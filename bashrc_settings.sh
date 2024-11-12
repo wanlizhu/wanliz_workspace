@@ -1,6 +1,6 @@
 export P4CLIENT=wanliz_linux_gpudrv
 export P4ROOT=/home/wanliz/$P4CLIENT
-export P4IGNORE=/home/.p4ignore
+export P4IGNORE=$P4ROOT/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
 export PATH=~/wanliz_linux_workbench:$PATH
