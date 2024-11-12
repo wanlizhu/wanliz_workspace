@@ -57,9 +57,8 @@ function nvins {
             nvins $outdir/NVIDIA-Linux-x86_64-$(nvver)-internal.run
         fi 
     else
-        echo "Install NVIDIA driver: $1"
-        read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
-
+        echo "NVIDIA driver: $1"
+        read -p "Press [ENTER] to continue: " _
         sudo systemctl stop gdm
         sudo $(realpath $1) -sb && 
         sudo systemctl start gdm ||
