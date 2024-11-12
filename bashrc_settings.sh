@@ -30,7 +30,7 @@ function nvmk {
 }
 
 function nvpkg {
-    config=${config:=release}
+    config=${1:-release}
     nvmk drivers dist linux amd64 $config -j$(nproc) &&
     nvmk drivers dist linux x86   $config -j$(nproc) &&
     nvmk drivers dist linux amd64 $config post-process-packages &&
@@ -128,4 +128,11 @@ function sshkey {
         ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -q -N ""
     fi
     ssh-copy-id $user@$host
+}
+
+function nopasswd {
+     if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
+        echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
+        sudo cat /etc/sudoers | tail -1
+    fi
 }
