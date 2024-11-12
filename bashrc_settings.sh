@@ -10,6 +10,7 @@ export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
 export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
 alias  nvcd="cd $P4ROOT/dev/gpu_drv/bugfix_main"
 alias  ss="source ~/.bashrc"
+alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null"
 
 function nvver {
     grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g'
