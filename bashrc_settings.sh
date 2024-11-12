@@ -117,6 +117,6 @@ function syncdir {
     read -p "From: " from
     for dir in $@; do 
         dir=$(realpath $dir)
-        rsync -avz wanliz@$from:$dir $dir || echo "Failed to sync $dir from $from" 
+        rsync -avz wanliz@$from:$dir/ $dir || echo "Failed to sync $dir from $from" 
     done
 }
