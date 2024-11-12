@@ -117,6 +117,15 @@ function syncdir {
     read -p "From: " from
     for dir in $@; do 
         dir=$(realpath $dir)
-        rsync -avz wanliz@$from:$dir $dir || echo "Failed to sync $dir from $from" 
+        rsync -avz wanliz@$from:$dir/ $dir || echo "Failed to sync $dir from $from" 
     done
+}
+
+function sshkey {
+    read -p "Remote host: " host
+    read -p "Remote user: " user
+    if [[ ! -f ~/.ssh/id_rsa ]]; then
+        ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -q -N ""
+    fi
+    ssh-copy-id $user@$host
 }
