@@ -4,10 +4,10 @@ export P4IGNORE=$P4ROOT/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
 export PATH=~/wanliz_linux_workbench:$PATH
-export PATH=~/Downloads/p4v/bin:$PATH
-export PATH=~/Downloads/nsight_systems/bin:$PATH
-export PATH=~/Downloads/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
-export PATH=~/Downloads/PIC-X_Package/SinglePassCapture:$PATH
+export PATH=~/p4v/bin:$PATH
+export PATH=~/nsight_systems/bin:$PATH
+export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
+export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
 alias  nvcd="cd $P4ROOT/dev/gpu_drv/bugfix_main"
 alias  ss="source ~/.bashrc"
 
@@ -106,9 +106,17 @@ function flamegraph {
     sudo chmod 666 $1
     sudo perf script --no-inline --force --input=$1 -F +pid > $1.perthread && 
     sudo perf script --no-inline --force --input=$1 >/tmp/$name.stage1 && 
-    sudo ~/Downloads/Flamegraph/stackcollapse-perf.pl /tmp/$name.stage1 >/tmp/$name.stage2 && 
-    sudo ~/Downloads/Flamegraph/stackcollapse-recursive.pl /tmp/$name.stage2 >/tmp/$name.stage3 && 
-    sudo ~/Downloads/Flamegraph/flamegraph.pl /tmp/$name.stage3 >$1.perf.svg && 
+    sudo ~/Flamegraph/stackcollapse-perf.pl /tmp/$name.stage1 >/tmp/$name.stage2 && 
+    sudo ~/Flamegraph/stackcollapse-recursive.pl /tmp/$name.stage2 >/tmp/$name.stage3 && 
+    sudo ~/Flamegraph/flamegraph.pl /tmp/$name.stage3 >$1.perf.svg && 
     echo "Generated $1.perf.svg" ||
     echo "Failed to generate flamegraph svg" 
+}
+
+function syncdir {
+    read -p "From: " from
+    for dir in $@; do 
+        dir=$(realpath $dir)
+        rsync -avz wanliz@$from:$dir $dir || echo "Failed to sync $dir from $from" 
+    done
 }
