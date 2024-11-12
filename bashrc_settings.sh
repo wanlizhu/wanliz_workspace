@@ -110,5 +110,5 @@ function flamegraph {
     sudo ~/Downloads/Flamegraph/stackcollapse-recursive.pl /tmp/$name.stage2 >/tmp/$name.stage3 && 
     sudo ~/Downloads/Flamegraph/flamegraph.pl /tmp/$name.stage3 >$1.perf.svg && 
     echo "Generated $1.perf.svg" ||
-    echo "Failed to generate flamegraph svg"
+    echo "Failed to generate flamegraph svg" 
 }
