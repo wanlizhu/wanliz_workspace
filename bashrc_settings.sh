@@ -162,3 +162,28 @@ function nopasswd {
         sudo cat /etc/sudoers | tail -1
     fi
 }
+
+function dumpmounts {
+    mounted=$(cat /proc/mounts | grep '/mnt')
+    while IFS= read -r mount; do
+        source=$(echo "$mount" | awk '{print $1}')
+        target=$(echo "$mount" | awk '{print $2}')
+        fstype=$(echo "$mount" | awk '{print $3}')
+        option=$(echo "$mount" | awk '{print $4}')
+        echo "sudo mkdir -p $target &&"
+        echo "sudo mount -t $fstype -o $option $source $target &&"
+    done <<< "$mounted"
+    echo "echo DONE"
+}
+
+function nvmount {
+    sudo mkdir -p /mnt/data &&
+    sudo mount -t nfs -o rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,soft,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.31.184.130,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=10.31.184.130 linuxqa:/qa/data /mnt/data &&
+    sudo mkdir -p /mnt/nvtest &&
+    sudo mount -t nfs -o rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,soft,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.31.184.102,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=10.31.184.102 nvtest:/nvtest/shared /mnt/nvtest &&
+    sudo mkdir -p /mnt/builds &&
+    sudo mount -t nfs -o rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,soft,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.31.184.130,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=10.31.184.130 linuxqa:/qa/builds /mnt/builds &&
+    sudo mkdir -p /mnt/linuxqa &&
+    sudo mount -t nfs -o rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,soft,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.31.184.130,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=10.31.184.130 linuxqa:/qa/people /mnt/linuxqa &&
+    echo DONE
+}
