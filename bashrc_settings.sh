@@ -90,8 +90,12 @@ function nvcp {
         if [[ ! -f $HOME/libnvidia-glcore.so.$version.backup ]]; then
             sudo cp -v /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version $HOME/libnvidia-glcore.so.$version.backup
         fi
-        config=$(nvbuildtype)
-        sudo cp -v --remove-destination $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
+        if [[ -f $1 ]]; then
+            sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
+        else
+            config=$(nvbuildtype)
+            sudo cp -v --remove-destination $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
+        fi
     fi
 }
 
@@ -99,8 +103,13 @@ function nvscp {
     read -p "Remote host: " host
     read -e -i $USER -p "Remote user: " user
     
-    version=$(ssh $user@$host "source ~/")
-    
+    if [[ $1 == restore ]]; then
+        ssh $user@$host "source ~/wanliz_linux_workbench/bashrc_settings.sh; nvcp restore"
+    else
+        config=$(nvbuildtype)
+        scp $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so $user@$host:/tmp/libnvidia-glcore.so
+        ssh $user@$host "source ~/wanliz_linux_workbench/bashrc_settings.sh; nvcp /tmp/libnvidia-glcore.so"
+    fi
 }
 
 function nvshaderhelp {
