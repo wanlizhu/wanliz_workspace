@@ -81,10 +81,6 @@ function nvins {
     fi
 }
 
-function nvbt {
-
-}
-
 function nvcp {
     version=$(nvsysver)
     if [[ $1 == restore ]]; then
