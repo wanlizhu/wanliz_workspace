@@ -12,8 +12,22 @@ alias  nvcd="cd $P4ROOT/dev/gpu_drv/bugfix_main"
 alias  ss="source ~/.bashrc"
 alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null"
 
-function nvver {
+function nvsrcver {
     grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g'
+}
+
+function nvsysver {
+    modinfo nvidia | grep ^version | awk '{print $2}'
+}
+
+function nvbuildtype {
+    if [[ ! -z $(cat /proc/driver/nvidia/version | awk '{print tolower($0)}' | grep "debug build") ]]; then
+        echo debug
+    elif [[ ! -z $(cat /proc/driver/nvidia/version | awk '{print tolower($0)}' | grep "develop build") ]]; then
+        echo develop
+    else
+        echo release
+    fi
 }
 
 function nvmk {
@@ -34,7 +48,7 @@ function nvpkg {
     nvmk drivers dist linux amd64 $config -j$(nproc) &&
     nvmk drivers dist linux x86   $config -j$(nproc) &&
     nvmk drivers dist linux amd64 $config post-process-packages &&
-    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_release/NVIDIA-Linux-x86_64-$(nvver).run
+    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_release/NVIDIA-Linux-x86_64-$(nvsrcver).run
 }
 
 function nvins {
@@ -52,29 +66,27 @@ function nvins {
             2) outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_debug   ;;
             3) outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_develop ;;
         esac
-        if [[ -f  $outdir/NVIDIA-Linux-x86_64-$(nvver).run ]]; then
-            nvins $outdir/NVIDIA-Linux-x86_64-$(nvver).run
+        if [[ -f  $outdir/NVIDIA-Linux-x86_64-$(nvsrcver).run ]]; then
+            nvins $outdir/NVIDIA-Linux-x86_64-$(nvsrcver).run
         else
-            nvins $outdir/NVIDIA-Linux-x86_64-$(nvver)-internal.run
+            nvins $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
         fi 
     else
         echo "NVIDIA driver: $1"
         read -p "Press [ENTER] to continue: " _
-        sudo systemctl stop gdm
-        sudo $(realpath $1) -sb && 
-        sudo systemctl start gdm ||
+        sudo systemctl isolate multi-user
+        sudo $(realpath $1) && 
+        sudo systemctl isolate graphical ||
         echo "Failed to install NVIDIA driver"
     fi
 }
 
-function nvcp {
-    version=$(modinfo nvidia | grep ^version | awk '{print $2}')
-    case $(cat /proc/driver/nvidia/version | awk '{print tolower($0)}') in
-        debug)   config=debug ;;
-        develop) config=develop ;;
-        *)       config=release ;;
-    esac 
+function nvbt {
 
+}
+
+function nvcp {
+    version=$(nvsysver)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libnvidia-glcore.so.$version.backup /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
         sudo rm -v -f $HOME/libnvidia-glcore.so.$version.backup
@@ -82,8 +94,17 @@ function nvcp {
         if [[ ! -f $HOME/libnvidia-glcore.so.$version.backup ]]; then
             sudo cp -v /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version $HOME/libnvidia-glcore.so.$version.backup
         fi
+        config=$(nvbuildtype)
         sudo cp -v --remove-destination $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
     fi
+}
+
+function nvscp {
+    read -p "Remote host: " host
+    read -e -i $USER -p "Remote user: " user
+    
+    version=$(ssh $user@$host "source ~/")
+    
 }
 
 function nvshaderhelp {
