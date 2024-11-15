@@ -48,7 +48,7 @@ function nvpkg {
     nvmk drivers dist linux amd64 $config -j$(nproc) &&
     nvmk drivers dist linux x86   $config -j$(nproc) &&
     nvmk drivers dist linux amd64 $config post-process-packages &&
-    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_release/NVIDIA-Linux-x86_64-$(nvsrcver).run
+    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(nvsrcver).run
 }
 
 function nvins {
