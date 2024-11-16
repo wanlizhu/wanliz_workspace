@@ -4,6 +4,7 @@ export P4IGNORE=$P4ROOT/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
 export PATH=~/wanliz_linux_workbench:$PATH
+export PATH=~/wanliz_linux_workbench/test_vp:$PATH
 export PATH=~/p4v/bin:$PATH
 export PATH=~/nsight_systems/bin:$PATH
 export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
