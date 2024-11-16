@@ -187,3 +187,21 @@ function nvmount {
     sudo mount -t nfs -o rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,soft,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.31.184.130,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=10.31.184.130 linuxqa:/qa/people /mnt/linuxqa &&
     echo DONE
 }
+
+function resizedp {
+    read -p "New size: " size
+    outputname=$(xrandr | grep " connected" | awk '{print $1}')
+    if [[ ! -z $(xrandr | grep $size) ]]; then
+        xrandr --output $outputname --mode $size
+    else
+        spec=$(cvt ${size//x/ } | tail -1 | cut -d' ' -f2-)
+        mode=$(cvt ${size//x/ } | tail -1 | cut -d' ' -f2- | awk '{print $1}')
+        xrandr --newmode $spec 
+        xrandr --addmode $outputname $mode 
+        xrandr --output  $outputname --mode $mode 
+    fi
+}
+
+function amdhelp {
+    echo "Latest AMD driver: https://repo.radeon.com/amdgpu-install/latest/ubuntu/jammy/"
+}
