@@ -206,3 +206,4 @@ function resizedp {
 function amdhelp {
     echo "Latest AMD driver: https://repo.radeon.com/amdgpu-install/latest/ubuntu/jammy/"
 }
+
