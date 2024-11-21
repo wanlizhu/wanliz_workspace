@@ -207,3 +207,13 @@ function amdhelp {
     echo "Latest AMD driver: https://repo.radeon.com/amdgpu-install/latest/ubuntu/jammy/"
 }
 
+function p4ins {
+    sudo apt install -y helix-p4d || {
+        if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
+            wget -qO - https://package.perforce.com/perforce.pubkey | gpg --dearmor | sudo tee /usr/share/keyrings/perforce.gpg >/dev/null
+            echo "deb [signed-by=/usr/share/keyrings/perforce.gpg] https://package.perforce.com/apt/ubuntu $(lsb_release -c | cut -f2) release"
+            sudo apt update
+            sudo apt install -y helix-p4d
+        fi
+    }
+}
