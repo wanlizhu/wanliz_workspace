@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.nvmk": "Makefile",
+        "map": "cpp"
+    }
+}
