@@ -32,6 +32,10 @@ function nvbuildtype {
 }
 
 function nvmk {
+    if [[ -z $1 ]]; then
+        config=$(nvbuildtype)
+        default_args="linux amd64 $config -j$(nproc)"
+    fi
     $P4ROOT/misc/linux/unix-build \
         --tools $P4ROOT/tools \
         --devrel $P4ROOT/devrel/SDK/inc/GL \
@@ -41,7 +45,7 @@ function nvmk {
         NV_COMPRESS_THREADS=$(nproc) \
         NV_FAST_PACKAGE_COMPRESSION=1 \
         NV_KEEP_UNSTRIPPED_BINARIES=0 \
-        NV_GUARDWORD=0 $@
+        NV_GUARDWORD=0 $default_args $@
 }
 
 function nvpkg {
@@ -82,6 +86,10 @@ function nvins {
         echo "NVIDIA driver: $1"
         read -p "Press [ENTER] to continue: " _
         sudo systemctl isolate multi-user
+        read -e -i "yes" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            sudo nvidia-uninstall 
+        fi
         sudo $(realpath $1) && 
         sudo systemctl isolate graphical ||
         echo "Failed to install NVIDIA driver"
