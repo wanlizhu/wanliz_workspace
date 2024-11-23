@@ -5,13 +5,22 @@ export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
 export PATH=~/wanliz_linux_workbench:$PATH
 export PATH=~/wanliz_linux_workbench/test_vp:$PATH
+export PATH=~/.local/bin:$PATH
 export PATH=~/p4v/bin:$PATH
 export PATH=~/nsight_systems/bin:$PATH
 export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
 export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
-alias  nvcd="cd $P4ROOT/dev/gpu_drv/bugfix_main"
 alias  ss="source ~/.bashrc"
 alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null"
+
+function nvcd {
+    case $1 in
+        glcore) cd $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL ;;
+        glx) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/glx ;;
+        egl) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/egl/build ;;
+        *) cd $P4ROOT/dev/gpu_drv/bugfix_main ;;
+    esac
+}
 
 function nvsrcver {
     grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g'
@@ -35,6 +44,9 @@ function nvmk {
     if [[ -z $1 ]]; then
         config=$(nvbuildtype)
         default_args="linux amd64 $config -j$(nproc)"
+    fi
+    if [[ $(basename $(pwd)) == bugfix_main ]]; then
+        default_args="drivers dist $default_args"
     fi
     $P4ROOT/misc/linux/unix-build \
         --tools $P4ROOT/tools \
@@ -83,6 +95,9 @@ function nvins {
             nvins $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
         fi 
     else
+        if [[ -z $(which gcc) ]]; then
+            sudo apt install -y gcc pkg-config
+        fi
         echo "NVIDIA driver: $1"
         read -p "Press [ENTER] to continue: " _
         sudo systemctl isolate multi-user
@@ -142,6 +157,29 @@ function nvcpglx {
     fi
 }
 
+function nvcpeglcore {
+    version=$(nvsysver)
+    if [[ $1 == restore ]]; then
+        sudo cp -v --remove-destination $HOME/libnvidia-eglcore.so.$version.backup /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
+        sudo rm -v -f $HOME/libnvidia-eglcore.so.$version.backup
+    else
+        if [[ -f $1 ]]; then
+            if [[ ! -f $HOME/libnvidia-eglcore.so.$version.backup ]]; then
+                sudo cp -v /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version $HOME/libnvidia-eglcore.so.$version.backup
+            fi
+            sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
+        else
+            config=$(nvbuildtype)
+            echo "Copy OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so to /lib/x86_64-linux-gnu as *.so.$version"
+            read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
+            if [[ ! -f $HOME/libnvidia-eglcore.so.$version.backup ]]; then
+                sudo cp -v /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version $HOME/libnvidia-eglcore.so.$version.backup
+            fi
+            sudo cp -v --remove-destination $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
+        fi
+    fi
+}
+
 function nvscp {
     read -p "Remote host: " host
     read -e -i $USER -p "Remote user: " user
@@ -171,15 +209,28 @@ function perfhelp {
 }
 
 function flamegraph {
-    name=$(basename $1)
+    if [[ ! -f ~/Flamegraph/flamegraph.pl ]]; then
+        git clone --depth 1 https://github.com/brendangregg/FlameGraph.git $HOME/Flamegraph || return -1
+        if [[ -z $(which pip) ]]; then
+            sudo apt install -y python3-pip
+            sudo apt install -y graphviz
+        fi
+        pip install gprof2dot 
+    fi
+    
+    midfile=/tmp/$(basename $1)
     sudo chmod 666 $1
     sudo perf script --no-inline --force --input=$1 -F +pid > $1.perthread && 
-    sudo perf script --no-inline --force --input=$1 >/tmp/$name.stage1 && 
-    sudo ~/Flamegraph/stackcollapse-perf.pl /tmp/$name.stage1 >/tmp/$name.stage2 && 
-    sudo ~/Flamegraph/stackcollapse-recursive.pl /tmp/$name.stage2 >/tmp/$name.stage3 && 
-    sudo ~/Flamegraph/flamegraph.pl /tmp/$name.stage3 >$1.perf.svg && 
-    echo "Generated $1.perf.svg" ||
-    echo "Failed to generate flamegraph svg" 
+    sudo perf script --no-inline --force --input=$1 >$midfile.stage1 && 
+    sudo ~/Flamegraph/stackcollapse-perf.pl $midfile.stage1 >$midfile.stage2 && 
+    sudo ~/Flamegraph/stackcollapse-recursive.pl $midfile.stage2 >$midfile.stage3 && 
+    sudo ~/Flamegraph/flamegraph.pl $midfile.stage3 >$1.svg && 
+    echo "Generated $1.svg" ||
+    echo "Failed to generate svg flamegraph" 
+
+    sudo perf script --no-inline --force --input=$1 | c++filt | gprof2dot -f perf | dot -Tpng -o $1.png && 
+    echo "Generated $1.png" || 
+    echo "Failed to generate png diagram"
 }
 
 function syncdir {
@@ -258,4 +309,8 @@ function p4ins {
             sudo apt install -y helix-p4d
         fi
     }
+}
+
+function xdgst {
+    echo $XDG_SESSION_TYPE
 }
