@@ -98,14 +98,16 @@ function nvins {
         if [[ -z $(which gcc) ]]; then
             sudo apt install -y gcc pkg-config
         fi
-        echo "NVIDIA driver: $1"
+        driver=$(realpath $1)
+        echo "NVIDIA driver: $driver"
         read -p "Press [ENTER] to continue: " _
         sudo systemctl isolate multi-user
         read -e -i "yes" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
         if [[ $ans == yes ]]; then
             sudo nvidia-uninstall 
         fi
-        sudo $(realpath $1) && 
+	chmod +x $driver 
+        sudo $driver && 
         sudo systemctl isolate graphical ||
         echo "Failed to install NVIDIA driver"
     fi
