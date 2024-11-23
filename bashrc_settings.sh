@@ -12,6 +12,21 @@ export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
 export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
 alias  ss="source ~/.bashrc"
 alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null"
+alias  uu="pushd ~/wanliz_linux_workbench >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
+
+function newmachine {
+    sudo apt update
+    sudo apt install -y vim git cmake build-essential pkg-config 
+    sudo apt install -y net-tools mesa-utils vulkan-tools htop
+    if [[ -z $(which google-chrome) ]]; then
+        wget --no-check-certificate -O $HOME/Downloads/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb &&
+        sudo dpkg -i $HOME/Downloads/google-chrome-stable_current_amd64.deb
+    fi
+    git config --global user.email zhu.wanli@icloud.com
+    git config --global user.name "Wanli Zhu"
+    git config --global pull.rebase false
+
+}
 
 function nvcd {
     case $1 in
@@ -42,12 +57,17 @@ function nvbuildtype {
 
 function nvmk {
     if [[ -z $1 ]]; then
-        config=$(nvbuildtype)
-        default_args="linux amd64 $config -j$(nproc)"
+        if [[ $(basename $(pwd)) == bugfix_main ]]; then
+            default_args="drivers dist linux amd64 $(nvbuildtype) -j$(nproc)"
+        else
+            default_args="linux amd64 $(nvbuildtype) -j$(nproc)"
+        fi
+        echo "Auto-generated nvmake arguments: $default_args"
+        read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
+    else
+        default_args=""
     fi
-    if [[ $(basename $(pwd)) == bugfix_main ]]; then
-        default_args="drivers dist $default_args"
-    fi
+
     $P4ROOT/misc/linux/unix-build \
         --tools $P4ROOT/tools \
         --devrel $P4ROOT/devrel/SDK/inc/GL \
