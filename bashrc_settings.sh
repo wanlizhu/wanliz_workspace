@@ -1,4 +1,10 @@
-export P4CLIENT=wanliz_p4sw_dev
+if   [[ $HOSTNAME == scc-03-3062-dev  ]]; then
+    export P4CLIENT=wanliz_p4sw_dev
+elif [[ $HOSTNAME == scc-03-3062-test ]]; then
+    export P4CLIENT=wanliz_p4sw_test
+elif [[ $HOSTNAME == scc-03-3062-wfh  ]]; then
+    export P4CLIENT=wanliz_p4sw_wfh
+fi
 export P4ROOT=/home/wanliz/$P4CLIENT
 export P4IGNORE=$P4ROOT/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
@@ -77,7 +83,7 @@ function nvmk {
         NV_COMPRESS_THREADS=$(nproc) \
         NV_FAST_PACKAGE_COMPRESSION=1 \
         NV_KEEP_UNSTRIPPED_BINARIES=0 \
-        NV_GUARDWORD=0 $default_args $@
+        NV_GUARDWORD=0 $default_args $@ 
 }
 
 function nvpkg {
@@ -256,6 +262,10 @@ function flamegraph {
 }
 
 function syncdir {
+    if [[ $(pwd) != $HOME ]]; then
+        echo "The current directory is not \$HOME"
+        read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
+    fi
     read -p "From: " from
     for dir in $@; do 
         dir=$(realpath $dir)
