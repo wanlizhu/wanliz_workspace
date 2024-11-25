@@ -1,4 +1,4 @@
-export P4CLIENT=wanliz_linux_gpudrv
+export P4CLIENT=wanliz_p4sw_dev
 export P4ROOT=/home/wanliz/$P4CLIENT
 export P4IGNORE=$P4ROOT/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
