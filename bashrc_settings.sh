@@ -121,18 +121,19 @@ function nvins {
             nvins $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
         fi 
     else
-        if [[ -z $(which gcc) ]]; then
-            sudo apt install -y gcc pkg-config
-        fi
+        sudo apt install -y  pkg-config build-essential libglvnd-dev
+
         driver=$(realpath $1)
         echo "NVIDIA driver: $driver"
         read -p "Press [ENTER] to continue: " _
         sudo systemctl isolate multi-user
+        
         read -e -i "yes" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
         if [[ $ans == yes ]]; then
             sudo nvidia-uninstall 
         fi
-	chmod +x $driver 
+
+	    chmod +x $driver 
         sudo $driver && 
         sudo systemctl isolate graphical ||
         echo "Failed to install NVIDIA driver"
