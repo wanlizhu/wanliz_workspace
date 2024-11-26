@@ -394,12 +394,19 @@ function plainx {
             sudo sed -i 's/"DPMS"/"DPMS" "false"/g' /etc/X11/xorg.conf
         fi
     fi
+
+    if [[ -z $(grep anybody /etc/X11/Xwrapper.config) ]]; then
+        sudo sed -i 's/console/anybody/g' /etc/X11/Xwrapper.config
+    fi
     
     sudo systemctl stop gdm
     X :0 &
     XPID=$!
-    echo "X $XPID is running in the background"
-
     export DISPLAY=:0
-    echo "DISPLAY $DISPLAY is active"
+
+    sleep 1
+    if [[ -f /proc/$XPID ]]; then
+        echo "X $XPID is running in the background"
+        echo "DISPLAY $DISPLAY is active"
+    fi
 }
