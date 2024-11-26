@@ -121,6 +121,11 @@ function nvins {
             nvins $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
         fi 
     else
+        if [[ $XDG_SESSION_TYPE != tty ]]; then
+            echo "Please run through a tty or ssh session"
+            return
+        fi
+
         sudo apt install -y  pkg-config build-essential libglvnd-dev
 
         driver=$(realpath $1)
@@ -374,4 +379,28 @@ function vpins {
     wget http://linuxqa.nvidia.com/people/nvtest/pynv_files/viewperf2020v3/viewperf2020v3.tar.gz || exit -1
     tar -zxvf viewperf2020v3.tar.gz
     popd >/dev/null
+}
+
+function plainx {
+    if [[ $XDG_SESSION_TYPE != tty ]]; then
+        echo "Please run through a tty or ssh session"
+        return 
+    fi
+    
+    read -e -i "yes" -p "Disable DPMS? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        xset -dpms
+        xset s off
+        if [[ -z $(grep '"DPMS" "false"' /etc/X11/xorg.conf) ]]; then
+            sudo sed -i 's/"DPMS"/"DPMS" "false"/g' /etc/X11/xorg.conf
+        fi
+    fi
+    
+    sudo systemctl stop gdm
+    X :0 &
+    XPID=$!
+    echo "X $XPID is running in the background"
+
+    export DISPLAY=:0
+    echo "DISPLAY $DISPLAY is active"
 }
