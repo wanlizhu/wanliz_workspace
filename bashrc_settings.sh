@@ -6,7 +6,7 @@ elif [[ $HOSTNAME == scc-03-3062-wfh  ]]; then
     export P4CLIENT=wanliz_p4sw_wfh
 fi
 export P4ROOT=/home/wanliz/$P4CLIENT
-export P4IGNORE=$P4ROOT/.p4ignore
+export P4IGNORE=$HOME/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
 export PATH=~/wanliz_linux_workbench:$PATH
@@ -345,4 +345,32 @@ function p4ins {
 
 function xdgst {
     echo $XDG_SESSION_TYPE
+}
+
+function p4switch {
+    export P4CLIENT=$1
+    export P4ROOT=/home/wanliz/$P4CLIENT
+}
+
+function p4ignore {
+    if [[ -f $HOME/.p4ignore ]]; then
+        cat $HOME/.p4ignore
+    else
+        read -e -i "yes" -p "$HOME/.p4ignore doesn't exist, create with default value? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            echo -e "_out\n.git\n.vscode\n" > $HOME/.p4ignore
+            cat $HOME/.p4ignore
+        fi
+    fi
+}
+
+function dvsbuild {
+    $P4ROOT/automation/dvs/dvsbuild/dvsbuild.pl -c $1 
+}
+
+function vpins {
+    pushd $HOME >/dev/null
+    wget http://linuxqa.nvidia.com/people/nvtest/pynv_files/viewperf2020v3/viewperf2020v3.tar.gz || exit -1
+    tar -zxvf viewperf2020v3.tar.gz
+    popd >/dev/null
 }
