@@ -408,7 +408,7 @@ function plainx {
     export DISPLAY=:0
 
     sleep 1
-    if [[ -f /proc/$XPID ]]; then
+    if [[ -d /proc/$XPID ]]; then
         echo "X $XPID is running in the background"
         echo "DISPLAY $DISPLAY is active"
     fi
