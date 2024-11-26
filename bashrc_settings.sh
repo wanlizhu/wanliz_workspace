@@ -399,7 +399,7 @@ function plainx {
         sudo sed -i 's/console/anybody/g' /etc/X11/Xwrapper.config
     fi
     if [[ -z $(grep 'needs_root_rights=no' /etc/X11/Xwrapper.config) ]]; then
-        echo -e '\nneeds_root_rights=no' >> /etc/X11/Xwrapper.config
+        echo -e '\nneeds_root_rights=no' | sudo tee -a /etc/X11/Xwrapper.config >/dev/null
     fi
     
     sudo systemctl stop gdm
