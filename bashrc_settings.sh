@@ -17,7 +17,7 @@ export PATH=~/nsight_systems/bin:$PATH
 export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
 export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
 alias  ss="source ~/.bashrc"
-alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null"
+alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
 alias  uu="pushd ~/wanliz_linux_workbench >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
 
 function newmachine {
@@ -31,7 +31,6 @@ function newmachine {
     git config --global user.email zhu.wanli@icloud.com
     git config --global user.name "Wanli Zhu"
     git config --global pull.rebase false
-
 }
 
 function nvcd {
