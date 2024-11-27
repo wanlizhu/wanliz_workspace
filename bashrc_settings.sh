@@ -413,3 +413,10 @@ function plainx {
         echo "DISPLAY $DISPLAY is active"
     fi
 }
+
+function picxenv {
+    pushd $HOME/PIC-X_Package/SinglePassCapture/Scripts >/dev/null
+    source ./setup-symbollinks.sh 
+    source ./setup-env.sh 
+    popd >/dev/null 
+}

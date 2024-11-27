@@ -1,7 +1,17 @@
+if [[ $1 == init ]]; then
+    echo "TODO"
+    exit    
+fi
+
 if [[ $1 == *.sh ]]; then
     read -p "Executable file name: " exe
 else
     exe=$1
+    read -e -i "$(dirname $1)" -p "Working directory (empty=current): " workdir
+fi
+
+if [[ ! -z $workdir ]]; then
+    cd $workdir
 fi
 
 read -e -i "yes" -p "Record the complete life cycle of target app? (yes/no): " ans
