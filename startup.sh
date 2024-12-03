@@ -22,3 +22,5 @@ if [[ ! -z $(which ifconfig) ]]; then
         git pull && git push || git push -f
     fi
 fi
+
+exit 111
