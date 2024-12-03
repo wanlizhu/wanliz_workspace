@@ -35,7 +35,7 @@ function newmachine {
 
 function nvcd {
     case $1 in
-        glcore) cd $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL ;;
+        gl|opengl|glcore) cd $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL ;;
         glx) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/glx ;;
         egl) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/egl/build ;;
         *) cd $P4ROOT/dev/gpu_drv/bugfix_main ;;
