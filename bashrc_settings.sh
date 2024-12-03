@@ -420,3 +420,33 @@ function picxenv {
     source ./setup-env.sh 
     popd >/dev/null 
 }
+
+function addstartupscript {
+    read -p "Script path: " script
+cat <<EOF > /tmp/addstartupscript
+[Unit]
+Description=$(basename $script)
+After=network.target
+
+[Service]
+ExecStart=$script
+
+[Install]
+WantedBy=default.target
+EOF
+    chmod +x $script
+    sudo mv /tmp/addstartupscript /etc/systemd/system/$(basename $script).service
+    sudo systemctl daemon-reload
+    sudo systemctl enable $(basename $script).service
+}
+
+function synchosts {
+    while IFS= read -r line; do
+        line=$(echo "$line" | sed 's/[[:space:]]*$//')
+        if ! grep -Fxq "$line" /etc/hosts; then
+            host=$(echo "$line" | awk '{print $2}')
+            sudo sed -i "/ $host$/d" /etc/hosts
+            echo "$line" | sudo tee -a /etc/hosts 
+        fi
+    done < $HOME/wanliz_linux_workbench/hosts
+}
