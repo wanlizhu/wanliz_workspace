@@ -1,6 +1,15 @@
 source $HOME/.bashrc
 
+if [[ $1 == register ]]; then
+    sudo cp -fv ~/wanliz_linux_workbench/startup.service /etc/systemd/system/startup.service
+    sudo systemctl daemon-reload
+    sudo systemctl enable startup.service
+    exit 
+fi
+
 if [[ ! -z $(which ifconfig) ]]; then
+    echo "Sleep 10 seconds until IP is assigned"
+    sleep 10
     ip=$(ifconfig | grep "172.16" | awk '{print $2}')
     if [[ ! -z $ip ]]; then
         case $HOSTNAME in
@@ -21,5 +30,6 @@ if [[ ! -z $(which ifconfig) ]]; then
         fi
     else
         echo "Not inside NVIDIA domain" | tee -a $HOME/startup.log
+        echo ifconfig | tee -a $HOME/startup.log
     fi
 fi
