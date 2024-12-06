@@ -232,8 +232,16 @@ function nvshaderhelp {
 }
 
 function prime {
+    if [[ $XDG_SESSION_TYPE == wayland ]]; then
+        export GBM_BACKEND=nvidia-drm
+        echo "export GBM_BACKEND=nvidia-drm"
+    fi
+
     export __NV_PRIME_RENDER_OFFLOAD=1
     export __GLX_VENDOR_LIBRARY_NAME=nvidia
+    echo "export __NV_PRIME_RENDER_OFFLOAD=1"
+    echo "export __GLX_VENDOR_LIBRARY_NAME=nvidia"
+
     "$@"
 }
 
@@ -419,25 +427,6 @@ function picxenv {
     source ./setup-symbollinks.sh 
     source ./setup-env.sh 
     popd >/dev/null 
-}
-
-function addstartupscript {
-    read -p "Script path: " script
-cat <<EOF > /tmp/addstartupscript
-[Unit]
-Description=$(basename $script)
-After=network.target
-
-[Service]
-ExecStart=$script
-
-[Install]
-WantedBy=default.target
-EOF
-    chmod +x $script
-    sudo mv /tmp/addstartupscript /etc/systemd/system/$(basename $script).service
-    sudo systemctl daemon-reload
-    sudo systemctl enable $(basename $script).service
 }
 
 function synchosts {
