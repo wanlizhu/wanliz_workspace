@@ -1,3 +1,10 @@
+read -e -i "localhost" -p "Target machine: " machine 
+if [[ $machine != localhost ]]; then
+    read -e -i "$USER"     -p "Run as user: " user
+    ssh -t $user@$machine 'bash -s' < $HOME/wanliz_linux_workbench/setup_new_machine.sh 
+    exit
+fi
+
 if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
     echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
     sudo cat /etc/sudoers | tail -1
@@ -5,8 +12,9 @@ fi
 
 if [[ -z $(which git) ]]; then
     sudo apt install -y git
-    git config --global config user.name "Wanli Zhu"
-    git config --global config user.email zhu.wanli@icloud.com
+    git config --global user.name "Wanli Zhu"
+    git config --global user.email zhu.wanli@icloud.com
+    git config --global pull.rebase false
 fi
 
 if [[ ! -d $HOME/wanliz_linux_workbench ]]; then
@@ -44,5 +52,7 @@ if [[ ! -z $P4CLIENT && ! -d $P4ROOT ]]; then
         p4 sync -f //sw/...
     fi
 fi
+
+synchosts
 
 
