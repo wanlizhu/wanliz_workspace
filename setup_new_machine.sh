@@ -5,6 +5,8 @@ fi
 
 if [[ -z $(which git) ]]; then
     sudo apt install -y git
+    git config --global config user.name "Wanli Zhu"
+    git config --global config user.email zhu.wanli@icloud.com
 fi
 
 if [[ ! -d $HOME/wanliz_linux_workbench ]]; then
