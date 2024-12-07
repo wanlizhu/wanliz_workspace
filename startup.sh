@@ -10,7 +10,7 @@ fi
 if [[ ! -z $(which ifconfig) ]]; then
     while [[ -z $ip ]]; do
         ip=$(ifconfig | grep "172.16" | awk '{print $2}')
-        sleep 3
+        sleep 5
     done
     if [[ ! -z $ip ]]; then
         case $HOSTNAME in
