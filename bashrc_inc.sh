@@ -155,7 +155,7 @@ function nvcpgl {
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
         else
             config=$(nvbuildtype)
-            echo "Copy OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so to /lib/x86_64-linux-gnu as *.so.$version"
+            echo "Copy OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so ($(nvsrcver)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libnvidia-glcore.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version $HOME/libnvidia-glcore.so.$version.backup
@@ -178,7 +178,7 @@ function nvcpegl {
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
         else
             config=$(nvbuildtype)
-            echo "Copy OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so to /lib/x86_64-linux-gnu as *.so.$version"
+            echo "Copy OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so ($(nvsrcver)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libnvidia-eglcore.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version $HOME/libnvidia-eglcore.so.$version.backup
@@ -201,7 +201,7 @@ function nvcpglx {
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version
         else
             config=$(nvbuildtype)
-            echo "Copy OpenGL/win/glx/lib/_out/Linux_amd64_$config/libGLX_nvidia.so to /lib/x86_64-linux-gnu as *.so.$version"
+            echo "Copy OpenGL/win/glx/lib/_out/Linux_amd64_$config/libGLX_nvidia.so ($(nvsrcver)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libGLX_nvidia.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version $HOME/libGLX_nvidia.so.$version.backup
@@ -212,24 +212,23 @@ function nvcpglx {
 }
 
 function nvcpxdriver {
-    version=$(nvsysver)
     if [[ $1 == restore ]]; then
-        sudo cp -v --remove-destination $HOME/nvidia_drv.so.$version.backup /lib/x86_64-linux-gnu/nvidia_drv.so.$version
-        sudo rm -v -f $HOME/nvidia_drv.so.$version.backup
+        sudo cp -v --remove-destination $HOME/nvidia_drv.so.backup /lib/xorg/modules/drivers/nvidia_drv.so
+        sudo rm -v -f $HOME/nvidia_drv.so.backup
     else
         if [[ -f $1 ]]; then
-            if [[ ! -f $HOME/nvidia_drv.so.$version.backup ]]; then
-                sudo cp -v /lib/x86_64-linux-gnu/nvidia_drv.so.$version $HOME/nvidia_drv.so.$version.backup
+            if [[ ! -f $HOME/nvidia_drv.so.backup ]]; then
+                sudo cp -v /lib/xorg/modules/drivers/nvidia_drv.so $HOME/nvidia_drv.so.backup
             fi
-            sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/nvidia_drv.so.$version
+            sudo cp -v --remove-destination $1 /lib/xorg/modules/drivers/nvidia_drv.so
         else
             config=$(nvbuildtype)
-            echo "Copy xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so to /lib/x86_64-linux-gnu as *.so.$version"
+            echo "Copy xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so ($(nvsrcver)) to /lib/xorg/modules/drivers/nvidia_drv.so"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
-            if [[ ! -f $HOME/nvidia_drv.so.$version.backup ]]; then
-                sudo cp -v /lib/x86_64-linux-gnu/nvidia_drv.so.$version $HOME/nvidia_drv.so.$version.backup
+            if [[ ! -f $HOME/nvidia_drv.so.backup ]]; then
+                sudo cp -v /lib/xorg/modules/drivers/nvidia_drv.so $HOME/nvidia_drv.so.backup
             fi
-            sudo cp -v --remove-destination $P4ROOT/dev/gpu_drv/bugfix_main/drivers/xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so /lib/x86_64-linux-gnu/nvidia_drv.so.$version
+            sudo cp -v --remove-destination $P4ROOT/dev/gpu_drv/bugfix_main/drivers/xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so /lib/xorg/modules/drivers/nvidia_drv.so
         fi
     fi
 }
