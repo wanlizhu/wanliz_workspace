@@ -19,7 +19,7 @@ After=display-manager.service
 [Service]
 Type=simple
 User=$USER
-ExecStart=$(command -v x11vnc) -display :0 -auth guess -forever -loop -noxdamage -repeat -usepw
+ExecStart=$(command -v x11vnc) -display :0 -rfbport 5900 -auth guess -forever -loop -noxdamage -repeat -usepw
 Restart=on-failure
 
 [Install]
