@@ -443,3 +443,7 @@ function synchosts {
 function checkvnc {
     sudo lsof -i :5900-5909
 }
+
+function restartvnc {
+    sudo systemctl restart x11vnc.service
+}
