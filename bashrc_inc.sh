@@ -439,3 +439,7 @@ function synchosts {
         fi
     done < $HOME/wanliz_linux_workbench/hosts
 }
+
+function checkvnc {
+    sudo lsof -i :5900-5909
+}
