@@ -1,4 +1,4 @@
-if [[ $1 == init ]]; then
+if [[ $1 == setup ]]; then
     echo "TODO"
     exit    
 fi
@@ -7,7 +7,7 @@ if [[ $1 == *.sh ]]; then
     read -p "Executable file name: " exe
 else
     exe=$1
-    read -e -i "$(dirname $1)" -p "Working directory (empty=current): " workdir
+    read -e -i "$(dirname $1)" -p "Working directory: " workdir
 fi
 
 if [[ ! -z $workdir ]]; then
@@ -44,6 +44,6 @@ fi
 
 read -e -i "yes" -p "Generate a svg flamegraph? (yes/no): " ans
 if [[ $ans == yes ]]; then
-    source ~/wanliz_linux_workbench/bashrc_settings.sh
+    source ~/wanliz_linux_workbench/bashrc_inc.sh
     flamegraph $outfile
 fi

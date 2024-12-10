@@ -1,7 +1,8 @@
-read -e -i "localhost" -p "Target machine: " machine 
-if [[ $machine != localhost ]]; then
-    read -e -i "$USER"     -p "Run as user: " user
-    ssh -t $user@$machine 'bash -s' < $HOME/wanliz_linux_workbench/setup_new_machine.sh 
+if [[ $1 != local ]]; then
+    read -p "Target machine: " machine 
+    read -e -i "$USER" -p "Run as user: " user
+    scp $HOME/wanliz_linux_workbench/setup_new_machine.sh $user@$machine:/tmp/setup_new_machine.sh
+    ssh -t $user@$machine 'bash /tmp/setup_new_machine.sh local'
     exit
 fi
 
@@ -25,8 +26,9 @@ fi
 if [[ -z $(grep wanliz_linux_workbench ~/.bashrc) ]]; then
     echo "" >> ~/.bashrc
     echo "source $HOME/wanliz_linux_workbench/bashrc_inc.sh" >> ~/.bashrc
-    source ~/.bashrc
 fi
+
+source $HOME/wanliz_linux_workbench/bashrc_inc.sh
 
 if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
     sudo apt install -y openssh-server
@@ -53,6 +55,14 @@ if [[ ! -z $P4CLIENT && ! -d $P4ROOT ]]; then
     fi
 fi
 
-synchosts
+ubuntu=$(grep '^VERSION_ID=' /etc/os-release | cut -d'"' -f2)
+if dpkg --compare-versions "$ubuntu" ge "24.0"; then
+    if [[ ! -f /etc/sysctl.d/99-userns.conf ]]; then
+        echo "kernel.apparmor_restrict_unprivileged_userns = 0" | sudo tee /etc/sysctl.d/99-userns.conf
+        sudo sysctl --system
+    fi
+fi
 
+synchosts
+startup.sh register
 

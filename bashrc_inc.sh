@@ -218,11 +218,11 @@ function nvscp {
     read -e -i $USER -p "Remote user: " user
     
     if [[ $1 == restore ]]; then
-        ssh $user@$host "source ~/wanliz_linux_workbench/bashrc_settings.sh; nvcp restore"
+        ssh $user@$host "source ~/wanliz_linux_workbench/bashrc_inc.sh; nvcp restore"
     else
         config=$(nvbuildtype)
         scp $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so $user@$host:/tmp/libnvidia-glcore.so
-        ssh $user@$host "source ~/wanliz_linux_workbench/bashrc_settings.sh; nvcp /tmp/libnvidia-glcore.so"
+        ssh $user@$host "source ~/wanliz_linux_workbench/bashrc_inc.sh; nvcp /tmp/libnvidia-glcore.so"
     fi
 }
 

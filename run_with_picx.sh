@@ -1,4 +1,4 @@
-if [[ $1 == init ]]; then
+if [[ $1 == setup ]]; then
     if [[ ! -f $HOME/PIC-X_Package/SinglePassCapture/pic-x ]]; then
         echo "PIC-X is not installed on $HOSTNAME"
         exit -1
