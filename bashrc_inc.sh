@@ -88,9 +88,14 @@ function nvpkg {
 
 function nvins {
     if [[ -z $1 ]]; then
-        echo "Download by date       : http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
-        echo "Download by version    : http://linuxqa/builds/release/display/x86_64/?C=M;O=D"
         echo "Download by changelist : http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Release_Linux_AMD64_unix-build_Test_Driver/?C=M;O=D"
+        echo "                         http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Debug_Linux_AMD64_unix-build_Driver/?C=M;O=D"
+        echo "Download by version    : http://linuxqa/builds/release/display/x86_64/?C=M;O=D"
+        echo "                         http://linuxqa/builds/release/display/x86_64/debug/?C=M;O=D"
+        echo "                         http://linuxqa/builds/release/display/x86_64/develop/?C=M;O=D"
+        echo "Download by date       : http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
+        echo "                         http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D"
+        echo "                         http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D"
     elif [[ $1 == local ]]; then
         echo "[1] Linux_amd64_release $([[ -d $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_release ]] || echo '(NULL)')"
         echo "[2] Linux_amd64_debug   $([[ -d $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_debug   ]] || echo '(NULL)')"
@@ -119,6 +124,7 @@ function nvins {
         fi
 
         sudo apt install -y  pkg-config gcc g++ libglvnd-dev
+
 
         driver=$(realpath $1)
         echo "NVIDIA driver: $driver"
