@@ -60,6 +60,11 @@ function nvbuildtype {
     fi
 }
 
+function checknvver {
+    echo "Installed dso ($(nvbuildtype) build) version: $(nvsysver)" 
+    echo "Source code ($P4CLIENT) version: $(nvsrcver)"
+}
+
 function nvmk {
     if [[ -z $1 ]]; then
         if [[ $(basename $(pwd)) == bugfix_main ]]; then
@@ -95,9 +100,9 @@ function nvpkg {
 
 function nvins {
     if [[ -z $1 ]]; then
-        echo "Download by date       : http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/"
-        echo "Download by version    : http://linuxqa/builds/release/display/x86_64/"
-        echo "Download by changelist : http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Release_Linux_AMD64_unix-build_Test_Driver/"
+        echo "Download by date       : http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
+        echo "Download by version    : http://linuxqa/builds/release/display/x86_64/?C=M;O=D"
+        echo "Download by changelist : http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Release_Linux_AMD64_unix-build_Test_Driver/?C=M;O=D"
     elif [[ $1 == local ]]; then
         echo "[1] Linux_amd64_release $([[ -d $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_release ]] || echo '(NULL)')"
         echo "[2] Linux_amd64_debug   $([[ -d $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_debug   ]] || echo '(NULL)')"
@@ -446,4 +451,18 @@ function checkvnc {
 
 function restartvnc {
     sudo systemctl restart x11vnc.service
+}
+
+function loadvksdk {
+    version=1.3.296.0
+    if [[ ! -d $HOME/VulkanSDK/$version ]]; then
+        cd $HOME/Downloads
+        wget https://sdk.lunarg.com/sdk/download/$version/linux/vulkansdk-linux-x86_64-$version.tar.xz || return -1
+        tar -xvf vulkansdk-linux-x86_64-$version.tar.xz
+        mkdir -p $HOME/VulkanSDK
+        mv $version $HOME/VulkanSDK
+        sudo apt install -y libxcb-xinerama0 libxcb-xinput0
+    fi
+    source $HOME/VulkanSDK/$version/setup-env.sh
+    echo $VULKAN_SDK
 }
