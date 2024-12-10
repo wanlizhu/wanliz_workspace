@@ -20,18 +20,6 @@ alias  ss="source ~/.bashrc"
 alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
 alias  uu="pushd ~/wanliz_linux_workbench >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
 
-function newmachine {
-    sudo apt update
-    sudo apt install -y vim git cmake build-essential pkg-config 
-    sudo apt install -y net-tools mesa-utils vulkan-tools htop
-    if [[ -z $(which google-chrome) ]]; then
-        wget --no-check-certificate -O $HOME/Downloads/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb &&
-        sudo dpkg -i $HOME/Downloads/google-chrome-stable_current_amd64.deb
-    fi
-    git config --global user.email zhu.wanli@icloud.com
-    git config --global user.name "Wanli Zhu"
-    git config --global pull.rebase false
-}
 
 function nvcd {
     case $1 in
@@ -130,7 +118,7 @@ function nvins {
             return
         fi
 
-        sudo apt install -y  pkg-config build-essential libglvnd-dev
+        sudo apt install -y  pkg-config gcc g++ libglvnd-dev
 
         driver=$(realpath $1)
         echo "NVIDIA driver: $driver"
