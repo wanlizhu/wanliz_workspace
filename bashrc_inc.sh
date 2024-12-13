@@ -117,7 +117,23 @@ function install_driver {
         else
             install_driver $outdir/NVIDIA-Linux-x86_64-$(get_src_version)-internal.run
         fi 
-    else
+    elif [[ -d $1 ]]; then
+        idx=0
+        for file in $1; do 
+            if [[ -f $file ]]; then
+                echo "[$idx] $file"
+                echo "$file" > /tmp/$idx
+            fi
+            idx=$((idx + 1))
+        done
+        if [[ $idx == 0 ]]; then
+            echo "Driver not found in $1"
+            return -1
+        else
+            read -e -i 0 -p "Select: " idx
+            install_driver $(cat /tmp/$idx)
+        fi
+    else 
         if [[ $XDG_SESSION_TYPE != tty ]]; then
             echo "Please run through a tty or ssh session"
             return
