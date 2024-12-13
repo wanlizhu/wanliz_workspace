@@ -464,6 +464,10 @@ function install_sysperf {
 }
 
 function enable_wayland {
+    if [[ -z $(which nvidia-smi) ]]; then
+        echo "Install nvidia driver first"
+        return -1
+    fi
     if [[ -z $(sudo grep '^WaylandEnable=true' /etc/gdm3/custom.conf) ]]; then
         echo "- Edit /etc/gdm3/custom.conf to add WaylandEnable=true"
     fi
