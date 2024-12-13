@@ -477,8 +477,9 @@ function install_sysprof {
         tar -zxvf sysprof-$version.tar.gz
     fi
    
-    cd sysprof-$version
-    sudo apt install -y gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev install libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool &&
+    sudo apt install -y gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev install libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool 
+
+    cd sysprof-$version &&
     meson --prefix=/usr build &&
     cd build &&
     ninja &&
