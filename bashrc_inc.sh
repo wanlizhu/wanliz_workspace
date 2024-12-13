@@ -469,15 +469,18 @@ function install_perf {
     echo TODO
 }
 
-function install_sysperf {
+function install_sysprof {
     pushd ~/Downloads >/dev/null
     wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/46.0/sysprof-46.0.tar.gz || return -1
     tar -zxvf sysprof-46.0.tar.gz
    
     cd sysprof-46.0
-    sudo apt install -y gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev meson
-    sudo pip3 install meson
-    meson --prefix=/usr build
+    sudo apt install -y gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev install libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool &&
+    meson --prefix=/usr build &&
+    cd build &&
+    ninja &&
+    sudo ninja install &&
+    which sysprof
 
     popd >/dev/null  
 }
