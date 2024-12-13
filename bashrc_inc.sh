@@ -117,9 +117,9 @@ function install_driver {
         else
             install_driver $outdir/NVIDIA-Linux-x86_64-$(get_src_version)-internal.run
         fi 
-    elif [[ -d $1 ]]; then
+    elif [[ -d $(realpath $1) ]]; then
         idx=0
-        for file in $1; do 
+        for file in $(realpath $1); do 
             if [[ -f $file ]]; then
                 echo "[$idx] $file"
                 echo "$file" > /tmp/$idx
