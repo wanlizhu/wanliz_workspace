@@ -20,7 +20,7 @@ fi
 
 if [[ ! -d $HOME/wanliz_linux_workbench ]]; then
     git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_linux_workbench $HOME/wanliz_linux_workbench
-    sudo apt install -y build-essential gcc g++ cmake pkg-config libglvnd-dev 
+    sudo apt install -y build-essential gcc g++ cmake pkg-config libglvnd-dev || exit -1
 fi
 
 if [[ -z $(grep wanliz_linux_workbench ~/.bashrc) ]]; then
@@ -67,6 +67,6 @@ if dpkg --compare-versions "$ubuntu" ge "24.0"; then
     fi
 fi
 
-synchosts
+sync_hosts
 startup.sh register
-sysperfinstall
+install_sysprof 46.0

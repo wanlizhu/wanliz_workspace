@@ -26,6 +26,17 @@ function check_and_install {
     fi
 }
 
+function apt_install_any {
+    rm -rf /tmp/apt-failed
+    for pkg in "$@"; do 
+        sudo apt install -y $pkg || echo "Failed to install $pkg" > /tmp/apt-failed
+    done
+    if [[ -f /tmp/apt-failed ]]; then
+        cat /tmp/apt-failed
+        return -1
+    fi
+}
+
 function chd {
     case $1 in
         gl|opengl|glcore) cd $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL ;;
@@ -144,7 +155,7 @@ function install_driver {
             return
         fi
 
-        sudo apt install -y  pkg-config gcc g++ libglvnd-dev
+        apt_install_any pkg-config gcc g++ libglvnd-dev
 
         driver=$(realpath $1)
         echo "NVIDIA driver: $driver"
@@ -281,8 +292,8 @@ function flamegraph {
     if [[ ! -f ~/Flamegraph/flamegraph.pl ]]; then
         git clone --depth 1 https://github.com/brendangregg/FlameGraph.git $HOME/Flamegraph || return -1
         if [[ -z $(which pip) ]]; then
-            sudo apt install -y python3-pip
-            sudo apt install -y graphviz
+            apt_install_any python3-pip
+            apt_install_any graphviz
         fi
         pip install gprof2dot 
     fi
@@ -459,7 +470,7 @@ function load_vksdk {
         tar -xvf vulkansdk-linux-x86_64-$version.tar.xz
         mkdir -p $HOME/VulkanSDK
         mv $version $HOME/VulkanSDK
-        sudo apt install -y libxcb-xinerama0 libxcb-xinput0
+        apt_install_any libxcb-xinerama0 libxcb-xinput0
     fi
     source $HOME/VulkanSDK/$version/setup-env.sh
     echo $VULKAN_SDK
@@ -471,13 +482,17 @@ function install_perf {
 
 function install_sysprof {
     pushd ~/Downloads >/dev/null
-    read -e -i "46.0" -p "Install sysprof version: " version
-    if [[ ! -d $HOME/sysprof-$version ]]; then
+    if [[ -z $1 ]]; then
+        read -e -i "46.0" -p "Install sysprof version: " version
+    else
+        version=$1
+    fi
+    if [[ ! -d $HOME/Downloads/sysprof-$version ]]; then
         wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/$version/sysprof-$version.tar.gz || return -1
         tar -zxvf sysprof-$version.tar.gz
     fi
    
-    sudo apt install -y gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev install libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool 
+    apt_install_any gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-0 libpolkit-agent-1-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool 
 
     cd sysprof-$version &&
     meson --prefix=/usr build &&
