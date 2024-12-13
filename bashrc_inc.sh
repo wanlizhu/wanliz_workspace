@@ -20,6 +20,11 @@ alias  ss="source ~/.bashrc"
 alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
 alias  uu="pushd ~/wanliz_linux_workbench >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
 
+function check_and_install {
+    if [[ -z $(which $1) ]]; then
+        sudo apt install -y $2
+    fi
+}
 
 function chd {
     case $1 in
@@ -466,15 +471,13 @@ function install_perf {
 
 function install_sysperf {
     pushd ~/Downloads >/dev/null
-    wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/47.2/sysprof-47.2.tar.gz || return -1
-    tar -zxvf sysprof-47.2.tar.gz
-    mv sysprof-47.2 $HOME 
-    
-    pushd $HOME/sysprof-47.2 >/dev/null
-    sudo apt install -y gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev
+    wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/46.0/sysprof-46.0.tar.gz || return -1
+    tar -zxvf sysprof-46.0.tar.gz
+   
+    cd sysprof-46.0
+    sudo apt install -y gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev meson
     sudo pip3 install meson
     meson --prefix=/usr build
-    popd >/dev/null
 
     popd >/dev/null  
 }
@@ -491,4 +494,5 @@ function enable_wayland {
         echo "options nvidia_drm modeset=1" | sudo tee /etc/modprobe.d/nvidia-modeset.conf
         echo "A reboot is required"
     fi
+    check_and_install wayland-info wayland-utils
 }

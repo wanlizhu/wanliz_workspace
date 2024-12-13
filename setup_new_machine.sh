@@ -18,10 +18,6 @@ if [[ -z $(which git) ]]; then
     git config --global pull.rebase false
 fi
 
-if [[ -z $(which vim) ]]; then
-    sudo apt install -y vim
-fi
-
 if [[ ! -d $HOME/wanliz_linux_workbench ]]; then
     git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_linux_workbench $HOME/wanliz_linux_workbench
     sudo apt install -y build-essential gcc g++ cmake pkg-config libglvnd-dev 
@@ -33,6 +29,10 @@ if [[ -z $(grep wanliz_linux_workbench ~/.bashrc) ]]; then
 fi
 
 source $HOME/wanliz_linux_workbench/bashrc_inc.sh
+
+check_and_install vim vim
+check_and_install vkcube vulkan-tools
+check_and_install ifconfig net-tools
 
 if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
     sudo apt install -y openssh-server
