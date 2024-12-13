@@ -86,7 +86,7 @@ function nvpkg {
     stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(nvsrcver).run
 }
 
-function nvins {
+function nvinstall {
     if [[ -z $1 ]]; then
         echo "Download by changelist : http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Release_Linux_AMD64_unix-build_Test_Driver/?C=M;O=D"
         echo "                         http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Debug_Linux_AMD64_unix-build_Driver/?C=M;O=D"
@@ -110,12 +110,12 @@ function nvins {
             echo "32-bits compatible packages are available"
             read -e -i "yes" -p "Install PPP (amd64 + x86) driver? (yes/no): " ans
             if [[ $ans == yes ]]; then
-                nvins $outdir/NVIDIA-Linux-x86_64-$(nvsrcver).run
+                nvinstall $outdir/NVIDIA-Linux-x86_64-$(nvsrcver).run
             else
-                nvins $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
+                nvinstall $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
             fi
         else
-            nvins $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
+            nvinstall $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
         fi 
     else
         if [[ $XDG_SESSION_TYPE != tty ]]; then
@@ -365,7 +365,7 @@ function amdhelp {
     echo "Latest AMD driver: https://repo.radeon.com/amdgpu-install/latest/ubuntu/jammy/"
 }
 
-function p4ins {
+function p4install {
     sudo apt install -y helix-p4d || {
         if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
             wget -qO - https://package.perforce.com/perforce.pubkey | gpg --dearmor | sudo tee /usr/share/keyrings/perforce.gpg >/dev/null
@@ -401,7 +401,7 @@ function dvsbuild {
     $P4ROOT/automation/dvs/dvsbuild/dvsbuild.pl -c $1 
 }
 
-function vpins {
+function vpinstall {
     pushd $HOME >/dev/null
     wget http://linuxqa.nvidia.com/people/nvtest/pynv_files/viewperf2020v3/viewperf2020v3.tar.gz || exit -1
     tar -zxvf viewperf2020v3.tar.gz
@@ -480,4 +480,23 @@ function loadvksdk {
     fi
     source $HOME/VulkanSDK/$version/setup-env.sh
     echo $VULKAN_SDK
+}
+
+function perfinstall {
+    echo TODO
+}
+
+function sysperfinstall {
+    pushd ~/Downloads >/dev/null
+    wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/47.2/sysprof-47.2.tar.gz || return -1
+    tar -zxvf sysprof-47.2.tar.gz
+    mv sysprof-47.2 $HOME 
+    
+    pushd $HOME/sysprof-47.2 >/dev/null
+    sudo apt install -y gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev
+    sudo pip3 install meson
+    meson --prefix=/usr build
+    popd >/dev/null
+
+    popd >/dev/null  
 }

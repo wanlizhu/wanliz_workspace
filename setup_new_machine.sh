@@ -39,7 +39,7 @@ if [[ -z $(sudo lsof -i :5900-5909) ]]; then
 fi
 
 if [[ -z $(which p4) ]]; then
-    p4ins 
+    p4install 
 fi
 
 if [[ ! -f $HOME/.p4ignore ]]; then
@@ -65,4 +65,4 @@ fi
 
 synchosts
 startup.sh register
-
+sysperfinstall
