@@ -119,7 +119,7 @@ function install_driver {
         fi 
     elif [[ -d $(realpath $1) ]]; then
         idx=0
-        for file in $(realpath $1); do 
+        for file in $(realpath $1/*.run); do 
             if [[ -f $file ]]; then
                 echo "[$idx] $file"
                 echo "$file" > /tmp/$idx
