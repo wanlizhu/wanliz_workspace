@@ -21,7 +21,7 @@ alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/n
 alias  uu="pushd ~/wanliz_linux_workbench >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
 
 
-function nvcd {
+function chd {
     case $1 in
         gl|opengl|glcore) cd $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL ;;
         glx) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/glx ;;
@@ -30,15 +30,15 @@ function nvcd {
     esac
 }
 
-function nvsrcver {
+function get_src_version {
     grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g'
 }
 
-function nvsysver {
+function get_mod_version {
     modinfo nvidia | grep ^version | awk '{print $2}'
 }
 
-function nvbuildtype {
+function get_build_type {
     if [[ ! -z $(cat /proc/driver/nvidia/version | awk '{print tolower($0)}' | grep "debug build") ]]; then
         echo debug
     elif [[ ! -z $(cat /proc/driver/nvidia/version | awk '{print tolower($0)}' | grep "develop build") ]]; then
@@ -48,17 +48,17 @@ function nvbuildtype {
     fi
 }
 
-function checknvver {
-    echo "Installed dso ($(nvbuildtype) build) version: $(nvsysver)" 
-    echo "Source code ($P4CLIENT) version: $(nvsrcver)"
+function check_version {
+    echo "Installed dso ($(get_build_type) build) version: $(get_mod_version)" 
+    echo "Source code ($P4CLIENT) version: $(get_src_version)"
 }
 
-function nvmk {
+function nvmake_unix {
     if [[ -z $1 ]]; then
         if [[ $(basename $(pwd)) == bugfix_main ]]; then
-            default_args="drivers dist linux amd64 $(nvbuildtype) -j$(nproc)"
+            default_args="drivers dist linux amd64 $(get_build_type) -j$(nproc)"
         else
-            default_args="linux amd64 $(nvbuildtype) -j$(nproc)"
+            default_args="linux amd64 $(get_build_type) -j$(nproc)"
         fi
         echo "Auto-generated nvmake arguments: $default_args"
         read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
@@ -78,15 +78,15 @@ function nvmk {
         NV_GUARDWORD=0 $default_args $@ 
 }
 
-function nvpkg {
+function nvmake_ppp {
     config=${1:-release}
-    nvmk drivers dist linux amd64 $config -j$(nproc) &&
-    nvmk drivers dist linux x86   $config -j$(nproc) &&
-    nvmk drivers dist linux amd64 $config post-process-packages &&
-    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(nvsrcver).run
+    nvmake_unix drivers dist linux amd64 $config -j$(nproc) &&
+    nvmake_unix drivers dist linux x86   $config -j$(nproc) &&
+    nvmake_unix drivers dist linux amd64 $config post-process-packages &&
+    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(get_src_version).run
 }
 
-function nvinstall {
+function install_driver {
     if [[ -z $1 ]]; then
         echo "Download by changelist : http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Release_Linux_AMD64_unix-build_Test_Driver/?C=M;O=D"
         echo "                         http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Debug_Linux_AMD64_unix-build_Driver/?C=M;O=D"
@@ -106,16 +106,16 @@ function nvinstall {
             2) outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_debug   ;;
             3) outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_develop ;;
         esac
-        if [[ -f  $outdir/NVIDIA-Linux-x86_64-$(nvsrcver).run ]]; then
+        if [[ -f  $outdir/NVIDIA-Linux-x86_64-$(get_src_version).run ]]; then
             echo "32-bits compatible packages are available"
             read -e -i "yes" -p "Install PPP (amd64 + x86) driver? (yes/no): " ans
             if [[ $ans == yes ]]; then
-                nvinstall $outdir/NVIDIA-Linux-x86_64-$(nvsrcver).run
+                install_driver $outdir/NVIDIA-Linux-x86_64-$(get_src_version).run
             else
-                nvinstall $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
+                install_driver $outdir/NVIDIA-Linux-x86_64-$(get_src_version)-internal.run
             fi
         else
-            nvinstall $outdir/NVIDIA-Linux-x86_64-$(nvsrcver)-internal.run
+            install_driver $outdir/NVIDIA-Linux-x86_64-$(get_src_version)-internal.run
         fi 
     else
         if [[ $XDG_SESSION_TYPE != tty ]]; then
@@ -142,8 +142,8 @@ function nvinstall {
     fi
 }
 
-function nvcpgl {
-    version=$(nvsysver)
+function deploy_dso_glcore {
+    version=$(get_mod_version)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libnvidia-glcore.so.$version.backup /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
         sudo rm -v -f $HOME/libnvidia-glcore.so.$version.backup
@@ -154,8 +154,8 @@ function nvcpgl {
             fi
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
         else
-            config=$(nvbuildtype)
-            echo "Copy OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so ($(nvsrcver)) to /lib/x86_64-linux-gnu as *.so.$version"
+            config=$(get_build_type)
+            echo "Copy OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so ($(get_src_version)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libnvidia-glcore.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version $HOME/libnvidia-glcore.so.$version.backup
@@ -165,8 +165,8 @@ function nvcpgl {
     fi
 }
 
-function nvcpegl {
-    version=$(nvsysver)
+function deploy_dso_eglcore {
+    version=$(get_mod_version)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libnvidia-eglcore.so.$version.backup /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
         sudo rm -v -f $HOME/libnvidia-eglcore.so.$version.backup
@@ -177,8 +177,8 @@ function nvcpegl {
             fi
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
         else
-            config=$(nvbuildtype)
-            echo "Copy OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so ($(nvsrcver)) to /lib/x86_64-linux-gnu as *.so.$version"
+            config=$(get_build_type)
+            echo "Copy OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so ($(get_src_version)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libnvidia-eglcore.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version $HOME/libnvidia-eglcore.so.$version.backup
@@ -188,8 +188,8 @@ function nvcpegl {
     fi
 }
 
-function nvcpglx {
-    version=$(nvsysver)
+function deploy_dso_glx {
+    version=$(get_mod_version)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libGLX_nvidia.so.$version.backup /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version
         sudo rm -v -f $HOME/libGLX_nvidia.so.$version.backup
@@ -200,8 +200,8 @@ function nvcpglx {
             fi
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version
         else
-            config=$(nvbuildtype)
-            echo "Copy OpenGL/win/glx/lib/_out/Linux_amd64_$config/libGLX_nvidia.so ($(nvsrcver)) to /lib/x86_64-linux-gnu as *.so.$version"
+            config=$(get_build_type)
+            echo "Copy OpenGL/win/glx/lib/_out/Linux_amd64_$config/libGLX_nvidia.so ($(get_src_version)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libGLX_nvidia.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version $HOME/libGLX_nvidia.so.$version.backup
@@ -211,7 +211,7 @@ function nvcpglx {
     fi
 }
 
-function nvcpxdriver {
+function deploy_dso_xorg {
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/nvidia_drv.so.backup /lib/xorg/modules/drivers/nvidia_drv.so
         sudo rm -v -f $HOME/nvidia_drv.so.backup
@@ -222,8 +222,8 @@ function nvcpxdriver {
             fi
             sudo cp -v --remove-destination $1 /lib/xorg/modules/drivers/nvidia_drv.so
         else
-            config=$(nvbuildtype)
-            echo "Copy xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so ($(nvsrcver)) to /lib/xorg/modules/drivers/nvidia_drv.so"
+            config=$(get_build_type)
+            echo "Copy xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so ($(get_src_version)) to /lib/xorg/modules/drivers/nvidia_drv.so"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/nvidia_drv.so.backup ]]; then
                 sudo cp -v /lib/xorg/modules/drivers/nvidia_drv.so $HOME/nvidia_drv.so.backup
@@ -233,20 +233,7 @@ function nvcpxdriver {
     fi
 }
 
-function nvscp {
-    read -p "Remote host: " host
-    read -e -i $USER -p "Remote user: " user
-    
-    if [[ $1 == restore ]]; then
-        ssh $user@$host "source ~/wanliz_linux_workbench/bashrc_inc.sh; nvcp restore"
-    else
-        config=$(nvbuildtype)
-        scp $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so $user@$host:/tmp/libnvidia-glcore.so
-        ssh $user@$host "source ~/wanliz_linux_workbench/bashrc_inc.sh; nvcp /tmp/libnvidia-glcore.so"
-    fi
-}
-
-function nvshaderhelp {
+function shaderhelp {
     echo "export __GL_c5e9d7a4=0x4574563 -> dump ogl shaders"
     echo "export __GL_c5e9d7a4=0x6839369 -> replace ogl shaders"
 }
@@ -294,7 +281,7 @@ function flamegraph {
     echo "Failed to generate png diagram"
 }
 
-function syncdir {
+function sync_folder {
     if [[ $(pwd) != $HOME ]]; then
         echo "The current directory is not \$HOME"
         read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
@@ -322,32 +309,7 @@ function nopasswd {
     fi
 }
 
-function dumpmounts {
-    mounted=$(cat /proc/mounts | grep '/mnt')
-    while IFS= read -r mount; do
-        source=$(echo "$mount" | awk '{print $1}')
-        target=$(echo "$mount" | awk '{print $2}')
-        fstype=$(echo "$mount" | awk '{print $3}')
-        option=$(echo "$mount" | awk '{print $4}')
-        echo "sudo mkdir -p $target &&"
-        echo "sudo mount -t $fstype -o $option $source $target &&"
-    done <<< "$mounted"
-    echo "echo DONE"
-}
-
-function nvmount {
-    sudo mkdir -p /mnt/data &&
-    sudo mount -t nfs -o rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,soft,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.31.184.130,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=10.31.184.130 linuxqa:/qa/data /mnt/data &&
-    sudo mkdir -p /mnt/nvtest &&
-    sudo mount -t nfs -o rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,soft,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.31.184.102,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=10.31.184.102 nvtest:/nvtest/shared /mnt/nvtest &&
-    sudo mkdir -p /mnt/builds &&
-    sudo mount -t nfs -o rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,soft,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.31.184.130,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=10.31.184.130 linuxqa:/qa/builds /mnt/builds &&
-    sudo mkdir -p /mnt/linuxqa &&
-    sudo mount -t nfs -o rw,relatime,vers=3,rsize=32768,wsize=32768,namlen=255,soft,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=10.31.184.130,mountvers=3,mountport=20048,mountproto=udp,local_lock=none,addr=10.31.184.130 linuxqa:/qa/people /mnt/linuxqa &&
-    echo DONE
-}
-
-function resizedp {
+function resize_display {
     read -p "New size: " size
     outputname=$(xrandr | grep " connected" | awk '{print $1}')
     if [[ ! -z $(xrandr | grep $size) ]]; then
@@ -365,7 +327,7 @@ function amdhelp {
     echo "Latest AMD driver: https://repo.radeon.com/amdgpu-install/latest/ubuntu/jammy/"
 }
 
-function p4install {
+function install_p4 {
     sudo apt install -y helix-p4d || {
         if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
             wget -qO - https://package.perforce.com/perforce.pubkey | gpg --dearmor | sudo tee /usr/share/keyrings/perforce.gpg >/dev/null
@@ -380,12 +342,12 @@ function xdgst {
     echo $XDG_SESSION_TYPE
 }
 
-function p4switch {
+function change_p4client {
     export P4CLIENT=$1
     export P4ROOT=/home/wanliz/$P4CLIENT
 }
 
-function p4ignore {
+function check_p4ignore {
     if [[ -f $HOME/.p4ignore ]]; then
         cat $HOME/.p4ignore
     else
@@ -401,14 +363,14 @@ function dvsbuild {
     $P4ROOT/automation/dvs/dvsbuild/dvsbuild.pl -c $1 
 }
 
-function vpinstall {
+function install_viewperf {
     pushd $HOME >/dev/null
     wget http://linuxqa.nvidia.com/people/nvtest/pynv_files/viewperf2020v3/viewperf2020v3.tar.gz || exit -1
     tar -zxvf viewperf2020v3.tar.gz
     popd >/dev/null
 }
 
-function plainx {
+function start_plain_x {
     if [[ $XDG_SESSION_TYPE != tty ]]; then
         echo "Please run through a tty or ssh session"
         return 
@@ -442,14 +404,14 @@ function plainx {
     fi
 }
 
-function picxenv {
+function load_pic_env {
     pushd $HOME/PIC-X_Package/SinglePassCapture/Scripts >/dev/null
     source ./setup-symbollinks.sh 
     source ./setup-env.sh 
     popd >/dev/null 
 }
 
-function synchosts {
+function sync_hosts {
     while IFS= read -r line; do
         line=$(echo "$line" | sed 's/[[:space:]]*$//')
         if ! grep -Fxq "$line" /etc/hosts; then
@@ -460,15 +422,15 @@ function synchosts {
     done < $HOME/wanliz_linux_workbench/hosts
 }
 
-function checkvnc {
+function check_vnc {
     sudo lsof -i :5900-5909
 }
 
-function restartvnc {
+function restart_vnc {
     sudo systemctl restart x11vnc.service
 }
 
-function loadvksdk {
+function load_vksdk {
     version=1.3.296.0
     if [[ ! -d $HOME/VulkanSDK/$version ]]; then
         cd $HOME/Downloads
@@ -482,11 +444,11 @@ function loadvksdk {
     echo $VULKAN_SDK
 }
 
-function perfinstall {
+function install_perf {
     echo TODO
 }
 
-function sysperfinstall {
+function install_sysperf {
     pushd ~/Downloads >/dev/null
     wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/47.2/sysprof-47.2.tar.gz || return -1
     tar -zxvf sysprof-47.2.tar.gz
@@ -499,4 +461,14 @@ function sysperfinstall {
     popd >/dev/null
 
     popd >/dev/null  
+}
+
+function enable_wayland {
+    if [[ -z $(sudo grep '^WaylandEnable=true' /etc/gdm3/custom.conf) ]]; then
+        echo "- Edit /etc/gdm3/custom.conf to add WaylandEnable=true"
+    fi
+    if [[ $(sudo cat /sys/module/nvidia_drm/parameters/modeset) != 'Y' ]]; then
+        echo "options nvidia_drm modeset=1" | sudo tee /etc/modprobe.d/nvidia-modeset.conf
+        echo "A reboot is required"
+    fi
 }
