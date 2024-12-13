@@ -471,10 +471,13 @@ function install_perf {
 
 function install_sysprof {
     pushd ~/Downloads >/dev/null
-    wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/46.0/sysprof-46.0.tar.gz || return -1
-    tar -zxvf sysprof-46.0.tar.gz
+    read -e -i "46.0" -p "Install sysprof version: " version
+    if [[ ! -d $HOME/sysprof-$version ]]; then
+        wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/$version/sysprof-$version.tar.gz || return -1
+        tar -zxvf sysprof-$version.tar.gz
+    fi
    
-    cd sysprof-46.0
+    cd sysprof-$version
     sudo apt install -y gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev install libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool &&
     meson --prefix=/usr build &&
     cd build &&
