@@ -27,23 +27,23 @@ function check_and_install {
 }
 
 function apt_install_any {
-    rm -rf /tmp/apt-failed /tmp/aptitude-failed
+    rm -rf /tmp/apt_failed /tmp/aptitude_failed
     for pkg in "$@"; do 
-        sudo apt install -y $pkg || echo "$pkg" >> /tmp/apt-failed
+        sudo apt install -y $pkg || echo "$pkg" >> /tmp/apt_failed
     done
-    if [[ -f /tmp/apt-failed ]]; then
-        echo "Failed to install $(wc -l /tmp/apt-failed) packages using apt: "
-        cat /tmp/apt-failed
+    if [[ -f /tmp/apt_failed ]]; then
+        echo "Failed to install $(wc -l /tmp/apt_failed) packages using apt: "
+        cat /tmp/apt_failed
         
         read -e -i "yes" -p "Retry with aptitude? (yes/no): " ans
         if [[ $ans == yes ]]; then
             while IFS= read -r pkg; do 
-                sudo aptitude install $pkg || echo "$pkg" >> /tmp/aptitude-failed
-            done < /tmp/apt-failed 
+                sudo aptitude install $pkg || echo "$pkg" >> /tmp/aptitude_failed
+            done < /tmp/apt_failed 
             
-            if [[ -f /tmp/aptitude-failed ]]; then
-                echo "Failed to install $(wc -l /tmp/aptitude-failed) packages using aptitude: "
-                cat /tmp/aptitude-failed
+            if [[ -f /tmp/aptitude_failed ]]; then
+                echo "Failed to install $(wc -l /tmp/aptitude_failed) packages using aptitude: "
+                cat /tmp/aptitude_failed
                 return -1
             fi
         fi
@@ -517,18 +517,4 @@ function install_sysprof {
     which sysprof
 
     popd >/dev/null  
-}
-
-function enable_wayland {
-    if [[ -z $(which nvidia-smi) ]]; then
-        echo "Install nvidia driver first"
-        return -1
-    fi
-    if [[ -z $(sudo grep '^WaylandEnable=true' /etc/gdm3/custom.conf) ]]; then
-        echo "- Edit /etc/gdm3/custom.conf to add WaylandEnable=true"
-    fi
-    if [[ $(sudo cat /sys/module/nvidia_drm/parameters/modeset) != 'Y' ]]; then
-        echo "options nvidia_drm modeset=1" | sudo tee /etc/modprobe.d/nvidia-modeset.conf
-        echo "A reboot is required"
-    fi
 }
