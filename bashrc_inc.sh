@@ -27,13 +27,26 @@ function check_and_install {
 }
 
 function apt_install_any {
-    rm -rf /tmp/apt-failed
+    rm -rf /tmp/apt-failed /tmp/aptitude-failed
     for pkg in "$@"; do 
-        sudo apt install -y $pkg || echo "Failed to install $pkg" > /tmp/apt-failed
+        sudo apt install -y $pkg || echo "$pkg" >> /tmp/apt-failed
     done
     if [[ -f /tmp/apt-failed ]]; then
+        echo "Failed to install $(wc -l /tmp/apt-failed) packages using apt: "
         cat /tmp/apt-failed
-        return -1
+        
+        read -e -i "yes" -p "Retry with aptitude? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            while IFS= read -r pkg; do 
+                sudo aptitude install $pkg || echo "$pkg" >> /tmp/aptitude-failed
+            done < /tmp/apt-failed 
+            
+            if [[ -f /tmp/aptitude-failed ]]; then
+                echo "Failed to install $(wc -l /tmp/aptitude-failed) packages using aptitude: "
+                cat /tmp/aptitude-failed
+                return -1
+            fi
+        fi
     fi
 }
 
@@ -483,7 +496,9 @@ function install_perf {
 function install_sysprof {
     pushd ~/Downloads >/dev/null
     if [[ -z $1 ]]; then
-        read -e -i "46.0" -p "Install sysprof version: " version
+        echo "Ubuntu 22.04 -> 3.44.0"
+        echo "Ubuntu 24.04 -> 46.0"
+        read -e -i "3.44.0" -p "Install sysprof version: " version
     else
         version=$1
     fi
@@ -492,7 +507,7 @@ function install_sysprof {
         tar -zxvf sysprof-$version.tar.gz
     fi
    
-    apt_install_any gcc g++ cmake pkg-config libglib2.0-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-0 libpolkit-agent-1-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool 
+    apt_install_any gcc g++ cmake pkg-config libglib2.0-dev libgtk-3-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-0 libpolkit-agent-1-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool gobject-introspection valac
 
     cd sysprof-$version &&
     meson --prefix=/usr build &&
