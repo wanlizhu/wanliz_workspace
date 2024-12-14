@@ -531,5 +531,4 @@ function enable_wayland {
         echo "options nvidia_drm modeset=1" | sudo tee /etc/modprobe.d/nvidia-modeset.conf
         echo "A reboot is required"
     fi
-    check_and_install wayland-info wayland-utils
 }
