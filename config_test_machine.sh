@@ -38,6 +38,8 @@ function apt_install_any {
     fi
 }
 
+sudo apt update
+
 if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
     echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
     sudo cat /etc/sudoers | tail -1
@@ -112,13 +114,24 @@ fi
 if [[ -z $(which p4) ]]; then
     sudo apt install -y helix-p4d || {
         if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
-            wget -qO - https://package.perforce.com/perforce.pubkey | gpg --dearmor | sudo tee /usr/share/keyrings/perforce.gpg >/dev/null
-            echo "deb [signed-by=/usr/share/keyrings/perforce.gpg] https://package.perforce.com/apt/ubuntu $(lsb_release -c | cut -f2) release" | sudo tee -a /etc/apt/sources.list
-            sudo apt update
+            pushd ~/Downloads >/dev/null 
+            codename=$(lsb_release -c | cut -f2)
+            wget https://package.perforce.com/perforce.pubkey
+            gpg -n --import --import-options import-show perforce.pubkey
+            wget -qO - https://package.perforce.com/perforce.pubkey | sudo apt-key add -
+            echo "deb http://package.perforce.com/apt/ubuntu $codename release" | sudo tee /etc/apt/sources.list.d/perforce.list
+            sudo apt update || {
+                echo "$codename is not supported, use noble instead"
+                echo "deb http://package.perforce.com/apt/ubuntu noble release" | sudo tee /etc/apt/sources.list.d/perforce.list
+                sudo apt update 
+            }
             sudo apt install -y helix-p4d
+            popd >/dev/null 
         fi
     }
-    echo "- Install p4 command  [OK]" >> /tmp/config.log
+    if [[ ! -z $(which p4) ]]; then
+        echo "- Install p4 command  [OK]" >> /tmp/config.log
+    fi
 fi
 
 if [[ ! -f $HOME/.p4ignore ]]; then
