@@ -188,7 +188,7 @@ if [[ ! -f $HOME/.p4ignore ]]; then
     echo "- Create file ~/.p4ignore  [OK]" >> /tmp/config.log
 fi
 
-if [[ ! -z $P4CLIENT && ! -d $P4ROOT ]]; then
+if [[ ! -z $P4CLIENT ]]; then
     read -e -i "yes" -p "Checkout perforce client $P4CLIENT? : " checkout
     if [[ $checkout == yes ]]; then
         mkdir -p $P4ROOT
@@ -197,6 +197,7 @@ if [[ ! -z $P4CLIENT && ! -d $P4ROOT ]]; then
         echo "- Sync $P4CLIENT (forced)  [OK]" >> /tmp/config.log
     fi
 fi
+https://nv-has.nvidia.com/saml/login/01JF4SQQDJJW7HKT73WWZPJ94H?instanceId=none
 
 ubuntu=$(grep '^VERSION_ID=' /etc/os-release | cut -d'"' -f2)
 if dpkg --compare-versions "$ubuntu" ge "24.0"; then
@@ -207,6 +208,6 @@ if dpkg --compare-versions "$ubuntu" ge "24.0"; then
     fi
 fi
 
-echo 
-cat /tmp/config.log
+echo -e '\n\n'
+cat /tmp/config.log || echo "Nothing to configure!"
 echo "DONE"
