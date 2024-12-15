@@ -60,6 +60,19 @@ function chd {
     esac
 }
 
+function p4sync {
+    if [[ ! -d $P4ROOT ]]; then
+        read -e -i "yes" -p "Checkout perforce client $P4CLIENT? : " checkout
+        if [[ $checkout == yes ]]; then
+            mkdir -p $P4ROOT
+            cd $P4ROOT
+            p4 sync -f //sw/... &&
+                echo "Sync $P4CLIENT (forced)  [OK]" ||
+                echo "Sync $P4CLIENT (forced)  [FAILED]"
+        fi
+    fi
+}
+
 function get_src_version {
     grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g'
 }
@@ -532,3 +545,4 @@ function install_sysprof {
 
     popd >/dev/null  
 }
+

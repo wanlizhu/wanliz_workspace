@@ -188,16 +188,6 @@ if [[ ! -f $HOME/.p4ignore ]]; then
     echo "- Create file ~/.p4ignore  [OK]" >> /tmp/config.log
 fi
 
-if [[ ! -z $P4CLIENT ]]; then
-    read -e -i "yes" -p "Checkout perforce client $P4CLIENT? : " checkout
-    if [[ $checkout == yes ]]; then
-        mkdir -p $P4ROOT
-        cd $P4ROOT
-        p4 sync -f //sw/...
-        echo "- Sync $P4CLIENT (forced)  [OK]" >> /tmp/config.log
-    fi
-fi
-
 ubuntu=$(grep '^VERSION_ID=' /etc/os-release | cut -d'"' -f2)
 if dpkg --compare-versions "$ubuntu" ge "24.0"; then
     if [[ ! -f /etc/sysctl.d/99-userns.conf ]]; then
@@ -205,6 +195,19 @@ if dpkg --compare-versions "$ubuntu" ge "24.0"; then
         sudo sysctl --system
         echo "- Set kernel.apparmor_restrict_unprivileged_userns=0 for unix-build  [OK]" >> /tmp/config.log
     fi
+fi
+
+if [[ -z $(which code) ]]; then
+    pushd >/dev/null 
+    sudo apt install -y software-properties-common apt-transport-https wget
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+    sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
+    sudo sh -c 'echo "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+    sudo apt update
+    sudo apt install -y code && 
+        echo "- Install VS Code  [OK]" >> /tmp/config.log ||
+        echo "- Install VS Code  [FAILED]" >> /tmp/config.log 
+    popd >/dev/null
 fi
 
 echo -e '\n\n'
