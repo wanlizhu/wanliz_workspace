@@ -458,7 +458,6 @@ function load_pic_env {
 
 function sync_hosts {
     while IFS= read -r line; do
-    echo $line 
         line=$(echo "$line" | sed 's/[[:space:]]*$//')
         if ! grep -Fxq "$line" /etc/hosts; then
             host=$(echo "$line" | awk '{print $2}')

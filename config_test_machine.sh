@@ -1,8 +1,8 @@
 if [[ $1 != local ]]; then
     read -p "Target machine: " machine 
     read -e -i "$USER" -p "Run as user: " user
-    scp $HOME/wanliz_linux_workbench/setup_new_machine.sh $user@$machine:/tmp/setup_new_machine.sh
-    ssh -t $user@$machine 'bash /tmp/setup_new_machine.sh local'
+    scp $HOME/wanliz_linux_workbench/config_test_machine.sh $user@$machine:/tmp/config_test_machine.sh
+    ssh -t $user@$machine 'bash /tmp/config_test_machine.sh local'
     exit
 fi
 
@@ -106,6 +106,5 @@ if dpkg --compare-versions "$ubuntu" ge "24.0"; then
     fi
 fi
 
-sync_hosts && echo "- Sync hosts  [OK]" | tee -a /tmp/config.log
-startup.sh register && echo "- Register startp.sh  [OK]" | tee -a /tmp/config.log
-install_sysprof 46.0 && echo "- Build and install sysprof  [OK]" | tee -a /tmp/config.log
+cat /tmp/config.log
+echo "DONE"
