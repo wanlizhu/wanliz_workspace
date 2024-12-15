@@ -67,6 +67,8 @@ check_and_install ifconfig net-tools
 
 if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
     sudo apt install -y openssh-server
+    sudo systemctl enable ssh
+    sudo systemctl start ssh
     echo "- Install openssh-server  [OK]" | tee -a /tmp/config.log
 fi
 
@@ -104,6 +106,6 @@ if dpkg --compare-versions "$ubuntu" ge "24.0"; then
     fi
 fi
 
-sync_hosts 
-startup.sh register
-install_sysprof 46.0
+sync_hosts && echo "- Sync hosts  [OK]" | tee -a /tmp/config.log
+startup.sh register && echo "- Register startp.sh  [OK]" | tee -a /tmp/config.log
+install_sysprof 46.0 && echo "- Build and install sysprof  [OK]" | tee -a /tmp/config.log
