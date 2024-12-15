@@ -78,8 +78,13 @@ if [[ $ans == yes ]]; then
         sudo apt install -y openconnect
     fi
     read -e -i "firefox" -p "Complete authentication in browser: " browser
+    read -e -i "no" -p "Run in background? (yes/no): " runinbg
     eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
-    [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | nohup sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE &
+    if [[ $runinbg == yes ]]; then
+        [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | nohup sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE &
+    else
+        [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
+    fi
 fi
 EOF
             chmod +x ~/vpn_with_sso.sh
