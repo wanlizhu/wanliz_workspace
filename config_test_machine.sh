@@ -9,7 +9,9 @@ fi
 rm -rf /tmp/config.log 
 
 export DISPLAY=:0
-sudo apt install -y vulkan-tools
+if [[ -z $(which vkcube) ]]; then
+    sudo apt install -y vulkan-tools
+fi
 if ! vkcube --c 10; then
     read -p 'Run command `xhost +x` on test machine, then press [ENTER] to continue: ' _
 fi
@@ -68,8 +70,8 @@ fi
 
 if [[ ! -d $HOME/wanliz_linux_workbench ]]; then
     if ! ping -c2 linuxqa; then
-        if [[ ! -f /tmp/vpn_with_sso.sh ]]; then
-            cat >> /tmp/vpn_with_sso.sh << 'EOF'
+        if [[ ! -f ~/vpn_with_sso.sh ]]; then
+            cat >> ~/vpn_with_sso.sh << 'EOF'
 read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
 if [[ $ans == yes ]]; then
     if [[ -z $(which openconnect) ]]; then
@@ -80,14 +82,9 @@ if [[ $ans == yes ]]; then
     [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | nohup sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE &
 fi
 EOF
-            chmod +x /tmp/vpn_with_sso.sh
+            chmod +x ~/vpn_with_sso.sh
         fi
-        if vkcube --c 10; then
-            /tmp/vpn_with_sso.sh
-            sleep 5
-        else
-            read -p "Run command /tmp/vpn_with_sso.sh, then press [ENTER] to continue: " _
-        fi
+        read -p "Run command ~/vpn_with_sso.sh, then press [ENTER] to continue: " _
     fi
     
     git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_linux_workbench $HOME/wanliz_linux_workbench
