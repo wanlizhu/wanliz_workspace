@@ -8,6 +8,12 @@ fi
 
 rm -rf /tmp/config.log 
 
+export DISPLAY=:0
+sudo apt install -y vulkan-tools
+if ! vkcube --c 10; then
+    read -p 'Run command `xhost +x` on test machine, then press [ENTER] to continue: ' _
+fi
+
 function check_and_install {
     if [[ -z $(which $1) ]]; then
         sudo apt install -y $2
@@ -15,10 +21,16 @@ function check_and_install {
 }
 
 function apt_install_any {
+    if [[ -z $(which aptitude) ]]; then
+        sudo apt install -y aptitude
+    fi
+
     rm -rf /tmp/apt_failed /tmp/aptitude_failed
+    
     for pkg in "$@"; do 
         sudo apt install -y $pkg || echo "$pkg" >> /tmp/apt_failed
     done
+    
     if [[ -f /tmp/apt_failed ]]; then
         echo "Failed to install $(wc -l /tmp/apt_failed) packages using apt: "
         cat /tmp/apt_failed
@@ -56,19 +68,36 @@ fi
 
 if [[ ! -d $HOME/wanliz_linux_workbench ]]; then
     if ! ping -c2 linuxqa; then
-        read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
-        if [[ $ans == yes ]]; then
-            if [[ -z $(which openconnect) ]]; then
-                sudo apt install -y openconnect
-            fi
-            read -e -i "firefox" -p "Complete authentication in browser: " browser
-            eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
-            [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | nohup sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE &
+        if [[ ! -f /tmp/vpn_with_sso.sh ]]; then
+            cat >> /tmp/vpn_with_sso.sh << 'EOF'
+read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
+if [[ $ans == yes ]]; then
+    if [[ -z $(which openconnect) ]]; then
+        sudo apt install -y openconnect
+    fi
+    read -e -i "firefox" -p "Complete authentication in browser: " browser
+    eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
+    [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | nohup sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE &
+fi
+EOF
+            chmod +x /tmp/vpn_with_sso.sh
+        fi
+        if vkcube --c 10; then
+            /tmp/vpn_with_sso.sh
+            sleep 5
+        else
+            read -p "Run command /tmp/vpn_with_sso.sh, then press [ENTER] to continue: " _
         fi
     fi
+    
     git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_linux_workbench $HOME/wanliz_linux_workbench
     apt_install_any build-essential gcc g++ cmake pkg-config libglvnd-dev 
-    echo "- Clone wanliz_linux_workbench  [OK]" >> /tmp/config.log
+    
+    if [[ -d $HOME/wanliz_linux_workbench ]]; then
+        echo "- Clone wanliz_linux_workbench  [OK]" >> /tmp/config.log
+    else
+        echo "- Clone wanliz_linux_workbench  [FAILED]" >> /tmp/config.log
+    fi
 fi
 
 if [[ -z $(grep wanliz_linux_workbench ~/.bashrc) ]]; then
@@ -144,6 +173,8 @@ if [[ -z $(which p4) ]]; then
     }
     if [[ ! -z $(which p4) ]]; then
         echo "- Install p4 command  [OK]" >> /tmp/config.log
+    else
+        echo "- Install p4 command  [FAILED]" >> /tmp/config.log
     fi
 fi
 
