@@ -515,34 +515,3 @@ function load_vksdk {
     source $HOME/VulkanSDK/$version/setup-env.sh
     echo $VULKAN_SDK
 }
-
-function install_perf {
-    echo TODO
-}
-
-function install_sysprof {
-    pushd ~/Downloads >/dev/null
-    if [[ -z $1 ]]; then
-        echo "Ubuntu 22.04 -> 3.44.0"
-        echo "Ubuntu 24.04 -> 46.0"
-        read -e -i "3.44.0" -p "Install sysprof version: " version
-    else
-        version=$1
-    fi
-    if [[ ! -d $HOME/Downloads/sysprof-$version ]]; then
-        wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/$version/sysprof-$version.tar.gz || return -1
-        tar -zxvf sysprof-$version.tar.gz
-    fi
-   
-    apt_install_any gcc g++ cmake pkg-config libglib2.0-dev libgtk-3-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-0 libpolkit-agent-1-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool gobject-introspection valac
-
-    cd sysprof-$version &&
-    meson --prefix=/usr build &&
-    cd build &&
-    ninja &&
-    sudo ninja install &&
-    which sysprof
-
-    popd >/dev/null  
-}
-
