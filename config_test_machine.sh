@@ -55,15 +55,28 @@ if [[ -z $(which git) ]]; then
 fi
 
 if [[ ! -d $HOME/wanliz_linux_workbench ]]; then
+    if ! ping -c2 linuxqa; then
+        read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            if [[ -z $(which openconnect) ]]; then
+                sudo apt install -y openconnect
+            fi
+            read -e -i "firefox" -p "Complete authentication in browser: " browser
+            eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
+            [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | nohup sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE &
+        fi
+    fi
     git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_linux_workbench $HOME/wanliz_linux_workbench
     apt_install_any build-essential gcc g++ cmake pkg-config libglvnd-dev 
     echo "- Clone wanliz_linux_workbench  [OK]" >> /tmp/config.log
 fi
 
 if [[ -z $(grep wanliz_linux_workbench ~/.bashrc) ]]; then
-    echo "" >> ~/.bashrc
-    echo "source $HOME/wanliz_linux_workbench/bashrc_inc.sh" >> ~/.bashrc
-    echo "- Source bashrc_inc.sh in ~/.bashrc  [OK]" >> /tmp/config.log
+    if [[ -d $HOME/wanliz_linux_workbench ]]; then
+        echo "" >> ~/.bashrc
+        echo "source $HOME/wanliz_linux_workbench/bashrc_inc.sh" >> ~/.bashrc
+        echo "- Source bashrc_inc.sh in ~/.bashrc  [OK]" >> /tmp/config.log
+    fi
 fi
 
 check_and_install vim vim
