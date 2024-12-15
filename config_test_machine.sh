@@ -8,6 +8,12 @@ fi
 
 rm -rf /tmp/config.log 
 
+function check_and_install {
+    if [[ -z $(which $1) ]]; then
+        sudo apt install -y $2
+    fi
+}
+
 function apt_install_any {
     rm -rf /tmp/apt_failed /tmp/aptitude_failed
     for pkg in "$@"; do 
@@ -58,9 +64,6 @@ if [[ -z $(grep wanliz_linux_workbench ~/.bashrc) ]]; then
     echo "- Source bashrc_inc.sh in ~/.bashrc  [OK]" | tee -a /tmp/config.log
 fi
 
-source $HOME/wanliz_linux_workbench/bashrc_inc.sh
-echo "- Source bashrc_inc.sh  [OK]" | tee -a /tmp/config.log
-
 check_and_install vim vim
 check_and_install vkcube vulkan-tools
 check_and_install ifconfig net-tools
@@ -106,5 +109,6 @@ if dpkg --compare-versions "$ubuntu" ge "24.0"; then
     fi
 fi
 
+echo 
 cat /tmp/config.log
 echo "DONE"
