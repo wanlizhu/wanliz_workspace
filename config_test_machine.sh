@@ -49,7 +49,7 @@ if [[ -z $(which git) ]]; then
     git config --global user.name "Wanli Zhu"
     git config --global user.email zhu.wanli@icloud.com
     git config --global pull.rebase false
-    echo "- git config ...  [OK]" | tee -a /tmp/config.log 
+    echo "- git config ...  [OK]" >> /tmp/config.log
 fi
 
 if [[ ! -d $HOME/wanliz_linux_workbench ]]; then
