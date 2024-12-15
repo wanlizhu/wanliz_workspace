@@ -19,3 +19,6 @@ Connected to HTTPS on ngvpn02.vpn.nvidia.com with ciphersuite (TLS1.2)-(ECDHE-X2
 Got CONNECT response: HTTP/1.1 200 OK
 CSTP connected. DPD 30, Keepalive 20
 Established DTLS connection (using GnuTLS). Ciphersuite (DTLS1.2)-(ECDHE-RSA)-(AES-256-GCM).
+Error: argument "via" is wrong: use nexthop syntax to specify multiple via
+
+User detached from session (SIGHUP); exiting.
