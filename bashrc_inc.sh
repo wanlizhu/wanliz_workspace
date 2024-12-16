@@ -321,11 +321,9 @@ function perfhelp {
 function flamegraph {
     if [[ ! -f ~/Flamegraph/flamegraph.pl ]]; then
         git clone --depth 1 https://github.com/brendangregg/FlameGraph.git $HOME/Flamegraph || return -1
-        if [[ -z $(which pip) ]]; then
-            apt_install_any python3-pip
-            apt_install_any graphviz
-        fi
-        pip install gprof2dot 
+        sudo apt install -y python3-pip
+        sudo apt install -y graphviz
+        pip install --break-system-packages gprof2dot 
     fi
     
     midfile=/tmp/$(basename $1)
@@ -335,12 +333,12 @@ function flamegraph {
     sudo ~/Flamegraph/stackcollapse-perf.pl $midfile.stage1 >$midfile.stage2 && 
     sudo ~/Flamegraph/stackcollapse-recursive.pl $midfile.stage2 >$midfile.stage3 && 
     sudo ~/Flamegraph/flamegraph.pl $midfile.stage3 >$1.svg && 
-    echo "Generated $1.svg" ||
-    echo "Failed to generate svg flamegraph" 
+        echo "Generated $1.svg" ||
+        echo "Failed to generate svg flamegraph" 
 
     sudo perf script --no-inline --force --input=$1 | c++filt | gprof2dot -f perf | dot -Tpng -o $1.png && 
-    echo "Generated $1.png" || 
-    echo "Failed to generate png diagram"
+        echo "Generated $1.png" || 
+        echo "Failed to generate png diagram"
 }
 
 function sync_folder {
