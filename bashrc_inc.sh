@@ -437,9 +437,10 @@ function dvsbuild {
 }
 
 function install_viewperf {
-    pushd $HOME >/dev/null
+    pushd $HOME/Downloads >/dev/null
     wget http://linuxqa.nvidia.com/people/nvtest/pynv_files/viewperf2020v3/viewperf2020v3.tar.gz || exit -1
     tar -zxvf viewperf2020v3.tar.gz
+    mv viewperf2020 $HOME
     popd >/dev/null
 }
 

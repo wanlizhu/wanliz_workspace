@@ -196,7 +196,7 @@ if dpkg --compare-versions "$ubuntu" ge "24.0"; then
 fi
 
 if [[ -z $(which code) ]]; then
-    pushd >/dev/null 
+    pushd ~/Downloads >/dev/null 
     sudo apt install -y software-properties-common apt-transport-https wget
     wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
     sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
