@@ -159,12 +159,9 @@ if [[ -z $(which p4) ]]; then
             wget https://package.perforce.com/perforce.pubkey
             gpg -n --import --import-options import-show perforce.pubkey
             wget -qO - https://package.perforce.com/perforce.pubkey | sudo apt-key add -
-            echo "deb http://package.perforce.com/apt/ubuntu $codename release" | sudo tee /etc/apt/sources.list.d/perforce.list
-            sudo apt update || {
-                echo "$codename is not supported, use noble instead"
-                echo "deb http://package.perforce.com/apt/ubuntu noble release" | sudo tee /etc/apt/sources.list.d/perforce.list
-                sudo apt update 
-            }
+            #echo "deb http://package.perforce.com/apt/ubuntu $codename release" | sudo tee /etc/apt/sources.list.d/perforce.list
+            echo "deb http://package.perforce.com/apt/ubuntu noble release" | sudo tee /etc/apt/sources.list.d/perforce.list
+            sudo apt update 
             sudo apt install -y helix-p4d
             popd >/dev/null 
         fi
