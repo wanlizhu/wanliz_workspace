@@ -192,8 +192,8 @@ function install_driver {
         read -e -i "yes" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
         if [[ $ans == yes ]]; then
             sudo nvidia-uninstall 
-            sudo apt remove --purge '^nvidia-.*'
-            sudo apt autoremove
+            sudo apt remove -y --purge '^nvidia-.*'
+            sudo apt autoremove -y
         fi
 
 	    chmod +x $driver 

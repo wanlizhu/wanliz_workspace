@@ -16,7 +16,9 @@ cat <<EOF > viewsets/catia/config/catia_4.xml
 </SPECGWPG>
 EOF
 
+read -e -i "1920x1080" -p "Resolution: " size
+
 mkdir -p results/catia-06/ &&
-./viewperf/bin/viewperf viewsets/catia/config/catia_4.xml -resolution 1920x1080 &&
+./viewperf/bin/viewperf viewsets/catia/config/catia_4.xml -resolution $size &&
 grep '<Test Index=' results/catia-06/results.xml | awk -F '"' '{print $10}' 
 
