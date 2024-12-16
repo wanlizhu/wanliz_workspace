@@ -211,6 +211,10 @@ if [[ -z $(which code) ]]; then
     popd >/dev/null
 fi
 
+if [[ -z $(which slack) ]]; then
+    sudo snap install slack --classic
+fi
+
 echo -e '\n\n'
 cat /tmp/config.log || echo "Nothing to configure!"
 echo "DONE"
