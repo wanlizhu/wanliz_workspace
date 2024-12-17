@@ -246,7 +246,7 @@ if [[ ! -f ~/.config/autostart/wanliz_post_startup.desktop ]]; then
         cat <<EOF > ~/wanliz_post_startup.sh
 #!/bin/bash
 echo "This works, $HOME" | tee ~/log
-ifconfig | tee -a ~/log
+ifconfig | grep "inet " | tee -a ~/log
 bash
 EOF
         chmod +x ~/wanliz_post_startup.sh
