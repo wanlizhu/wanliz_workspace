@@ -527,6 +527,7 @@ function install_nsys {
     tar -zxvf nsight_systems-linux-x86_64-2024.6.2.225.tar.gz
     mv nsight_systems $HOME 
     sudo apt install -y libxcb-cursor0
+    sudo apt install -y libxcb-cursor-dev
     popd
 }
 
@@ -539,5 +540,12 @@ function install_ngfx {
         sudo mount.cifs -o user=wanliz //10.126.133.25/share /mnt/10.126.133.25/share || return -1
         sudo df -h /mnt/10.126.133.25/share
     fi
-    sudo apt 
+    pushd ~/Downloads 
+    cp /mnt/10.126.133.25/share/Devtools/NomadBuilds/latest/Internal/linux/*.tar.gz . || return -1
+    tar -zxvf NVIDIA_Nsight_Graphics_*-internal.tar.gz
+    mv nvidia-nomad-internal-Linux.linux nvidia-nomad-internal
+    mv nvidia-nomad-internal $HOME
+    sudo apt install -y libxcb-cursor0
+    sudo apt install -y libxcb-cursor-dev
+    popd
 }
