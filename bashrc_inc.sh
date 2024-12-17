@@ -485,16 +485,16 @@ function load_pic_env {
     popd >/dev/null 
 }
 
-function sync_hosts {
-    while IFS= read -r line; do
-        line=$(echo "$line" | sed 's/[[:space:]]*$//')
-        if ! grep -Fxq "$line" /etc/hosts; then
-            host=$(echo "$line" | awk '{print $2}')
-            sudo sed -i "/ $host$/d" /etc/hosts
-            echo "$line" | sudo tee -a /etc/hosts 
-        fi
-    done < $HOME/wanliz_linux_workbench/hosts
-}
+#function sync_hosts {
+#    while IFS= read -r line; do
+#        line=$(echo "$line" | sed 's/[[:space:]]*$//')
+#        if ! grep -Fxq "$line" /etc/hosts; then
+#            host=$(echo "$line" | awk '{print $2}')
+#            sudo sed -i "/ $host$/d" /etc/hosts
+#            echo "$line" | sudo tee -a /etc/hosts 
+#        fi
+#    done < $HOME/wanliz_linux_workbench/hosts
+#}
 
 function check_vnc {
     sudo lsof -i :5900-5909
@@ -516,4 +516,8 @@ function load_vksdk {
     fi
     source $HOME/VulkanSDK/$version/setup-env.sh
     echo $VULKAN_SDK
+}
+
+function install_nsys {
+    echo TODO
 }
