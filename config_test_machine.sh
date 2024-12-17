@@ -225,8 +225,8 @@ if [[ ! -f ~/.local/share/fonts/VerilySerifMono.otf ]]; then
         popd 
     fi
     fc-cache -f -v &&
-    echo "- Install font VerilySerifMono  [OK]" ||
-    echo "- Install font VerilySerifMono  [FAILED]"
+    echo "- Install font VerilySerifMono  [OK]" >> /tmp/config.log ||
+    echo "- Install font VerilySerifMono  [FAILED]" >> /tmp/config.log
 fi
 
 PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
