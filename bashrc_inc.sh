@@ -525,6 +525,7 @@ function install_nsys {
         wget https://wanliz:$passwd@urm.nvidia.com/artifactory/swdt-nsys-generic/ctk/12.8/2024.6.2.225/nsight_systems-linux-x86_64-2024.6.2.225.tar.gz || return -1
     fi
     tar -zxvf nsight_systems-linux-x86_64-2024.6.2.225.tar.gz
+    rm -rf $HOME/nsight_systems
     mv nsight_systems $HOME 
     sudo apt install -y libxcb-cursor0
     sudo apt install -y libxcb-cursor-dev
@@ -545,6 +546,7 @@ function install_ngfx {
     cp /mnt/10.126.133.25/share/Devtools/NomadBuilds/latest/Internal/linux/*.tar.gz . || return -1
     tar -zxvf NVIDIA_Nsight_Graphics_*-internal.tar.gz
     mv nvidia-nomad-internal-Linux.linux nvidia-nomad-internal
+    rm -rf $HOME/nvidia-nomad-internal
     mv nvidia-nomad-internal $HOME
     popd
 
