@@ -174,6 +174,19 @@ if [[ -z $(which p4) ]]; then
     fi
 fi
 
+if [[ -z $(which p4v) ]]; then
+    pushd ~/Downloads
+    wget https://www.perforce.com/downloads/perforce/r24.4/bin.linux26x86_64/p4v.tgz
+    tar -zxvf p4v.tgz 
+    sudo cp -R p4v-2024.4.2690487/bin/* /usr/local/bin
+    sudo cp -R p4v-2024.4.2690487/lib/* /usr/local/lib 
+    popd
+    
+    [[ ! -z $(which p4v) ]] && 
+    echo "- Install p4v command  [OK]" >> /tmp/config.log ||
+    echo "- Install p4v command  [FAILED]" >> /tmp/config.log 
+fi
+
 if [[ ! -f $HOME/.p4ignore ]]; then
     if [[ -f $HOME/.p4ignore ]]; then
         cat $HOME/.p4ignore

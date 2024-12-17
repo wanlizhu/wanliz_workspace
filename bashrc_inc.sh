@@ -387,30 +387,6 @@ function amdhelp {
     echo "Latest AMD driver: https://repo.radeon.com/amdgpu-install/latest/ubuntu/jammy/"
 }
 
-function install_p4 {
-    sudo apt install -y helix-p4d || {
-        if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
-            #wget -qO - https://package.perforce.com/perforce.pubkey | gpg --dearmor | sudo tee /usr/share/keyrings/perforce.gpg >/dev/null
-            #echo "deb [signed-by=/usr/share/keyrings/perforce.gpg] https://package.perforce.com/apt/ubuntu $(lsb_release -c | cut -f2) release" | sudo tee -a /etc/apt/sources.list
-            #sudo apt update
-            #sudo apt install -y helix-p4d
-            pushd ~/Downloads >/dev/null 
-            codename=$(lsb_release -c | cut -f2)
-            wget https://package.perforce.com/perforce.pubkey
-            gpg -n --import --import-options import-show perforce.pubkey
-            wget -qO - https://package.perforce.com/perforce.pubkey | sudo apt-key add -
-            echo "deb http://package.perforce.com/apt/ubuntu $codename release" | sudo tee /etc/apt/sources.list.d/perforce.list
-            sudo apt update || {
-                echo "$codename is not supported, use noble instead"
-                echo "deb http://package.perforce.com/apt/ubuntu noble release" | sudo tee /etc/apt/sources.list.d/perforce.list
-                sudo apt update 
-            }
-            sudo apt install -y helix-p4d
-            popd >/dev/null 
-        fi
-    }
-}
-
 function xdgst {
     echo $XDG_SESSION_TYPE
 }
