@@ -519,6 +519,14 @@ function load_vksdk {
 }
 
 function install_nsys {
+    if [[ -d ~/nsight_systems ]]; then
+        echo "Nsight systems has already installed"
+        read -e -i "no" -p "Reinstall? (yes/no): " ans
+        if [[ $ans == no ]]; then
+            return 
+        fi
+    fi
+
     pushd ~/Downloads
     if [[ ! -f nsight_systems-linux-x86_64-2024.6.2.225.tar.gz ]]; then
         read -p "NVIDIA account password: " passwd
@@ -533,6 +541,14 @@ function install_nsys {
 }
 
 function install_ngfx {
+    if [[ -d ~/nvidia-nomad-internal ]]; then
+        echo "Nsight graphics has already installed"
+        read -e -i "no" -p "Reinstall? (yes/no): " ans
+        if [[ $ans == no ]]; then
+            return 
+        fi
+    fi
+
     if [[ ! -d /mnt/10.126.133.25/share || -z $(ls -A /mnt/10.126.133.25/share 2>&1) ]]; then
         if [[ -z $(dpkg -l | grep cifs-utils) ]]; then
             sudo apt install -y cifs-utils
