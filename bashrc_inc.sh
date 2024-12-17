@@ -532,7 +532,7 @@ function install_nsys {
 }
 
 function install_ngfx {
-    if [[ ! -d /mnt/10.126.133.25/share || ! $(ls -A /mnt/10.126.133.25/share >/dev/null 2>&1) ]]; then
+    if [[ ! -d /mnt/10.126.133.25/share || -z $(ls -A /mnt/10.126.133.25/share 2>&1) ]]; then
         if [[ -z $(dpkg -l | grep cifs-utils) ]]; then
             sudo apt install -y cifs-utils
         fi
