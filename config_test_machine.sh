@@ -22,6 +22,11 @@ function check_and_install {
     fi
 }
 
+check_and_install vim vim
+check_and_install vkcube vulkan-tools
+check_and_install ifconfig net-tools
+check_and_install unzip unzip
+
 function apt_install_any {
     if [[ -z $(which aptitude) ]]; then
         sudo apt install -y aptitude
@@ -106,10 +111,6 @@ if [[ -z $(grep wanliz_linux_workbench ~/.bashrc) ]]; then
     fi
 fi
 
-check_and_install vim vim
-check_and_install vkcube vulkan-tools
-check_and_install ifconfig net-tools
-
 if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
     sudo apt install -y openssh-server
     sudo systemctl enable ssh
@@ -154,7 +155,7 @@ fi
 if [[ -z $(which p4) ]]; then
     sudo apt install -y helix-p4d || {
         if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
-            pushd ~/Downloads >/dev/null 
+            pushd ~/Downloads 
             codename=$(lsb_release -c | cut -f2)
             wget https://package.perforce.com/perforce.pubkey
             gpg -n --import --import-options import-show perforce.pubkey
@@ -163,7 +164,7 @@ if [[ -z $(which p4) ]]; then
             echo "deb http://package.perforce.com/apt/ubuntu noble release" | sudo tee /etc/apt/sources.list.d/perforce.list
             sudo apt update 
             sudo apt install -y helix-p4d
-            popd >/dev/null 
+            popd 
         fi
     }
     if [[ ! -z $(which p4) ]]; then
@@ -196,7 +197,7 @@ if dpkg --compare-versions "$ubuntu" ge "24.0"; then
 fi
 
 if [[ -z $(which code) ]]; then
-    pushd ~/Downloads >/dev/null 
+    pushd ~/Downloads 
     sudo apt install -y software-properties-common apt-transport-https wget
     wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
     sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
@@ -205,11 +206,39 @@ if [[ -z $(which code) ]]; then
     sudo apt install -y code && 
         echo "- Install VS Code  [OK]" >> /tmp/config.log ||
         echo "- Install VS Code  [FAILED]" >> /tmp/config.log 
-    popd >/dev/null
+    popd 
 fi
 
 if [[ -z $(which slack) ]]; then
     sudo snap install slack --classic
+fi
+
+if [[ ! -f ~/.local/share/fonts/VerilySerifMono.otf ]]; then
+    mkdir -p ~/.local/share/fonts
+    if [[ -f ~/wanliz_linux_workbench/resources/VerilySerifMono.otf ]]; then
+        cp ~/wanliz_linux_workbench/resources/VerilySerifMono.otf ~/.local/share/fonts
+    else
+        pushd ~/Downloads 
+        wget -O verily_serif_mono.zip https://dl.dafont.com/dl/?f=verily_serif_mono &&
+        unzip verily_serif_mono.zip && 
+        cp verily_serif_mono/VerilySerifMono.otf ~/.local/share/fonts
+        popd 
+    fi
+    fc-cache -f -v &&
+    echo "- Install font VerilySerifMono  [OK]" ||
+    echo "- Install font VerilySerifMono  [FAILED]"
+fi
+
+PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
+FONT_NAME=$(gsettings get org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font)
+if [[ $FONT_NAME != 'VerilySerifMono 14' ]]; then
+    PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
+    gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ use-system-font false
+    gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font 'VerilySerifMono 14'
+    gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ background-color '#ffffff'
+    gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ foreground-color '#171421'
+    gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-columns 100
+    gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-rows 30
 fi
 
 echo -e '\n\n'
