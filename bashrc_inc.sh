@@ -528,3 +528,15 @@ function install_nsys {
     mv nsight_systems $HOME 
     popd
 }
+
+function install_ngfx {
+    if [[ ! -d /mnt/10.126.133.25/share ]]; then
+        if [[ -z $(dpkg -l | grep cifs-utils) ]]; then
+            sudo apt install -y cifs-utils
+        fi
+        sudo mkdir -p /mnt/10.126.133.25/share
+        sudo mount.cifs -o user=wanliz //10.126.133.25/share /mnt/10.126.133.25/share || return -1
+        sudo df -h /mnt/10.126.133.25/share
+    fi
+    sudo apt 
+}

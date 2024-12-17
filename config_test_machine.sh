@@ -187,6 +187,13 @@ if [[ ! -f $HOME/.p4ignore ]]; then
     echo "- Create file ~/.p4ignore  [OK]" >> /tmp/config.log
 fi
 
+if [[ -z $(which gtlfs) ]]; then
+    sudo wget --no-check-certificate -O /usr/local/bin/gtlfs https://gtlfs.nvidia.com/client/linux && {
+        sudo chmod +x /usr/local/bin/gtlfs
+        echo "- Install gtlfs  [OK]" >> /tmp/config.log
+    } || echo "- Install gtlfs  [FAILED]" >> /tmp/config.log
+fi
+
 ubuntu=$(grep '^VERSION_ID=' /etc/os-release | cut -d'"' -f2)
 if dpkg --compare-versions "$ubuntu" ge "24.0"; then
     if [[ ! -f /etc/sysctl.d/99-userns.conf ]]; then
