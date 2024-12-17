@@ -13,10 +13,10 @@ export PATH=~/wanliz_linux_workbench:$PATH
 export PATH=~/wanliz_linux_workbench/test_vp:$PATH
 export PATH=~/wanliz_linux_workbench/test_wayland:$PATH
 export PATH=~/.local/bin:$PATH
-export PATH=~/p4v/bin:$PATH
 export PATH=~/nsight_systems/bin:$PATH
 export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
 export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
+export PATH=~/apitrace/bin:$PATH
 export PATH=$HOME:$PATH
 alias  ss="source ~/.bashrc"
 alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
@@ -550,4 +550,18 @@ function install_ngfx {
         sudo update-initramfs -u -k all
         echo "A reboot is required for Nsight graphics"
     fi
+}
+
+function install_apitrace {
+    if [[ -z $(which bzip2) ]]; then
+        sudo apt install -y bzip2
+    fi
+
+    pushd ~/Downloads
+    wget https://github.com/apitrace/apitrace/releases/download/12.0/apitrace-12.0-Linux.tar.bz2 || return -1
+    bzip2 -fdk apitrace-12.0-Linux.tar.bz2
+    tar -xvf apitrace-12.0-Linux.tar
+    mv apitrace-12.0-Linux apitrace
+    mv apitrace $HOME
+    popd
 }
