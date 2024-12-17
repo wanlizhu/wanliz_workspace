@@ -1,9 +1,11 @@
 if [[ $1 != local ]]; then
     read -p "Target machine: " machine 
-    read -e -i "$USER" -p "Run as user: " user
-    scp $HOME/wanliz_linux_workbench/config_test_machine.sh $user@$machine:/tmp/config_test_machine.sh
-    ssh -t $user@$machine 'bash /tmp/config_test_machine.sh local'
-    exit
+    if [[ $machine != local ]]; then
+        read -e -i "$USER" -p "Run as user: " user
+        scp $HOME/wanliz_linux_workbench/config_test_machine.sh $user@$machine:/tmp/config_test_machine.sh
+        ssh -t $user@$machine 'bash /tmp/config_test_machine.sh local'
+        exit
+    fi
 fi
 
 rm -rf /tmp/config.log 
@@ -181,7 +183,7 @@ if [[ -z $(which p4v) ]]; then
     sudo cp -R p4v-2024.4.2690487/bin/* /usr/local/bin
     sudo cp -R p4v-2024.4.2690487/lib/* /usr/local/lib 
     popd
-    
+
     [[ ! -z $(which p4v) ]] && 
     echo "- Install p4v command  [OK]" >> /tmp/config.log ||
     echo "- Install p4v command  [FAILED]" >> /tmp/config.log 
