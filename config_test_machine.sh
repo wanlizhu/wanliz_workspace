@@ -244,10 +244,12 @@ fi
 if [[ ! -f ~/.config/autostart/wanliz_post_startup.desktop ]]; then
     if [[ ! -f ~/wanliz_post_startup.sh ]]; then
         cat <<EOF > ~/wanliz_post_startup.sh
+#!/bin/bash
 echo "This works, $HOME" | tee ~/log
 ifconfig | tee -a ~/log
 bash
 EOF
+        chmod +x ~/wanliz_post_startup.sh
     fi
 
     mkdir -p ~/.config/autostart
