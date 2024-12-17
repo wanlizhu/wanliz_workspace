@@ -526,6 +526,7 @@ function install_nsys {
     fi
     tar -zxvf nsight_systems-linux-x86_64-2024.6.2.225.tar.gz
     mv nsight_systems $HOME 
+    sudo apt install -y libxcb-cursor0
     popd
 }
 
