@@ -519,5 +519,12 @@ function load_vksdk {
 }
 
 function install_nsys {
-    echo TODO
+    pushd ~/Downloads
+    if [[ ! -f nsight_systems-linux-x86_64-2024.6.2.225.tar.gz ]]; then
+        read -p "NVIDIA account password: " passwd
+        wget https://wanliz:$passwd@urm.nvidia.com/artifactory/swdt-nsys-generic/ctk/12.8/2024.6.2.225/nsight_systems-linux-x86_64-2024.6.2.225.tar.gz || return -1
+    fi
+    tar -zxvf nsight_systems-linux-x86_64-2024.6.2.225.tar.gz
+    mv nsight_systems $HOME 
+    popd
 }
