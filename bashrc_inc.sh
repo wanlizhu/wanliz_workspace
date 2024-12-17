@@ -511,9 +511,14 @@ function install_nsys {
     tar -zxvf nsight_systems-linux-x86_64-2024.6.2.225.tar.gz
     rm -rf $HOME/nsight_systems
     mv nsight_systems $HOME 
+    popd
+
     sudo apt install -y libxcb-cursor0
     sudo apt install -y libxcb-cursor-dev
-    popd
+
+    sudo mkdir -p /root/.nsightsystems/Projects 
+    sudo ln -sf /root/.nsightsystems/Projects ~/nsight_systems_projects
+    sudo chmod -R 777 /root/.nsightsystems
 }
 
 function install_ngfx {
@@ -544,6 +549,10 @@ function install_ngfx {
 
     sudo apt install -y libxcb-cursor0
     sudo apt install -y libxcb-cursor-dev
+
+    sudo mkdir -p /root/Documents
+    sudo ln -sf /root/Documents ~/rootDocuments
+    sudo chmod -R 777 /root/Documents
 
     if [[ ! -f /etc/modprobe.d/nvidia-restrict-profiling-to-admin-users.conf ]]; then
         echo 'options nvidia "NVreg_RestrictProfilingToAdminUsers=0"' | sudo tee /etc/modprobe.d/nvidia-restrict-profiling-to-admin-users.conf
