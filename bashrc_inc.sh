@@ -540,12 +540,20 @@ function install_ngfx {
         sudo mount.cifs -o user=wanliz //10.126.133.25/share /mnt/10.126.133.25/share || return -1
         sudo df -h /mnt/10.126.133.25/share
     fi
+    
     pushd ~/Downloads 
     cp /mnt/10.126.133.25/share/Devtools/NomadBuilds/latest/Internal/linux/*.tar.gz . || return -1
     tar -zxvf NVIDIA_Nsight_Graphics_*-internal.tar.gz
     mv nvidia-nomad-internal-Linux.linux nvidia-nomad-internal
     mv nvidia-nomad-internal $HOME
+    popd
+
     sudo apt install -y libxcb-cursor0
     sudo apt install -y libxcb-cursor-dev
-    popd
+
+    if [[ ! -f /etc/modprobe.d/nvidia-restrict-profiling-to-admin-users.conf ]]; then
+        echo 'options nvidia "NVreg_RestrictProfilingToAdminUsers=0"' | sudo tee /etc/modprobe.d/nvidia-restrict-profiling-to-admin-users.conf
+        sudo update-initramfs -u -k all
+        echo "A reboot is required for Nsight graphics"
+    fi
 }
