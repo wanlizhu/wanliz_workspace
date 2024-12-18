@@ -155,15 +155,17 @@ if [[ $XDG_SESSION_TYPE == x11 ]]; then
         fi
     fi
 elif [[ $XDG_SESSION_TYPE == wayland ]]; then
-    apt_install_any gnome-remote-desktop xdg-desktop-portal xdg-desktop-portal-gnome
-    gsettings set org.gnome.desktop.remote-desktop.rdp enable true
-    gsettings set org.gnome.desktop.remote-desktop.rdp.authentication-method 'password'
-    echo -n "zhujie" | base64 | gsettings set org.gnome.desktop.remote-desktop.rdp.password-hash
-    gsettings set org.gnome.desktop.remote-desktop.rdp.enable-remote-control true
-    sudo ufw disable
-    systemctl --user enable gnome-remote-desktop
-    systemctl --user start gnome-remote-desktop
-    echo "- Share wayland display  [OK]" >> /tmp/config.log
+    if [[ -z $(sudo lsof -i :3389) ]]; then
+        apt_install_any gnome-remote-desktop xdg-desktop-portal xdg-desktop-portal-gnome
+        gsettings set org.gnome.desktop.remote-desktop.rdp enable true
+        gsettings set org.gnome.desktop.remote-desktop.rdp.authentication-method 'password'
+        echo -n "zhujie" | base64 | gsettings set org.gnome.desktop.remote-desktop.rdp.password-hash
+        gsettings set org.gnome.desktop.remote-desktop.rdp.enable-remote-control true
+        sudo ufw disable
+        systemctl --user enable gnome-remote-desktop
+        systemctl --user start gnome-remote-desktop
+        echo "- Share wayland display  [OK]" >> /tmp/config.log
+    fi
 fi
 
 if [[ -z $(which p4) ]]; then
@@ -300,6 +302,8 @@ fi
 #    echo "- Register autostart application: ~/wanliz_post_startup.sh"
 #fi
 
+echo -n '\n\n'
+ip -br a
 echo -e '\n\n'
 cat /tmp/config.log || echo "Nothing to configure!"
 echo "DONE"
