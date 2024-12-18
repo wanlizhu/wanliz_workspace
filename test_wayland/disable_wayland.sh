@@ -15,7 +15,7 @@ if [[ -z $(sudo grep '^WaylandEnable=false' /etc/gdm3/custom.conf) ]]; then
 fi
 
 if [[ $XDG_SESSION_TYPE == tty ]]; then
-    read -e -i yes -p "Restart gdm to enable wayland? (yes/no): " ans
+    read -e -i yes -p "Restart gdm to disable wayland? (yes/no): " ans
     if [[ $ans == yes ]]; then
         sudo systemctl restart gdm
     fi
