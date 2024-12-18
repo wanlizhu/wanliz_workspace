@@ -302,7 +302,7 @@ fi
 #    echo "- Register autostart application: ~/wanliz_post_startup.sh"
 #fi
 
-echo -n '\n\n'
+echo -e '\n\n'
 ip -br a
 echo -e '\n\n'
 cat /tmp/config.log || echo "Nothing to configure!"
