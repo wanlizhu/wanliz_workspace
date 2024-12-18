@@ -16,7 +16,7 @@ fi
 
 read -e -i "yes" -p "Record the complete life cycle of target app? (yes/no): " ans
 read -e -i "max" -p "The sampling frequency: " freq
-outdir=$(basename $exe)_$(date +%H%M%S)
+outdir=$HOME/Documents/$(basename $exe)_$(date +%H%M%S)
 read -e -i "$outdir/perf.data" -p "The output file: " outfile
 mkdir -p $(dirname $outfile)
 
