@@ -585,6 +585,6 @@ function sync_root_docs {
     if [[ ! -d ~/Documents/root_nsightsystems_sync ]]; then
         mkdir -p ~/Documents/root_nsightsystems_sync
     fi
-    sudo rsync -a /root/.nsightsystems ~/Documents/root_nsightsystems_sync
+    sudo rsync -a /root/.nsightsystems/ ~/Documents/root_nsightsystems_sync
     sudo chown -R $USER ~/Documents/root_nsightsystems_sync
 }
