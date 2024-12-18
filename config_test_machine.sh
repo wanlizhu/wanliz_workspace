@@ -273,30 +273,30 @@ if [[ $FONT_NAME != 'VerilySerifMono 14' ]]; then
     gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-rows 30
 fi
 
-if [[ ! -f ~/.config/autostart/wanliz_post_startup.desktop ]]; then
-    if [[ ! -f ~/wanliz_post_startup.sh ]]; then
-        cat <<EOF > ~/wanliz_post_startup.sh
-#!/bin/bash
-echo "This works, $USER" | tee ~/log
-ifconfig | grep "inet " | tee -a ~/log
-bash
-EOF
-        chmod +x ~/wanliz_post_startup.sh
-    fi
-
-    mkdir -p ~/.config/autostart
-    cat <<EOF > ~/.config/autostart/wanliz_post_startup.desktop
-[Desktop Entry]
-Type=Application
-Exec=~/wanliz_post_startup.sh
-Hidden=false
-NoDisplay=false
-X-GNOME-AutoStart-enabled=true
-Name=wanliz_post_startup
-Comment="This is wanli's custom startup application"
-EOF
-    echo "- Register autostart application: ~/wanliz_post_startup.sh"
-fi
+#if [[ ! -f ~/.config/autostart/wanliz_post_startup.desktop ]]; then
+#    if [[ ! -f ~/wanliz_post_startup.sh ]]; then
+#        cat <<EOF > ~/wanliz_post_startup.sh
+##!/bin/bash
+#echo "This works, $USER" | tee ~/log
+#ifconfig | grep "inet " | tee -a ~/log
+#bash
+#EOF
+#        chmod +x ~/wanliz_post_startup.sh
+#    fi
+#
+#    mkdir -p ~/.config/autostart
+#    cat <<EOF > ~/.config/autostart/wanliz_post_startup.desktop
+#[Desktop Entry]
+#Type=Application
+#Exec=~/wanliz_post_startup.sh
+#Hidden=false
+#NoDisplay=false
+#X-GNOME-AutoStart-enabled=true
+#Name=wanliz_post_startup
+#Comment="This is wanli's custom startup application"
+#EOF
+#    echo "- Register autostart application: ~/wanliz_post_startup.sh"
+#fi
 
 echo -e '\n\n'
 cat /tmp/config.log || echo "Nothing to configure!"
