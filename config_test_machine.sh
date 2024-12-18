@@ -120,38 +120,48 @@ if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
     echo "- Install openssh-server  [OK]" >> /tmp/config.log
 fi
 
-if [[ -z $(sudo lsof -i :5900-5909) ]]; then
-    if [[ $(systemctl is-active x11vnc) == active ]]; then
-        echo "x11vnc.service is already running"
-    else 
-        if [[ -z $(command -v x11vnc) ]]; then
-            sudo apt install -y x11vnc
+if [[ $XDG_SESSION_TYPE == x11 ]]; then
+    if [[ -z $(sudo lsof -i :5900-5909) ]]; then
+        if [[ $(systemctl is-active x11vnc) == active ]]; then
+            echo "x11vnc.service is already running"
+        else 
+            if [[ -z $(command -v x11vnc) ]]; then
+                sudo apt install -y x11vnc
+            fi
+
+            if [[ ! -f $HOME/.vnc/passwd ]]; then
+                x11vnc -storepasswd
+            fi
+
+            if [[ ! -f /etc/systemd/system/x11vnc.service ]]; then
+                echo "[Unit]
+    Description=x11vnc server
+    After=display-manager.service
+
+    [Service]
+    Type=simple
+    User=$USER
+    ExecStart=$(command -v x11vnc) -display :0 -rfbport 5900 -auth guess -forever -loop -noxdamage -repeat -usepw
+    Restart=on-failure
+
+    [Install]
+    WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
+            fi
+
+            sudo systemctl daemon-reload 
+            sudo systemctl enable x11vnc.service
+            sudo systemctl start  x11vnc.service
+            echo "- Register x11vnc as service  [OK]" >> /tmp/config.log
         fi
-
-        if [[ ! -f $HOME/.vnc/passwd ]]; then
-            x11vnc -storepasswd
-        fi
-
-        if [[ ! -f /etc/systemd/system/x11vnc.service ]]; then
-            echo "[Unit]
-Description=x11vnc server
-After=display-manager.service
-
-[Service]
-Type=simple
-User=$USER
-ExecStart=$(command -v x11vnc) -display :0 -rfbport 5900 -auth guess -forever -loop -noxdamage -repeat -usepw
-Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
-        fi
-
-        sudo systemctl daemon-reload 
-        sudo systemctl enable x11vnc.service
-        sudo systemctl start  x11vnc.service
-        echo "- Register x11vnc as service  [OK]" >> /tmp/config.log
     fi
+elif [[ $XDG_SESSION_TYPE == wayland ]]; then
+    apt_install_any gnome-remote-desktop xdg-desktop-portal xdg-desktop-portal-gnome
+    gsettings set org.gnome.desktop.remote-desktop.rdp enable true
+    gsettings set org.gnome.desktop.remote-desktop.rdp.authentication-method 'password'
+    echo -n "zhujie" | base64 | gsettings set org.gnome.desktop.remote-desktop.rdp.password-hash
+    gsettings set org.gnome.desktop.remote-desktop.rdp.enable-remote-control true
+    sudo ufw disable
+    echo "- Share wayland display  [OK]" >> /tmp/config.log
 fi
 
 if [[ -z $(which p4) ]]; then
