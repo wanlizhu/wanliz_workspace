@@ -164,7 +164,13 @@ elif [[ $XDG_SESSION_TYPE == wayland ]]; then
         sudo ufw disable
         systemctl --user enable gnome-remote-desktop
         systemctl --user start gnome-remote-desktop
-        echo "- Share wayland display  [OK]" >> /tmp/config.log
+        sleep 1
+
+        if [[ ! -z $(ip -br a | grep 3389) ]]; then
+            echo "- Share wayland display  [OK]" >> /tmp/config.log
+        else
+            echo "- Share wayland display  [FAILED]" >> /tmp/config.log
+        fi
     fi
 fi
 
