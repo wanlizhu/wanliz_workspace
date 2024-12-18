@@ -1,0 +1,15 @@
+Wayland - Release
+<Results Name="snx-04" Threads="1" Processes="1">
+    <Test Index="1" Weight="7.50" Frames="7920" Seconds="15.17" FPS="522.08" TimeStamp="12/17/24 16:56:39" />
+    <Test Index="2" Weight="10.00" Frames="12960" Seconds="15.85" FPS="817.80" TimeStamp="12/17/24 16:56:56" />
+    <Test Index="3" Weight="20.00" Frames="5040" Seconds="15.46" FPS="325.95" TimeStamp="12/17/24 16:57:13" />
+    <Test Index="4" Weight="5.00" Frames="7200" Seconds="16.03" FPS="449.02" TimeStamp="12/17/24 16:57:30" />
+    <Test Index="5" Weight="7.50" Frames="7920" Seconds="15.09" FPS="524.90" TimeStamp="12/17/24 16:57:46" />
+    <Test Index="6" Weight="7.50" Frames="15120" Seconds="15.03" FPS="1006.13" TimeStamp="12/17/24 16:58:02" />
+    <Test Index="7" Weight="10.00" Frames="12960" Seconds="15.79" FPS="820.65" TimeStamp="12/17/24 16:58:19" />
+    <Test Index="8" Weight="20.00" Frames="5760" Seconds="15.79" FPS="364.84" TimeStamp="12/17/24 16:58:35" />
+    <Test Index="9" Weight="5.00" Frames="7920" Seconds="15.90" FPS="498.14" TimeStamp="12/17/24 16:58:52" />
+    <Test Index="10" Weight="7.50" Frames="11160" Seconds="15.50" FPS="719.84" TimeStamp="12/17/24 16:59:09" />
+    <Composite Score="515.87" />
+</Results>
+

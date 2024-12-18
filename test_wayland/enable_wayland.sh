@@ -11,6 +11,7 @@ if [[ -z $(sudo grep '^WaylandEnable=true' /etc/gdm3/custom.conf) ]]; then
         echo "WaylandEnable=true" | sudo tee -a /etc/gdm3/custom.conf >/dev/null
         echo "Append WaylandEnable=true to /etc/gdm3/custom.conf"
     fi
+    sudo systemctl daemon-reload 
 fi
 
 if [[ $(sudo cat /sys/module/nvidia_drm/parameters/modeset) != 'Y' ]]; then
