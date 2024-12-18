@@ -11,7 +11,7 @@ if [[ -z $(sudo grep '^WaylandEnable=false' /etc/gdm3/custom.conf) ]]; then
         echo "WaylandEnable=false" | sudo tee -a /etc/gdm3/custom.conf >/dev/null
         echo "Append WaylandEnable=false to /etc/gdm3/custom.conf"
     fi
-    sudo systemctl daemon-reload 
+    #sudo systemctl daemon-reload 
 fi
 
 if [[ $XDG_SESSION_TYPE == tty ]]; then
