@@ -17,4 +17,9 @@ fi
 if [[ $(sudo cat /sys/module/nvidia_drm/parameters/modeset) != 'Y' ]]; then
     echo "options nvidia_drm modeset=1" | sudo tee /etc/modprobe.d/nvidia-modeset.conf
     echo "A reboot is required"
+elif [[ $XDG_SESSION_TYPE == tty ]]
+    read -e -i yes -p "Restart gdm to enable wayland? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        sudo systemctl restart gdm
+    fi
 fi
