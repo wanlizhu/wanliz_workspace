@@ -161,6 +161,8 @@ elif [[ $XDG_SESSION_TYPE == wayland ]]; then
     echo -n "zhujie" | base64 | gsettings set org.gnome.desktop.remote-desktop.rdp.password-hash
     gsettings set org.gnome.desktop.remote-desktop.rdp.enable-remote-control true
     sudo ufw disable
+    systemctl --user enable gnome-remote-desktop
+    systemctl --user start gnome-remote-desktop
     echo "- Share wayland display  [OK]" >> /tmp/config.log
 fi
 
