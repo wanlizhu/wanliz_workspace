@@ -448,16 +448,7 @@ function start_plain_x {
     fi
     
     sudo systemctl stop gdm
-    X :0 &
-    XPID=$!
-    export DISPLAY=:0
-
-    sleep 1
-    
-    if [[ -d /proc/$XPID ]]; then
-        echo "X $XPID is running in the background"
-        echo "DISPLAY $DISPLAY is active now"
-    fi
+    X :0 
 }
 
 function load_pic_env {
