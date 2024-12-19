@@ -19,5 +19,5 @@ EOF
 read -e -i "1920x1080" -p "Resolution: " size 
 
 mkdir -p results/snx-04/ &&
-./viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution &size &&
+./viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size &&
 grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}' 
