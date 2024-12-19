@@ -438,9 +438,13 @@ function start_plain_x {
     if [[ -z $(grep anybody /etc/X11/Xwrapper.config) ]]; then
         sudo sed -i 's/console/anybody/g' /etc/X11/Xwrapper.config
     fi
-    
+
     if [[ -z $(grep 'needs_root_rights=no' /etc/X11/Xwrapper.config) ]]; then
         echo -e '\nneeds_root_rights=yes' | sudo tee -a /etc/X11/Xwrapper.config >/dev/null
+    fi
+
+    if [[ ! -z $(pidof Xorg) ]]; then
+        pkill Xorg
     fi
     
     sudo systemctl stop gdm
@@ -449,9 +453,10 @@ function start_plain_x {
     export DISPLAY=:0
 
     sleep 1
+    
     if [[ -d /proc/$XPID ]]; then
         echo "X $XPID is running in the background"
-        echo "DISPLAY $DISPLAY is active"
+        echo "DISPLAY $DISPLAY is active now"
     fi
 }
 
