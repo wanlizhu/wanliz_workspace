@@ -42,8 +42,5 @@ else
     fi
 fi
 
-read -e -i "yes" -p "Generate a svg flamegraph? (yes/no): " ans
-if [[ $ans == yes ]]; then
-    source ~/wanliz_linux_workbench/bashrc_inc.sh
-    flamegraph $outfile
-fi
+source ~/wanliz_linux_workbench/bashrc_inc.sh
+flamegraph $outfile
