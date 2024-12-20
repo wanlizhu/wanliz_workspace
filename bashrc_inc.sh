@@ -474,10 +474,6 @@ function load_pic_env {
 
 function check_vnc {
     sudo lsof -i :5900-5909
-    if [[ ! -z $(journalctl -u x11vnc.service -n 100 | grep "/home/$USER/.Xauthority does not exist") ]]; then
-        journalctl -u x11vnc.service -n 100 | grep "/home/$USER/.Xauthority does not exist" | tail -1
-        echo 'Todo: run `xhost +x` on this machine'
-    fi
 }
 
 function restart_vnc {
