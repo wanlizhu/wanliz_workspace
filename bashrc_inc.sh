@@ -5,6 +5,9 @@ elif [[ $HOSTNAME == scc-03-3062-test ]]; then
 elif [[ $HOSTNAME == scc-03-3062-wfh  ]]; then
     export P4CLIENT=wanliz_p4sw_wfh
 fi
+if [[ -z $DISPLAY ]]; then
+    export DISPLAY=:0
+fi  
 export P4ROOT=/home/wanliz/$P4CLIENT
 export P4IGNORE=$HOME/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
@@ -477,6 +480,14 @@ function restart_vnc {
     sudo systemctl restart x11vnc.service
 }
 
+function uninstall_vnc {
+    sudo systemctl stop x11vnc.service
+    sudo systemctl disable x11vnc.service
+    sudo rm -rf /etc/systemd/system/x11vnc.service
+    sudo systemctl daemon-reload
+    sudo systemctl reset-failed
+}
+
 function load_vksdk {
     version=1.3.296.0
     if [[ ! -d $HOME/VulkanSDK/$version ]]; then
@@ -584,4 +595,8 @@ function sync_root_docs {
     sudo rsync -a --delete --force /root/.nsightsystems/ ~/Documents/root_nsightsystems_sync
     
     sudo chown -R $USER:$USER ~/Documents
+}
+
+function listen_ports {
+    sudo ss -tunlp
 }

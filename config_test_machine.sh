@@ -1,5 +1,5 @@
 if [[ $1 != local ]]; then
-    read -p "Target machine: " machine 
+    read -e -i "local" -p "Target machine: " machine 
     if [[ $machine != local ]]; then
         read -e -i "$USER" -p "Run as user: " user
         scp $HOME/wanliz_linux_workbench/config_test_machine.sh $user@$machine:/tmp/config_test_machine.sh
@@ -59,12 +59,16 @@ function apt_install_any {
     fi
 }
 
-sudo apt update
-
 if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
     echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
     sudo cat /etc/sudoers | tail -1
     echo "- sudo with nopasswd  [OK]" >> /tmp/config.log
+fi
+
+sudo apt update
+
+if [[ -z $(which perf) ]]; then
+    sudo apt install -y linux-tools-common linux-tools-generic
 fi
 
 if [[ -z $(which git) ]]; then
@@ -120,6 +124,10 @@ if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
     echo "- Install openssh-server  [OK]" >> /tmp/config.log
 fi
 
+if [[ $XDG_SESSION_TYPE == tty ]]; then
+    read -e -i "x11" -p "XDG session type: " XDG_SESSION_TYPE
+fi
+
 if [[ $XDG_SESSION_TYPE == x11 ]]; then
     if [[ -z $(sudo lsof -i :5900-5909) ]]; then
         if [[ $(systemctl is-active x11vnc) == active ]]; then
@@ -135,17 +143,17 @@ if [[ $XDG_SESSION_TYPE == x11 ]]; then
 
             if [[ ! -f /etc/systemd/system/x11vnc.service ]]; then
                 echo "[Unit]
-    Description=x11vnc server
-    After=display-manager.service
+Description=x11vnc server
+After=display-manager.service
 
-    [Service]
-    Type=simple
-    User=$USER
-    ExecStart=$(command -v x11vnc) -display :0 -rfbport 5900 -auth guess -forever -loop -noxdamage -repeat -usepw
-    Restart=on-failure
+[Service]
+Type=simple
+User=$USER
+ExecStart=$(command -v x11vnc) -display :0 -rfbport 5900 -auth guess -forever -loop -noxdamage -repeat -usepw
+Restart=on-failure
 
-    [Install]
-    WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
+[Install]
+WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
             fi
 
             sudo systemctl daemon-reload 
@@ -172,6 +180,8 @@ elif [[ $XDG_SESSION_TYPE == wayland ]]; then
             echo "- Share wayland display  [FAILED]" >> /tmp/config.log
         fi
     fi
+else
+    echo "- Share $XDG_SESSION_TYPE display  [FAILED]" >> /tmp/config.log 
 fi
 
 if [[ -z $(which p4) ]]; then
@@ -307,6 +317,21 @@ fi
 #EOF
 #    echo "- Register autostart application: ~/wanliz_post_startup.sh"
 #fi
+
+if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
+    cat >> /tmp/xhost.desktop << 'EOF'
+[Desktop Entry]
+Type=Application
+Exec=bash -c "xhost + > /tmp/xhost.log"
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=XHost Command
+Comment=Disable access control
+EOF
+    sudo mv /tmp/xhost.desktop ~/.config/autostart/xhost.desktop
+    echo "- Disable access control  [OK]" >> /tmp/config.log
+fi
 
 echo -e '\n\n'
 ip -br a
