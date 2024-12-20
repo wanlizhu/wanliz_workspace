@@ -4,6 +4,7 @@ fi
 
 if [[ -z $(which mangohud) ]]; then
     sudo apt install -y mangohud
+    sudo apt install -y libxnvctrl-dev
 fi
 
 cat <<EOF > viewsets/snx/config/snx_10.xml
