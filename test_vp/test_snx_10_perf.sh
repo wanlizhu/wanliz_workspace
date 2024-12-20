@@ -27,6 +27,10 @@ export wait_sec=2
 export record_sec=5
 
 mkdir -p results/snx-04/ 
-run_with_perf.sh viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size && {
-    grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}' 
-}
+run_with_perf.sh viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size 
+
+while [[ ! -z $(pidof viewperf) ]]; do
+    sleep 1
+done
+
+grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}'
