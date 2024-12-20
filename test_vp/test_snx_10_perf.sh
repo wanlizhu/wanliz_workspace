@@ -25,6 +25,6 @@ export freq=1000
 export outfile=$HOME/Documents/viewperf_snx10_$suffix/perf.data
 
 mkdir -p results/snx-04/ 
-run_with_perf.sh ./viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size && {
+run_with_perf.sh viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size && {
     grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}' 
 }
