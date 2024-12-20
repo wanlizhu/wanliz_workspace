@@ -7,27 +7,44 @@ if [[ $1 == *.sh ]]; then
     read -p "Executable file name: " exe
 else
     exe=$1
-    read -e -i "$(dirname $1)" -p "Working directory: " workdir
+    if [[ -z $workdir ]]; then
+        read -e -i "$(dirname $1)" -p "Working directory: " workdir
+    fi
 fi
 
 if [[ ! -z $workdir ]]; then
     cd $workdir
 fi
 
-read -e -i "yes" -p "Record the complete life cycle of target app? (yes/no): " ans
-read -e -i "max" -p "The sampling frequency: " freq
-outdir=$HOME/Documents/$(basename $exe)_$(date +%H%M%S)
-read -e -i "$outdir/perf.data" -p "The output file: " outfile
+if [[ -z $lifecycle ]]; then
+    read -e -i "yes" -p "Record the complete life cycle of target app? (yes/no): " lifecycle
+fi
+
+if [[ -z $freq ]]; then
+    read -e -i "max" -p "The sampling frequency: " freq
+fi
+
+if [[ -z $outfile ]]; then
+    outdir=$HOME/Documents/$(basename $exe)_$(date +%H%M%S)
+    read -e -i "$outdir/perf.data" -p "The output file: " outfile
+fi
 mkdir -p $(dirname $outfile)
 
-if [[ $ans == yes ]]; then 
-    echo "Do NOT run script file in this mode!"
-    read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
+if [[ $lifecycle == yes ]]; then 
+    if [[ $exe == *.sh ]]; then
+        echo "Do NOT run script file in this mode!"
+        exit -1
+    fi
     sudo perf record -g --call-graph dwarf --freq=$freq --output=$outfile -- "$@" || exit -1
 else
-    read -e -i "3"   -p "The number of seconds to wait: " wait_sec
-    read -e -i "1"   -p "The number of seconds to record: " record_sec
+    if [[ -z $wait_sec ]]; then
+        read -e -i "3"   -p "The number of seconds to wait: " wait_sec
+    fi
     
+    if [[ -z $record_sec ]]; then
+        read -e -i "1"   -p "The number of seconds to record: " record_sec
+    fi
+
     "$@" &
     
     echo "[$exe] Wait $wait_sec seconds before recording $record_sec seconds"
