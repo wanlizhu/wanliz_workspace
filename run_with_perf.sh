@@ -57,7 +57,7 @@ else
 
     if [[ -d /proc/$exepid ]]; then
         SECONDS=0
-        echo "Recording process $exepid"
+        echo "Recording process $exepid ($(basename $exe))"
         sudo perf record -g --call-graph dwarf --freq=$freq --output=$outfile --pid=$exepid -- sleep $record_sec || exit -1
         echo "Finished recording after $SECONDS seconds"
     else
