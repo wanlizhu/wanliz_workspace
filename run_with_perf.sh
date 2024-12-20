@@ -40,7 +40,7 @@ else
     if [[ -z $wait_sec ]]; then
         read -e -i "3"   -p "The number of seconds to wait: " wait_sec
     fi
-    
+
     if [[ -z $record_sec ]]; then
         read -e -i "1"   -p "The number of seconds to record: " record_sec
     fi
@@ -59,5 +59,7 @@ else
     fi
 fi
 
-source ~/wanliz_linux_workbench/bashrc_inc.sh
-flamegraph $outfile
+if [[ -f $outfile ]]; then
+    source ~/wanliz_linux_workbench/bashrc_inc.sh
+    flamegraph $outfile
+fi
