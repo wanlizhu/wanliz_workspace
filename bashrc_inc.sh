@@ -5,6 +5,9 @@ elif [[ $HOSTNAME == scc-03-3062-test ]]; then
 elif [[ $HOSTNAME == scc-03-3062-wfh  ]]; then
     export P4CLIENT=wanliz_p4sw_wfh
 fi
+if [[ -z $DISPLAY ]]; then
+    export DISPLAY=:0
+fi  
 export P4ROOT=/home/wanliz/$P4CLIENT
 export P4IGNORE=$HOME/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006

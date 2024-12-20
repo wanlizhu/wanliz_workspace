@@ -143,17 +143,17 @@ if [[ $XDG_SESSION_TYPE == x11 ]]; then
 
             if [[ ! -f /etc/systemd/system/x11vnc.service ]]; then
                 echo "[Unit]
-    Description=x11vnc server
-    After=display-manager.service
+Description=x11vnc server
+After=display-manager.service
 
-    [Service]
-    Type=simple
-    User=$USER
-    ExecStart=$(command -v x11vnc) -display :0 -rfbport 5900 -auth guess -forever -loop -noxdamage -repeat -usepw
-    Restart=on-failure
+[Service]
+Type=simple
+User=$USER
+ExecStart=$(command -v x11vnc) -display :0 -rfbport 5900 -auth guess -forever -loop -noxdamage -repeat -usepw
+Restart=on-failure
 
-    [Install]
-    WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
+[Install]
+WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
             fi
 
             sudo systemctl daemon-reload 
@@ -317,6 +317,21 @@ fi
 #EOF
 #    echo "- Register autostart application: ~/wanliz_post_startup.sh"
 #fi
+
+if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
+    cat >> /tmp/xhost.desktop << 'EOF'
+[Desktop Entry]
+Type=Application
+Exec=bash -c "xhost + > /tmp/xhost.log"
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=XHost Command
+Comment=Disable access control
+EOF
+    sudo mv /tmp/xhost.desktop ~/.config/autostart/xhost.desktop
+    echo "- Disable access control  [OK]" >> /tmp/config.log
+fi
 
 echo -e '\n\n'
 ip -br a
