@@ -36,7 +36,10 @@ if [[ $lifecycle == yes ]]; then
         echo "Do NOT run script file in this mode!"
         exit -1
     fi
+    SECONDS=0
+    echo "Recording the whole life cycle"
     sudo perf record -g --call-graph dwarf --freq=$freq --output=$outfile -- "$@" || exit -1
+    echo "Finished recording after $SECONDS seconds"
 else
     if [[ -z $wait_sec ]]; then
         read -e -i "3"   -p "The number of seconds to wait: " wait_sec
@@ -53,7 +56,10 @@ else
     exepid=$(pgrep -n $(basename $exe))
 
     if [[ -d /proc/$exepid ]]; then
+        SECONDS=0
+        echo "Recording process $exepid"
         sudo perf record -g --call-graph dwarf --freq=$freq --output=$outfile --pid=$exepid -- sleep $record_sec || exit -1
+        echo "Finished recording after $SECONDS seconds"
     else
         echo "PID $exepid is invalid"
         exit -1
