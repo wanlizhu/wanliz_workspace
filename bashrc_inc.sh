@@ -585,3 +585,7 @@ function sync_root_docs {
     
     sudo chown -R $USER:$USER ~/Documents
 }
+
+function listen_ports {
+    sudo ss -tunlp
+}

@@ -1,5 +1,5 @@
 if [[ $1 != local ]]; then
-    read -p "Target machine: " machine 
+    read -e -i "local" -p "Target machine: " machine 
     if [[ $machine != local ]]; then
         read -e -i "$USER" -p "Run as user: " user
         scp $HOME/wanliz_linux_workbench/config_test_machine.sh $user@$machine:/tmp/config_test_machine.sh
