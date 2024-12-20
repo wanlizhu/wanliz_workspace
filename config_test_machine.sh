@@ -59,12 +59,16 @@ function apt_install_any {
     fi
 }
 
-sudo apt update
-
 if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
     echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
     sudo cat /etc/sudoers | tail -1
     echo "- sudo with nopasswd  [OK]" >> /tmp/config.log
+fi
+
+sudo apt update
+
+if [[ -z $(which perf) ]]; then
+    sudo apt install -y linux-tools-common linux-tools-generic
 fi
 
 if [[ -z $(which git) ]]; then
@@ -120,6 +124,10 @@ if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
     echo "- Install openssh-server  [OK]" >> /tmp/config.log
 fi
 
+if [[ $XDG_SESSION_TYPE == tty ]]; then
+    read -e -i "x11" -p "XDG session type: " XDG_SESSION_TYPE
+fi
+
 if [[ $XDG_SESSION_TYPE == x11 ]]; then
     if [[ -z $(sudo lsof -i :5900-5909) ]]; then
         if [[ $(systemctl is-active x11vnc) == active ]]; then
@@ -172,6 +180,8 @@ elif [[ $XDG_SESSION_TYPE == wayland ]]; then
             echo "- Share wayland display  [FAILED]" >> /tmp/config.log
         fi
     fi
+else
+    echo "- Share $XDG_SESSION_TYPE display  [FAILED]" >> /tmp/config.log 
 fi
 
 if [[ -z $(which p4) ]]; then
