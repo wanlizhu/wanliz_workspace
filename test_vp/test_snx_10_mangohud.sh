@@ -2,6 +2,10 @@ if [[ ! -f ./viewperf/bin/viewperf ]]; then
     pushd ~/viewperf2020 || exit 1
 fi
 
+if [[ -z $(which mangohud) ]]; then
+    sudo apt install -y mangohud
+fi
+
 cat <<EOF > viewsets/snx/config/snx_10.xml
 <?xml version="1.0" standalone="yes"?>
 <!DOCTYPE SPECGWPG>
@@ -19,7 +23,7 @@ EOF
 mkdir -p results/snx-04/ 
 read -e -i "1920x1080" -p "Resolution: " size 
 
-viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size 
+mango viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size 
 
 while [[ ! -z $(pidof viewperf) ]]; do
     sleep 1
