@@ -23,7 +23,7 @@ EOF
 mkdir -p results/snx-04/ 
 read -e -i "1920x1080" -p "Resolution: " size 
 
-mango viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size 
+mangohud viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size 
 
 while [[ ! -z $(pidof viewperf) ]]; do
     sleep 1
