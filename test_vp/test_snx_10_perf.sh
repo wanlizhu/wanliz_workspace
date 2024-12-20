@@ -16,13 +16,15 @@ cat <<EOF > viewsets/snx/config/snx_10.xml
 </SPECGWPG>
 EOF
 
+read -e -i "1920x1080" -p "Resolution: " size 
+read -e -i "$(date +%H%M%S)" -p "Output folder suffix: " suffix
+
 export workdir=`pwd`
 export lifecycle=yes
 export freq=1000
-export outfile=$HOME/Documents/viewperf_snx10_$(date +%H%M%S)/perf.data
+export outfile=$HOME/Documents/viewperf_snx10_$suffix/perf.data
 
 mkdir -p results/snx-04/ 
-read -e -i "1920x1080" -p "Resolution: " size 
 run_with_perf.sh ./viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size && {
     grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}' 
 }
