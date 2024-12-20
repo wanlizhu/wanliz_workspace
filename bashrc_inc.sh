@@ -477,6 +477,14 @@ function restart_vnc {
     sudo systemctl restart x11vnc.service
 }
 
+function uninstall_vnc {
+    sudo systemctl stop x11vnc.service
+    sudo systemctl disable x11vnc.service
+    sudo rm -rf /etc/systemd/system/x11vnc.service
+    sudo systemctl daemon-reload
+    sudo systemctl reset-failed
+}
+
 function load_vksdk {
     version=1.3.296.0
     if [[ ! -d $HOME/VulkanSDK/$version ]]; then
