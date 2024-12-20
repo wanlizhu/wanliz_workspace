@@ -576,7 +576,7 @@ function sync_root_docs {
     if [[ ! -d ~/Documents/root_documents_sync ]]; then
         mkdir -p ~/Documents/root_documents_sync
     fi
-    sudo rsync -a /root/Documents/ ~/Documents/root_documents_sync
+    sudo rsync -a --delete --force /root/Documents/ ~/Documents/root_documents_sync
 
     if [[ ! -d ~/Documents/root_nsightsystems_sync ]]; then
         mkdir -p ~/Documents/root_nsightsystems_sync
