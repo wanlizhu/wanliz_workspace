@@ -7,6 +7,7 @@ if [[ $1 == *.sh ]]; then
     read -p "Executable file name: " exe
 else
     exe=$1
+
     if [[ -z $workdir ]]; then
         read -e -i "$(dirname $1)" -p "Working directory: " workdir
     fi
@@ -49,7 +50,7 @@ else
     
     echo "[$exe] Wait $wait_sec seconds before recording $record_sec seconds"
     sleep $wait_sec
-    exepid=$(pgrep -n $exe)
+    exepid=$(pgrep -n $(basename $exe))
 
     if [[ -d /proc/$exepid ]]; then
         sudo perf record -g --call-graph dwarf --freq=$freq --output=$outfile --pid=$exepid -- sleep $record_sec || exit -1
