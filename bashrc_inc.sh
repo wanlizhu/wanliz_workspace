@@ -581,11 +581,15 @@ function listen_ports {
 function sync_workspace {
     echo "[1] Sync from local to remote"
     echo "[2] Sync from remote to local"
-    read -e -i 1 -p "Select: " choice
+    read -e -i "1" -p "Mode: " mode
     read -p "Remote host: " remote
 
-    if [[ $choice == 1 ]]; then
-        rsync -avz /home/wanliz/wanliz_workspace/ wanliz@$remote:/home/wanliz/wanliz_workspace
+    if [[ $mode == 1 ]]; then
+        if [[ $(uname) == Darwin ]]; then
+            rsync -avz /Users/wanliz/wanliz_workspace/ wanliz@$remote:/home/wanliz/wanliz_workspace
+        else
+            rsync -avz /home/wanliz/wanliz_workspace/ wanliz@$remote:/home/wanliz/wanliz_workspace
+        fi
     else
         rsync -avz wanliz@$remote:/home/wanliz/wanliz_workspace/ /home/wanliz/wanliz_workspace
     fi 
