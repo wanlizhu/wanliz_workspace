@@ -67,6 +67,6 @@ else
 fi
 
 if [[ -f $outfile ]]; then
-    source ~/wanliz_linux_workbench/bashrc_inc.sh
+    source ~/wanliz_workspace/bashrc_inc.sh
     flamegraph $outfile
 fi

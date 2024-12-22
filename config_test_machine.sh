@@ -2,7 +2,7 @@ if [[ $1 != local ]]; then
     read -e -i "local" -p "Target machine: " machine 
     if [[ $machine != local ]]; then
         read -e -i "$USER" -p "Run as user: " user
-        scp $HOME/wanliz_linux_workbench/config_test_machine.sh $user@$machine:/tmp/config_test_machine.sh
+        scp $HOME/wanliz_workspace/config_test_machine.sh $user@$machine:/tmp/config_test_machine.sh
         ssh -t $user@$machine 'bash /tmp/config_test_machine.sh local'
         exit
     fi
@@ -79,7 +79,7 @@ if [[ -z $(which git) ]]; then
     echo "- git config ...  [OK]" >> /tmp/config.log
 fi
 
-if [[ ! -d $HOME/wanliz_linux_workbench ]]; then
+if [[ ! -d $HOME/wanliz_workspace ]]; then
     if ! ping -c2 linuxqa; then
         if [[ ! -f ~/vpn_with_sso.sh ]]; then
             cat >> ~/vpn_with_sso.sh << 'EOF'
@@ -99,20 +99,20 @@ EOF
         read -p "Run command ~/vpn_with_sso.sh, then press [ENTER] to continue: " _
     fi
     
-    git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_linux_workbench $HOME/wanliz_linux_workbench
+    git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_workspace $HOME/wanliz_workspace
     apt_install_any build-essential gcc g++ cmake pkg-config libglvnd-dev 
     
-    if [[ -d $HOME/wanliz_linux_workbench ]]; then
-        echo "- Clone wanliz_linux_workbench  [OK]" >> /tmp/config.log
+    if [[ -d $HOME/wanliz_workspace ]]; then
+        echo "- Clone wanliz_workspace  [OK]" >> /tmp/config.log
     else
-        echo "- Clone wanliz_linux_workbench  [FAILED]" >> /tmp/config.log
+        echo "- Clone wanliz_workspace  [FAILED]" >> /tmp/config.log
     fi
 fi
 
-if [[ -z $(grep wanliz_linux_workbench ~/.bashrc) ]]; then
-    if [[ -d $HOME/wanliz_linux_workbench ]]; then
+if [[ -z $(grep wanliz_workspace ~/.bashrc) ]]; then
+    if [[ -d $HOME/wanliz_workspace ]]; then
         echo "" >> ~/.bashrc
-        echo "source $HOME/wanliz_linux_workbench/bashrc_inc.sh" >> ~/.bashrc
+        echo "source $HOME/wanliz_workspace/bashrc_inc.sh" >> ~/.bashrc
         echo "- Source bashrc_inc.sh in ~/.bashrc  [OK]" >> /tmp/config.log
     fi
 fi
@@ -267,8 +267,8 @@ fi
 
 if [[ ! -f ~/.local/share/fonts/VerilySerifMono.otf ]]; then
     mkdir -p ~/.local/share/fonts
-    if [[ -f ~/wanliz_linux_workbench/resources/VerilySerifMono.otf ]]; then
-        cp ~/wanliz_linux_workbench/resources/VerilySerifMono.otf ~/.local/share/fonts
+    if [[ -f ~/wanliz_workspace/resources/VerilySerifMono.otf ]]; then
+        cp ~/wanliz_workspace/resources/VerilySerifMono.otf ~/.local/share/fonts
     else
         pushd ~/Downloads 
         wget -O verily_serif_mono.zip https://dl.dafont.com/dl/?f=verily_serif_mono &&

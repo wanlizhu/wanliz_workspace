@@ -12,9 +12,9 @@ export P4ROOT=/home/wanliz/$P4CLIENT
 export P4IGNORE=$HOME/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
-export PATH=~/wanliz_linux_workbench:$PATH
-export PATH=~/wanliz_linux_workbench/test_vp:$PATH
-export PATH=~/wanliz_linux_workbench/test_wayland:$PATH
+export PATH=~/wanliz_workspace:$PATH
+export PATH=~/wanliz_workspace/test_vp:$PATH
+export PATH=~/wanliz_workspace/test_wayland:$PATH
 export PATH=~/.local/bin:$PATH
 export PATH=~/nsight_systems/bin:$PATH
 export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
@@ -22,8 +22,8 @@ export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
 export PATH=~/apitrace/bin:$PATH
 export PATH=$HOME:$PATH
 alias  ss="source ~/.bashrc"
-alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
-alias  uu="pushd ~/wanliz_linux_workbench >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
+alias  pp="pushd ~/wanliz_workspace >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
+alias  uu="pushd ~/wanliz_workspace >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
 
 function check_and_install {
     if [[ -z $(which $1) ]]; then
@@ -344,12 +344,18 @@ function flamegraph {
         echo "Failed to generate png diagram"
 }
 
-function sync_folder {
+function sync_folder_from {
     if [[ $(pwd) != $HOME ]]; then
         echo "The current directory is not \$HOME"
         read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
     fi
-    read -p "From: " from
+    
+    if [[ -z $1 ]]; then
+        read -p "From: " from
+    else
+        from=$1
+    fi
+
     for dir in $@; do 
         dir=$(realpath $dir)
         rsync -avz wanliz@$from:$dir/ $dir || echo "Failed to sync $dir from $from" 
@@ -469,7 +475,7 @@ function load_pic_env {
 #            sudo sed -i "/ $host$/d" /etc/hosts
 #            echo "$line" | sudo tee -a /etc/hosts 
 #        fi
-#    done < $HOME/wanliz_linux_workbench/hosts
+#    done < $HOME/wanliz_workspace/hosts
 #}
 
 function check_vnc {
@@ -599,4 +605,14 @@ function sync_root_docs {
 
 function listen_ports {
     sudo ss -tunlp
+}
+
+function sync_workspace_from {
+    if [[ -z $1 ]]; then
+        read -p "From: " from
+    else
+        from=$1
+    fi
+    
+    rsync -avz wanliz@$from:/home/wanliz/workspace/ /home/wanliz_workspace 
 }
