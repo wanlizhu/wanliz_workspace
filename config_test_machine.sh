@@ -336,8 +336,6 @@ EOF
     echo "- Disable access control  [OK]" >> /tmp/config.log
 fi
 
-echo -e '\n\n'
 ip -br a
-echo -e '\n\n'
 cat /tmp/config.log || echo "Nothing to configure!"
 echo "DONE"
