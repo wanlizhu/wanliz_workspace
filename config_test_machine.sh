@@ -10,7 +10,10 @@ fi
 
 rm -rf /tmp/config.log 
 
-export DISPLAY=:0
+if [[ -z $DISPLAY ]]; then
+    export DISPLAY=:0
+fi
+
 if [[ -z $(which vkcube) ]]; then
     sudo apt install -y vulkan-tools
 fi
