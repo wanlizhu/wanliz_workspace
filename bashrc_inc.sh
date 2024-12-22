@@ -344,24 +344,6 @@ function flamegraph {
         echo "Failed to generate png diagram"
 }
 
-function sync_folder_from {
-    if [[ $(pwd) != $HOME ]]; then
-        echo "The current directory is not \$HOME"
-        read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
-    fi
-    
-    if [[ -z $1 ]]; then
-        read -p "From: " from
-    else
-        from=$1
-    fi
-
-    for dir in $@; do 
-        dir=$(realpath $dir)
-        rsync -avz wanliz@$from:$dir/ $dir || echo "Failed to sync $dir from $from" 
-    done
-}
-
 function sshkey {
     read -p "Remote host: " host
     read -p "Remote user: " user
@@ -466,17 +448,6 @@ function load_pic_env {
     source ./setup-env.sh 
     popd >/dev/null 
 }
-
-#function sync_hosts {
-#    while IFS= read -r line; do
-#        line=$(echo "$line" | sed 's/[[:space:]]*$//')
-#        if ! grep -Fxq "$line" /etc/hosts; then
-#            host=$(echo "$line" | awk '{print $2}')
-#            sudo sed -i "/ $host$/d" /etc/hosts
-#            echo "$line" | sudo tee -a /etc/hosts 
-#        fi
-#    done < $HOME/wanliz_workspace/hosts
-#}
 
 function check_vnc {
     sudo lsof -i :5900-5909
@@ -607,12 +578,15 @@ function listen_ports {
     sudo ss -tunlp
 }
 
-function sync_workspace_from {
-    if [[ -z $1 ]]; then
-        read -p "From: " from
+function sync_workspace {
+    echo "[1] Sync from local to remote"
+    echo "[2] Sync from remote to local"
+    read -e -i 1 -p "Select: " choice
+    read -p "Remote host: " remote
+
+    if [[ $choice == 1 ]]; then
+        rsync -avz /home/wanliz/wanliz_workspace/ wanliz@$remote:/home/wanliz/wanliz_workspace
     else
-        from=$1
-    fi
-    
-    rsync -avz wanliz@$from:/home/wanliz/workspace/ /home/wanliz_workspace 
+        rsync -avz wanliz@$remote:/home/wanliz/wanliz_workspace/ /home/wanliz/wanliz_workspace
+    fi 
 }
