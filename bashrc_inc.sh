@@ -5,20 +5,25 @@ elif [[ $HOSTNAME == scc-03-3062-test ]]; then
 elif [[ $HOSTNAME == scc-03-3062-wfh  ]]; then
     export P4CLIENT=wanliz_p4sw_wfh
 fi
+if [[ -z $DISPLAY ]]; then
+    export DISPLAY=:0
+fi  
 export P4ROOT=/home/wanliz/$P4CLIENT
 export P4IGNORE=$HOME/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
-export PATH=~/wanliz_linux_workbench:$PATH
-export PATH=~/wanliz_linux_workbench/test_vp:$PATH
+export PATH=~/wanliz_workspace:$PATH
+export PATH=~/wanliz_workspace/test_vp:$PATH
+export PATH=~/wanliz_workspace/test_wayland:$PATH
 export PATH=~/.local/bin:$PATH
-export PATH=~/p4v/bin:$PATH
 export PATH=~/nsight_systems/bin:$PATH
 export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
 export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
+export PATH=~/apitrace/bin:$PATH
+export PATH=$HOME:$PATH
 alias  ss="source ~/.bashrc"
-alias  pp="pushd ~/wanliz_linux_workbench >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
-alias  uu="pushd ~/wanliz_linux_workbench >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
+alias  pp="pushd ~/wanliz_workspace >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
+alias  uu="pushd ~/wanliz_workspace >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
 
 function check_and_install {
     if [[ -z $(which $1) ]]; then
@@ -27,23 +32,23 @@ function check_and_install {
 }
 
 function apt_install_any {
-    rm -rf /tmp/apt-failed /tmp/aptitude-failed
+    rm -rf /tmp/apt_failed /tmp/aptitude_failed
     for pkg in "$@"; do 
-        sudo apt install -y $pkg || echo "$pkg" >> /tmp/apt-failed
+        sudo apt install -y $pkg || echo "$pkg" >> /tmp/apt_failed
     done
-    if [[ -f /tmp/apt-failed ]]; then
-        echo "Failed to install $(wc -l /tmp/apt-failed) packages using apt: "
-        cat /tmp/apt-failed
+    if [[ -f /tmp/apt_failed ]]; then
+        echo "Failed to install $(wc -l /tmp/apt_failed) packages using apt: "
+        cat /tmp/apt_failed
         
         read -e -i "yes" -p "Retry with aptitude? (yes/no): " ans
         if [[ $ans == yes ]]; then
             while IFS= read -r pkg; do 
-                sudo aptitude install $pkg || echo "$pkg" >> /tmp/aptitude-failed
-            done < /tmp/apt-failed 
+                sudo aptitude install $pkg || echo "$pkg" >> /tmp/aptitude_failed
+            done < /tmp/apt_failed 
             
-            if [[ -f /tmp/aptitude-failed ]]; then
-                echo "Failed to install $(wc -l /tmp/aptitude-failed) packages using aptitude: "
-                cat /tmp/aptitude-failed
+            if [[ -f /tmp/aptitude_failed ]]; then
+                echo "Failed to install $(wc -l /tmp/aptitude_failed) packages using aptitude: "
+                cat /tmp/aptitude_failed
                 return -1
             fi
         fi
@@ -57,6 +62,19 @@ function chd {
         egl) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/egl/build ;;
         *) cd $P4ROOT/dev/gpu_drv/bugfix_main ;;
     esac
+}
+
+function p4sync {
+    if [[ ! -d $P4ROOT ]]; then
+        read -e -i "yes" -p "Checkout perforce client $P4CLIENT? : " checkout
+        if [[ $checkout == yes ]]; then
+            mkdir -p $P4ROOT
+            cd $P4ROOT
+            p4 sync -f //sw/... &&
+                echo "Sync $P4CLIENT (forced)  [OK]" ||
+                echo "Sync $P4CLIENT (forced)  [FAILED]"
+        fi
+    fi
 }
 
 function get_src_version {
@@ -178,6 +196,8 @@ function install_driver {
         read -e -i "yes" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
         if [[ $ans == yes ]]; then
             sudo nvidia-uninstall 
+            sudo apt remove -y --purge '^nvidia-.*'
+            sudo apt autoremove -y
         fi
 
 	    chmod +x $driver 
@@ -304,11 +324,9 @@ function perfhelp {
 function flamegraph {
     if [[ ! -f ~/Flamegraph/flamegraph.pl ]]; then
         git clone --depth 1 https://github.com/brendangregg/FlameGraph.git $HOME/Flamegraph || return -1
-        if [[ -z $(which pip) ]]; then
-            apt_install_any python3-pip
-            apt_install_any graphviz
-        fi
-        pip install gprof2dot 
+        sudo apt install -y python3-pip
+        sudo apt install -y graphviz
+        pip install --break-system-packages gprof2dot 
     fi
     
     midfile=/tmp/$(basename $1)
@@ -318,24 +336,12 @@ function flamegraph {
     sudo ~/Flamegraph/stackcollapse-perf.pl $midfile.stage1 >$midfile.stage2 && 
     sudo ~/Flamegraph/stackcollapse-recursive.pl $midfile.stage2 >$midfile.stage3 && 
     sudo ~/Flamegraph/flamegraph.pl $midfile.stage3 >$1.svg && 
-    echo "Generated $1.svg" ||
-    echo "Failed to generate svg flamegraph" 
+        echo "Generated $1.svg" ||
+        echo "Failed to generate svg flamegraph" 
 
     sudo perf script --no-inline --force --input=$1 | c++filt | gprof2dot -f perf | dot -Tpng -o $1.png && 
-    echo "Generated $1.png" || 
-    echo "Failed to generate png diagram"
-}
-
-function sync_folder {
-    if [[ $(pwd) != $HOME ]]; then
-        echo "The current directory is not \$HOME"
-        read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
-    fi
-    read -p "From: " from
-    for dir in $@; do 
-        dir=$(realpath $dir)
-        rsync -avz wanliz@$from:$dir/ $dir || echo "Failed to sync $dir from $from" 
-    done
+        echo "Generated $1.png" || 
+        echo "Failed to generate png diagram"
 }
 
 function sshkey {
@@ -372,17 +378,6 @@ function amdhelp {
     echo "Latest AMD driver: https://repo.radeon.com/amdgpu-install/latest/ubuntu/jammy/"
 }
 
-function install_p4 {
-    sudo apt install -y helix-p4d || {
-        if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
-            wget -qO - https://package.perforce.com/perforce.pubkey | gpg --dearmor | sudo tee /usr/share/keyrings/perforce.gpg >/dev/null
-            echo "deb [signed-by=/usr/share/keyrings/perforce.gpg] https://package.perforce.com/apt/ubuntu $(lsb_release -c | cut -f2) release" | sudo tee -a /etc/apt/sources.list
-            sudo apt update
-            sudo apt install -y helix-p4d
-        fi
-    }
-}
-
 function xdgst {
     echo $XDG_SESSION_TYPE
 }
@@ -409,9 +404,10 @@ function dvsbuild {
 }
 
 function install_viewperf {
-    pushd $HOME >/dev/null
+    pushd $HOME/Downloads >/dev/null
     wget http://linuxqa.nvidia.com/people/nvtest/pynv_files/viewperf2020v3/viewperf2020v3.tar.gz || exit -1
     tar -zxvf viewperf2020v3.tar.gz
+    mv viewperf2020 $HOME
     popd >/dev/null
 }
 
@@ -433,20 +429,17 @@ function start_plain_x {
     if [[ -z $(grep anybody /etc/X11/Xwrapper.config) ]]; then
         sudo sed -i 's/console/anybody/g' /etc/X11/Xwrapper.config
     fi
+
     if [[ -z $(grep 'needs_root_rights=no' /etc/X11/Xwrapper.config) ]]; then
         echo -e '\nneeds_root_rights=yes' | sudo tee -a /etc/X11/Xwrapper.config >/dev/null
     fi
+
+    if [[ ! -z $(pidof Xorg) ]]; then
+        pkill Xorg
+    fi
     
     sudo systemctl stop gdm
-    X :0 &
-    XPID=$!
-    export DISPLAY=:0
-
-    sleep 1
-    if [[ -d /proc/$XPID ]]; then
-        echo "X $XPID is running in the background"
-        echo "DISPLAY $DISPLAY is active"
-    fi
+    X :0 
 }
 
 function load_pic_env {
@@ -456,23 +449,20 @@ function load_pic_env {
     popd >/dev/null 
 }
 
-function sync_hosts {
-    while IFS= read -r line; do
-        line=$(echo "$line" | sed 's/[[:space:]]*$//')
-        if ! grep -Fxq "$line" /etc/hosts; then
-            host=$(echo "$line" | awk '{print $2}')
-            sudo sed -i "/ $host$/d" /etc/hosts
-            echo "$line" | sudo tee -a /etc/hosts 
-        fi
-    done < $HOME/wanliz_linux_workbench/hosts
-}
-
 function check_vnc {
     sudo lsof -i :5900-5909
 }
 
 function restart_vnc {
     sudo systemctl restart x11vnc.service
+}
+
+function uninstall_vnc {
+    sudo systemctl stop x11vnc.service
+    sudo systemctl disable x11vnc.service
+    sudo rm -rf /etc/systemd/system/x11vnc.service
+    sudo systemctl daemon-reload
+    sudo systemctl reset-failed
 }
 
 function load_vksdk {
@@ -489,46 +479,118 @@ function load_vksdk {
     echo $VULKAN_SDK
 }
 
-function install_perf {
-    echo TODO
+function install_nsys {
+    if [[ -d ~/nsight_systems ]]; then
+        echo "Nsight systems has already installed"
+        read -e -i "no" -p "Reinstall? (yes/no): " ans
+        if [[ $ans == no ]]; then
+            return 
+        fi
+    fi
+
+    pushd ~/Downloads
+    if [[ ! -f nsight_systems-linux-x86_64-2024.6.2.225.tar.gz ]]; then
+        read -p "NVIDIA account password: " passwd
+        wget https://wanliz:$passwd@urm.nvidia.com/artifactory/swdt-nsys-generic/ctk/12.8/2024.6.2.225/nsight_systems-linux-x86_64-2024.6.2.225.tar.gz || return -1
+    fi
+    tar -zxvf nsight_systems-linux-x86_64-2024.6.2.225.tar.gz
+    rm -rf $HOME/nsight_systems
+    mv nsight_systems $HOME 
+    popd
+
+    sudo apt install -y libxcb-cursor0
+    sudo apt install -y libxcb-cursor-dev
+
+    sudo mkdir -p /root/.nsightsystems/Projects 
+    sudo ln -sf /root/.nsightsystems/Projects ~/nsight_systems_projects
+    sudo chmod -R 777 /root/.nsightsystems
 }
 
-function install_sysprof {
-    pushd ~/Downloads >/dev/null
-    if [[ -z $1 ]]; then
-        echo "Ubuntu 22.04 -> 3.44.0"
-        echo "Ubuntu 24.04 -> 46.0"
-        read -e -i "3.44.0" -p "Install sysprof version: " version
+function install_ngfx {
+    if [[ -d ~/nvidia-nomad-internal ]]; then
+        echo "Nsight graphics has already installed"
+        read -e -i "no" -p "Reinstall? (yes/no): " ans
+        if [[ $ans == no ]]; then
+            return 
+        fi
+    fi
+
+    if [[ ! -d /mnt/10.126.133.25/share || -z $(ls -A /mnt/10.126.133.25/share 2>&1) ]]; then
+        if [[ -z $(dpkg -l | grep cifs-utils) ]]; then
+            sudo apt install -y cifs-utils
+        fi
+        sudo mkdir -p /mnt/10.126.133.25/share
+        sudo mount.cifs -o user=wanliz //10.126.133.25/share /mnt/10.126.133.25/share || return -1
+        sudo df -h /mnt/10.126.133.25/share
+    fi
+    
+    pushd ~/Downloads 
+    cp /mnt/10.126.133.25/share/Devtools/NomadBuilds/latest/Internal/linux/*.tar.gz . || return -1
+    tar -zxvf NVIDIA_Nsight_Graphics_*-internal.tar.gz
+    mv nvidia-nomad-internal-Linux.linux nvidia-nomad-internal
+    rm -rf $HOME/nvidia-nomad-internal
+    mv nvidia-nomad-internal $HOME
+    popd
+
+    sudo apt install -y libxcb-cursor0
+    sudo apt install -y libxcb-cursor-dev
+
+    sudo mkdir -p /root/Documents
+    sudo ln -sf /root/Documents ~/rootDocuments
+    sudo chmod -R 777 /root/Documents
+
+    if [[ ! -f /etc/modprobe.d/nvidia-restrict-profiling-to-admin-users.conf ]]; then
+        echo 'options nvidia "NVreg_RestrictProfilingToAdminUsers=0"' | sudo tee /etc/modprobe.d/nvidia-restrict-profiling-to-admin-users.conf
+        sudo update-initramfs -u -k all
+        echo "A reboot is required for Nsight graphics"
+    fi
+}
+
+function install_apitrace {
+    if [[ -z $(which bzip2) ]]; then
+        sudo apt install -y bzip2
+    fi
+
+    pushd ~/Downloads
+    wget https://github.com/apitrace/apitrace/releases/download/12.0/apitrace-12.0-Linux.tar.bz2 || return -1
+    bzip2 -fdk apitrace-12.0-Linux.tar.bz2
+    tar -xvf apitrace-12.0-Linux.tar
+    mv apitrace-12.0-Linux apitrace
+    mv apitrace $HOME
+    popd
+}
+
+function sync_root_docs {
+    if [[ ! -d ~/Documents/root_documents_sync ]]; then
+        mkdir -p ~/Documents/root_documents_sync
+    fi
+    sudo rsync -a --delete --force /root/Documents/ ~/Documents/root_documents_sync
+
+    if [[ ! -d ~/Documents/root_nsightsystems_sync ]]; then
+        mkdir -p ~/Documents/root_nsightsystems_sync
+    fi
+    sudo rsync -a --delete --force /root/.nsightsystems/ ~/Documents/root_nsightsystems_sync
+    
+    sudo chown -R $USER:$USER ~/Documents
+}
+
+function listen_ports {
+    sudo ss -tunlp
+}
+
+function sync_workspace {
+    echo "[1] Sync from local to remote"
+    echo "[2] Sync from remote to local"
+    read -e -i "1" -p "Mode: " mode
+    read -p "Remote host: " remote
+
+    if [[ $mode == 1 ]]; then
+        if [[ $(uname) == Darwin ]]; then
+            rsync -avz /Users/wanliz/wanliz_workspace/ wanliz@$remote:/home/wanliz/wanliz_workspace
+        else
+            rsync -avz /home/wanliz/wanliz_workspace/ wanliz@$remote:/home/wanliz/wanliz_workspace
+        fi
     else
-        version=$1
-    fi
-    if [[ ! -d $HOME/Downloads/sysprof-$version ]]; then
-        wget https://gitlab.gnome.org/GNOME/sysprof/-/archive/$version/sysprof-$version.tar.gz || return -1
-        tar -zxvf sysprof-$version.tar.gz
-    fi
-   
-    apt_install_any gcc g++ cmake pkg-config libglib2.0-dev libgtk-3-dev libgtk-4-dev libadwaita-1-dev meson libsystemd-dev libpolkit-agent-1-0 libpolkit-agent-1-dev libpolkit-agent-1-dev libpolkit-gobject-1-dev libunwind-dev libdex-1-1 libdex-dev libjson-glib-1.0-0 libjson-glib-dev gettext libpanel-1-1 libpanel-dev itstool gobject-introspection valac
-
-    cd sysprof-$version &&
-    meson --prefix=/usr build &&
-    cd build &&
-    ninja &&
-    sudo ninja install &&
-    which sysprof
-
-    popd >/dev/null  
-}
-
-function enable_wayland {
-    if [[ -z $(which nvidia-smi) ]]; then
-        echo "Install nvidia driver first"
-        return -1
-    fi
-    if [[ -z $(sudo grep '^WaylandEnable=true' /etc/gdm3/custom.conf) ]]; then
-        echo "- Edit /etc/gdm3/custom.conf to add WaylandEnable=true"
-    fi
-    if [[ $(sudo cat /sys/module/nvidia_drm/parameters/modeset) != 'Y' ]]; then
-        echo "options nvidia_drm modeset=1" | sudo tee /etc/modprobe.d/nvidia-modeset.conf
-        echo "A reboot is required"
-    fi
+        rsync -avz wanliz@$remote:/home/wanliz/wanliz_workspace/ /home/wanliz/wanliz_workspace
+    fi 
 }
