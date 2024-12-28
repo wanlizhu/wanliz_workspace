@@ -341,5 +341,8 @@ EOF
     echo "- Disable access control  [OK]" >> /tmp/config.log
 fi
 
+# TODO - show grub menu
+
 ip -br a
+mokutil --sb-state 
 cat /tmp/config.log || echo "Nothing to configure!"
