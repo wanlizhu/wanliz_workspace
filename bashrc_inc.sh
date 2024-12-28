@@ -195,11 +195,15 @@ function install_driver {
         # Disable nouveau
         if [[ ! -z $(lsmod | grep nouveau) ]]; then
             if [[ -z $(grep -r "nouveau" /etc/modprobe.d/) ]]; then
-                echo "blacklist nouveau" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
-                echo "options nouveau modeset=0" | sudo tee -a /etc/modprobe.d/blacklist-nouveau.conf
-                echo "Nouveau is disabled since next boot"
-                echo "Reboot and try again"
-                return -1
+                read -e -i "disable" -p "Nouveau has loaded, disable or ignore it? (disable/ignore): " ans
+                if [[ $ans == disable ]]; then
+                    echo "blacklist nouveau" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
+                    echo "options nouveau modeset=0" | sudo tee -a /etc/modprobe.d/blacklist-nouveau.conf
+                    sudo update-initramfs -u
+                    echo "Nouveau is disabled since next boot"
+                    echo "Reboot and try again"
+                    return -1
+                fi
             fi
         fi
 
@@ -217,8 +221,10 @@ function install_driver {
 
 	    chmod +x $driver 
         sudo $driver && 
-        sudo systemctl isolate graphical ||
-        echo "Failed to install NVIDIA driver"
+        sudo systemctl isolate graphical || {
+            echo "Failed to install NVIDIA driver"
+            cat /var/log/nvidia-installer.log
+        }
     fi
 }
 
