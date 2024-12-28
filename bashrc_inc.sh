@@ -16,6 +16,7 @@ export PATH=~/wanliz_workspace:$PATH
 export PATH=~/wanliz_workspace/test_vp:$PATH
 export PATH=~/wanliz_workspace/test_wayland:$PATH
 export PATH=~/.local/bin:$PATH
+export PATH=~/viewperf2020:$PATH
 export PATH=~/nsight_systems/bin:$PATH
 export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
 export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
