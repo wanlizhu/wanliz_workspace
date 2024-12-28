@@ -45,6 +45,7 @@ check_and_install htop htop
 check_and_install vkcube vulkan-tools
 check_and_install ifconfig net-tools
 check_and_install unzip unzip
+check_and_install libglfw3 libglfw3-dev
 
 function apt_install_any {
     if [[ -z $(which aptitude) ]]; then
