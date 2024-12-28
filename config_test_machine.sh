@@ -4,6 +4,7 @@ if [[ $1 != local ]]; then
         read -e -i "$USER" -p "Run as user: " user
         scp $HOME/wanliz_workspace/config_test_machine.sh $user@$machine:/tmp/config_test_machine.sh
         ssh -t $user@$machine 'bash /tmp/config_test_machine.sh local'
+        echo "Configuration finished on $machine"
         exit
     fi
 fi
@@ -12,6 +13,18 @@ rm -rf /tmp/config.log
 
 if [[ -z $DISPLAY ]]; then
     export DISPLAY=:0
+    echo "export DISPLAY=:0"
+fi
+
+if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
+    echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
+    sudo cat /etc/sudoers | tail -1
+    echo "- sudo with nopasswd  [OK]" >> /tmp/config.log
+fi
+
+read -e -i "yes" -p "Update apt sources? (yes/no): " apt_update
+if [[ $apt_update == yes ]]; then
+    sudo apt update
 fi
 
 if [[ -z $(which vkcube) ]]; then
@@ -61,14 +74,6 @@ function apt_install_any {
         fi
     fi
 }
-
-if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
-    echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
-    sudo cat /etc/sudoers | tail -1
-    echo "- sudo with nopasswd  [OK]" >> /tmp/config.log
-fi
-
-sudo apt update
 
 if [[ -z $(which perf) ]]; then
     sudo apt install -y linux-tools-common linux-tools-generic
@@ -338,4 +343,3 @@ fi
 
 ip -br a
 cat /tmp/config.log || echo "Nothing to configure!"
-echo "DONE"
