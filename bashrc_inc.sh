@@ -193,7 +193,7 @@ function install_driver {
 
         # TODO - gcc-12
         # Disable nouveau
-        if [[ ! -z $(lspci -vnn | grep -i VGA -A 12 | grep nouveau) ]]; then
+        if [[ ! -z $(lsmod | grep nouveau) ]]; then
             if [[ -z $(grep -r "nouveau" /etc/modprobe.d/) ]]; then
                 echo "blacklist nouveau" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
                 echo "options nouveau modeset=0" | sudo tee -a /etc/modprobe.d/blacklist-nouveau.conf
