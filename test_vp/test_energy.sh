@@ -1,5 +1,5 @@
 if [[ ! -f ./viewperf/bin/viewperf ]]; then
-    cd ~/viewperf2020 
+    pushd ~/viewperf2020 || exit 1
 fi
 
 echo "- 1920x1080"
