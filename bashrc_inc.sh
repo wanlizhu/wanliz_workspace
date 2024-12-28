@@ -186,7 +186,10 @@ function install_driver {
             return -1
         fi
 
-        apt_install_any pkg-config gcc gcc-12 g++ libglvnd-dev
+        read -e -i "no" -p "Install dependencies? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            apt_install_any pkg-config gcc gcc-12 g++ libglvnd-dev
+        fi
 
         # TODO - gcc-12
         # Disable nouveau
