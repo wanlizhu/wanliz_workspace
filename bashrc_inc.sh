@@ -212,7 +212,7 @@ function install_driver {
         read -p "Press [ENTER] to continue: " _
         sudo systemctl isolate multi-user
         
-        read -e -i "yes" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
+        read -e -i "no" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
         if [[ $ans == yes ]]; then
             sudo nvidia-uninstall 
             sudo apt remove -y --purge '^nvidia-.*'
