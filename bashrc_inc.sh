@@ -606,7 +606,7 @@ function install_kernel {
     fi
 
     echo "List all available GRUB menu entries:"
-    sudo grep 'menuentry ' /boot/grub/grub.cfg | grep "Ubuntu, " | cut -d "'" -f2 | nl -v0
+    sudo grep 'menuentry ' /boot/grub/grub.cfg | cut -d "'" -f2 | nl -v0
     read -p "Kernel index: " index
     
     sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"1>$index\"" /etc/default/grub
