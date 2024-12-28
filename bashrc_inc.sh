@@ -603,6 +603,8 @@ function install_kernel {
         sudo apt install -y linux-image-$version-$patch-generic 
         sudo apt install -y linux-modules-$version-$patch-generic
         sudo apt install -y linux-headers-$version-$patch-generic
+    else
+        echo "Kernel $version is not found"
     fi
 
     echo "List all available GRUB menu entries:"
@@ -611,7 +613,7 @@ function install_kernel {
     read -e -i "yes" -p "Configure grub? (yes/no): " config
     if [[ $config == yes ]]; then
         read -p "Kernel index: " index
-        sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"$index\"" /etc/default/grub
+        sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=$index" /etc/default/grub
         sudo update-grub
         echo "Ready to reboot now"
     fi
