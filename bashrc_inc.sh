@@ -603,9 +603,6 @@ function install_kernel {
         sudo apt install -y linux-image-$version-$patch-generic 
         sudo apt install -y linux-modules-$version-$patch-generic
         sudo apt install -y linux-headers-$version-$patch-generic
-    else
-        echo "Linux kernel $version is not found"
-        return -1
     fi
 
     echo "List all available GRUB menu entries:"
