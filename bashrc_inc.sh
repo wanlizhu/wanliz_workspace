@@ -610,18 +610,9 @@ function install_kernel {
 
     echo "List all available GRUB menu entries:"
     sudo grep 'menuentry ' /boot/grub/grub.cfg | grep "Ubuntu, " | cut -d "'" -f2 | nl -v0
-
-    echo "[1] Set a kernel index for the NEXT boot (default kernel remains unchanged)"
-    echo "[2] Set a kenrel index for the DEFAULT kernel"
-    read -e -i "1" -p "Select: " mode
     read -p "Kernel index: " index
     
-    if [[ $mode == 1 ]]; then
-        sudo grub-reboot $index 
-        echo "Ready to reboot now"
-    elif [[ $mode == 2 ]]; then
-        sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"1>$index\"" /etc/default/grub
-        sudo update-grub
-        echo "Ready to reboot now"
-    fi
+    sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"1>$index\"" /etc/default/grub
+    sudo update-grub
+    echo "Ready to reboot now"
 }
