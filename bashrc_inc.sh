@@ -594,3 +594,34 @@ function sync_workspace {
         rsync -avz wanliz@$remote:/home/wanliz/wanliz_workspace/ /home/wanliz/wanliz_workspace
     fi 
 }
+
+function install_kernel {
+    read -p "Linux kernel version: " version
+    if [[ ! -z $(apt search linux-image-$version | grep -E "linux-image-$version-.*-generic") ]]; then
+        apt search linux-image-$version | grep -E "linux-image-$version-.*-generic"
+        read -p "Patch number: " patch
+        sudo apt install -y linux-image-$version-$patch-generic 
+        sudo apt install -y linux-modules-$version-$patch-generic
+        sudo apt install -y linux-headers-$version-$patch-generic
+    else
+        echo "Linux kernel $version is not found"
+        return -1
+    fi
+
+    echo "List all available GRUB menu entries:"
+    sudo grep 'menuentry ' /boot/grub/grub.cfg | grep "Ubuntu, " | cut -d "'" -f2 | nl -v0
+
+    echo "[1] Set a kernel index for the NEXT boot (default kernel remains unchanged)"
+    echo "[2] Set a kenrel index for the DEFAULT kernel"
+    read -e -i "1" -p "Select: " mode
+    read -p "Kernel index: " index
+    
+    if [[ $mode == 1 ]]; then
+        sudo grub-reboot $index 
+        echo "Ready to reboot now"
+    elif [[ $mode == 2 ]]; then
+        sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"1>$index\"" /etc/default/grub
+        sudo update-grub
+        echo "Ready to reboot now"
+    fi
+}
