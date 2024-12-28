@@ -611,7 +611,7 @@ function install_kernel {
     read -e -i "yes" -p "Configure grub? (yes/no): " config
     if [[ $config == yes ]]; then
         read -p "Kernel index: " index
-        sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"1>$index\"" /etc/default/grub
+        sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"$index\"" /etc/default/grub
         sudo update-grub
         echo "Ready to reboot now"
     fi
