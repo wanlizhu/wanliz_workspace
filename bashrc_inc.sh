@@ -607,9 +607,12 @@ function install_kernel {
 
     echo "List all available GRUB menu entries:"
     sudo grep 'menuentry ' /boot/grub/grub.cfg | cut -d "'" -f2 | nl -v0
-    read -p "Kernel index: " index
-    
-    sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"1>$index\"" /etc/default/grub
-    sudo update-grub
-    echo "Ready to reboot now"
+
+    read -e -i "yes" -p "Configure grub? (yes/no): " config
+    if [[ $config == yes ]]; then
+        read -p "Kernel index: " index
+        sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"1>$index\"" /etc/default/grub
+        sudo update-grub
+        echo "Ready to reboot now"
+    fi
 }
