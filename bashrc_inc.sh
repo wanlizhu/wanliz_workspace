@@ -183,10 +183,22 @@ function install_driver {
     else 
         if [[ $XDG_SESSION_TYPE != tty ]]; then
             echo "Please run through a tty or ssh session"
-            return
+            return -1
         fi
 
-        apt_install_any pkg-config gcc g++ libglvnd-dev
+        apt_install_any pkg-config gcc gcc-12 g++ libglvnd-dev
+
+        # TODO - gcc-12
+        # Disable nouveau
+        if [[ ! -z $(lspci -vnn | grep -i VGA -A 12 | grep nouveau) ]]; then
+            if [[ -z $(grep -r "nouveau" /etc/modprobe.d/) ]]; then
+                echo "blacklist nouveau" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
+                echo "options nouveau modeset=0" | sudo tee -a /etc/modprobe.d/blacklist-nouveau.conf
+                echo "Nouveau is disabled since next boot"
+                echo "Reboot and try again"
+                return -1
+            fi
+        fi
 
         driver=$(realpath $1)
         echo "NVIDIA driver: $driver"
