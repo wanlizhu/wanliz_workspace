@@ -346,4 +346,10 @@ fi
 
 ip -br a
 mokutil --sb-state 
-cat /tmp/config.log || echo "Nothing to configure!"
+cat /tmp/config.log && {
+    echo "Things to do post config: "
+    echo "    - Install nvidia driver"
+    echo "    - install viewperf (if needed)"
+    echo "    - Install Nsight graphics/systems"
+    echo "    - Install PIC-X"
+} || echo "Nothing to configure!"
