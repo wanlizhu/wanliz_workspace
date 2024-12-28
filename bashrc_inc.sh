@@ -629,17 +629,15 @@ function install_kernel {
     fi
 
     echo "List all available GRUB menu entries:"
-    sudo grep 'menuentry ' /boot/grub/grub.cfg | cut -d "'" -f2 | nl -v0
+    sudo grep 'menuentry ' /boot/grub/grub.cfg | cut -d "'" -f2 | nl -v1 | tee /tmp/menuentry
 
     read -e -i "yes" -p "Configure grub? (yes/no): " config
     if [[ $config == yes ]]; then
-        # TODO - use text instead of index
-        echo TODO
-        return -1
-        
         read -p "Kernel index: " index
-        sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=$index" /etc/default/grub
+        kernelname=$(awk "NR==$index" /tmp/menuentry | cut -f2-)
+        sudo sed -i "/^GRUB_DEFAULT=/c\GRUB_DEFAULT=\"Advanced options for Ubuntu>$kernelname\"" /etc/default/grub
         sudo update-grub
+        sudo cat /etc/default/grub | grep "GRUB_DEFAULT="
         echo "Ready to reboot now"
     fi
 }
