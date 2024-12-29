@@ -196,7 +196,7 @@ function install_driver {
         # Disable nouveau
         if [[ ! -z $(lsmod | grep nouveau) ]]; then
             if [[ -z $(grep -r "nouveau" /etc/modprobe.d/) ]]; then
-                read -e -i "disable" -p "Nouveau has loaded, disable or ignore it? (disable/ignore): " ans
+                read -e -i "ignore" -p "Nouveau has loaded, disable or ignore it? (disable/ignore): " ans
                 if [[ $ans == disable ]]; then
                     echo "blacklist nouveau" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
                     echo "options nouveau modeset=0" | sudo tee -a /etc/modprobe.d/blacklist-nouveau.conf
