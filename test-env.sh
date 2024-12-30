@@ -731,7 +731,7 @@ function pull-dvs-source {
 }
 
 function gdb-attach-xorg {
-    sudo gdb $(which Xorg) $(pgrep Xorg)
+    sudo gdb -ex "handle SIGPIPE nostop noprint pass" -ex "cont" $(which Xorg) $(pgrep Xorg)
 }
 
 ###########################################################
