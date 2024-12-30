@@ -134,7 +134,7 @@ function install-driver {
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D"
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D"
-    elif [[ $1 =~ '^[0-9]+\.[0-9]+$' ]]; then
+    elif [[ $1 =~ ^[0-9]+\.[0-9]+$ ]]; then
         echo "Available build types for $1: release, debug and develop"
         read -e -i "release" -p "Build type: " buildtype
         pushd ~/Downloads 
