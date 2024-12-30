@@ -22,6 +22,8 @@ export PATH=$HOME/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
 export PATH=$HOME/PIC-X_Package/SinglePassCapture:$PATH
 export PATH=$HOME/apitrace/bin:$PATH
 export PATH=$HOME:$PATH
+export __GL_DEBUG_BYPASS_ASSERT=c 
+ulimit -c unlimited
 alias  ss="source ~/.bashrc"
 alias  pp="pushd ~/wanliz_workspace >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
 alias  uu="pushd ~/wanliz_workspace >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
@@ -194,7 +196,7 @@ function install-driver {
 
         read -e -i "no" -p "Install dependencies? (yes/no): " ans
         if [[ $ans == yes ]]; then
-            apt_install_any pkg-config gcc gcc-12 g++ libglvnd-dev
+            apt_install_any pkg-config gcc gcc-12 g++ libglvnd-dev  
         fi
 
         # TODO - gcc-12
