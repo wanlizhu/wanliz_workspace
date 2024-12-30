@@ -431,11 +431,35 @@ function dvsbuild {
     $P4ROOT/automation/dvs/dvsbuild/dvsbuild.pl -c $1 
 }
 
+function download-big-file {
+    if [[ -z $(which aria2c) ]]; then
+        sudo apt install -y aria2
+    fi
+    time aria2c -c -x 16 -d $HOME/Downloads -o $(basename $1) --check-certificate=false $1 || return -1
+}
+
+function unzip-big-file {
+    if [[ -z $(which pigz) ]]; then
+        sudo apt install -y pigz
+    fi
+
+    if [[ -z $(which pv) ]]; then
+        sudo apt install -y pv
+    fi
+
+    if [[ $1 == *".tar.gz" ]]; then
+        pigz -dc $1 | pv | tar xf -
+    else
+        # TODO: supports more formats 
+        return -1
+    fi
+}
+
 # TODO: Use multithreads
 function install-viewperf {
     pushd $HOME/Downloads >/dev/null
-    wget http://linuxqa.nvidia.com/people/nvtest/pynv_files/viewperf2020v3/viewperf2020v3.tar.gz || exit -1
-    tar -zxvf viewperf2020v3.tar.gz
+    download-big-file http://linuxqa.nvidia.com/people/nvtest/pynv_files/viewperf2020v3/viewperf2020v3.tar.gz || return -1
+    unzip-big-file viewperf2020v3.tar.gz
     mv viewperf2020 $HOME
     popd >/dev/null
 }
@@ -657,7 +681,7 @@ if [[ $1 == config ]]; then
         scp $HOME/wanliz_workspace/test-env.sh $user@$machine:/tmp/test-env.sh
         ssh -t $user@$machine 'bash /tmp/test-env.sh config'
         echo "Configuration finished on $machine"
-        exit
+        return
     fi
 
     rm -rf /tmp/config.log 
