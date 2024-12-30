@@ -727,6 +727,7 @@ function pull-dvs-source {
     p4 client -o wanliz_temp_client
     P4CLIENT=wanliz_temp_client P4ROOT=/dvs/p4/build/sw p4 -I sync -q -f //sw/... 
     p4 client -d wanliz_temp_client
+    du -sh /dvs/p4/build/sw
 }
 
 ###########################################################
