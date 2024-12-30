@@ -719,6 +719,10 @@ function pull-dvs-source {
         fi
     done 
 
+    if [[ $(p4 login -s) == *"(P4PASSWD) invalid or unset"* ]]; then
+        p4 login -a
+    fi
+
     p4 client -i < /tmp/wanliz_temp_client.txt || return -1
     p4 client -o wanliz_temp_client
     P4CLIENT=wanliz_temp_client P4ROOT=/dvs/p4/build/sw p4 -I sync -q -f //sw/... 
