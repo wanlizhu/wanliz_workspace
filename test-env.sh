@@ -676,6 +676,80 @@ function install-kernel {
     fi
 }
 
+function pull-dvs-source {
+    echo "Installed Nvidia MOD version is $(nvmod-version)"
+    read -e -i "$(nvmod-version | cut -d'.' -f1)" -p "Pull dvs source at version: " version
+
+    if [[ -d /dvs ]]; then
+        read -e -i "no" -p "Delete existing /dvs folder? (yes/no): " ans 
+        if [[ $ans == yes ]]; then
+            sudo rm -rf /dvs
+        fi
+    fi
+    
+    echo "[1] drivers/OpenGL"
+    echo "[2] drivers/OpenGL/glcore"
+    read -e -i "1" -p "Select folders to pull: " folders
+
+    if [[ -z $folders ]]; then
+        return -1
+    fi
+
+    if [[ ! -d /dvs/p4/build/sw ]]; then
+        sudo mkdir -p /dvs/p4/build/sw
+        sudo chown -R $USER /dvs 
+        sudo chmod -R 777 /dvs 
+    fi
+
+    echo "Client: wanliz_temp_client" > /tmp/wanliz_temp_client.txt
+    echo "Owner: wanliz" >> /tmp/wanliz_temp_client.txt
+    echo "Host: $HOSTNAME" >> /tmp/wanliz_temp_client.txt
+    echo "Root: /dvs/p4/build/sw" >> /tmp/wanliz_temp_client.txt
+    echo "Options: noallwrite noclobber nocompress unlocked nomodtime rmdir" >> /tmp/wanliz_temp_client.txt
+    echo "View:" >> /tmp/wanliz_temp_client.txt
+
+    for folder in $folders; do 
+        if [[ ! -d /dvs/p4/build/sw/rel/gpu_drv/r$version/r${version}_00/$folder ]]; then
+            case $folder in
+                1) folder="drivers/OpenGL" ;;
+                2) folder="drivers/OpenGL/glcore" ;;
+                *) continue ;;
+            esac
+            echo "    //sw/rel/gpu_drv/r$version/r${version}_00/$folder/... //wanliz_temp_client/rel/gpu_drv/r$version/r${version}_00/$folder/..." >> /tmp/wanliz_temp_client.txt
+        fi
+    do
+
+    p4 client -i < /tmp/wanliz_temp_client.txt || return -1
+    p4 client -o wanliz_temp_client
+    P4CLIENT=wanliz_temp_client P4ROOT=/dvs/p4/build/sw p4 -I sync -q -f //sw/... 
+    p4 client -d wanliz_temp_client
+}
+
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+###########################################################
+
 if [[ $1 == config ]]; then
     if [[ $2 == remote ]]; then
         read -e -i "local" -p "Remote host: " machine 
