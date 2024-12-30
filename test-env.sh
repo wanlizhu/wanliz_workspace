@@ -717,7 +717,7 @@ function pull-dvs-source {
             esac
             echo "    //sw/rel/gpu_drv/r$version/r${version}_00/$folder/... //wanliz_temp_client/rel/gpu_drv/r$version/r${version}_00/$folder/..." >> /tmp/wanliz_temp_client.txt
         fi
-    do
+    done 
 
     p4 client -i < /tmp/wanliz_temp_client.txt || return -1
     p4 client -o wanliz_temp_client
