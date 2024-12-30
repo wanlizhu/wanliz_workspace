@@ -134,6 +134,21 @@ function install-driver {
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D"
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D"
+    elif [[ $1 =~ '^[0-9]+\.[0-9]+$' ]]; then
+        echo "Available build types for $1: release, debug and develop"
+        read -e -i "release" -p "Build type: " buildtype
+        pushd ~/Downloads 
+        if [[ $buildtype == release ]]; then
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1.run http://linuxqa/builds/release/display/x86_64/$1/NVIDIA-Linux-x86_64-$1.run || return -1
+            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1.run
+        elif [[ $buildtype == debug ]]; then
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-debug.run http://linuxqa/builds/release/display/x86_64/debug/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
+            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-debug.run
+        elif [[ $buildtype == develop ]]; then
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-develop.run http://linuxqa/builds/release/display/x86_64/develop/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
+            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-develop.run
+        fi
+        popd
     elif [[ $1 == local ]]; then
         echo "[1] Linux_amd64_release $([[ -d $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_release ]] || echo '(NULL)')"
         echo "[2] Linux_amd64_debug   $([[ -d $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_debug   ]] || echo '(NULL)')"
