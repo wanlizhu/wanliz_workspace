@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "*.nvmake_unix": "Makefile",
-        "map": "cpp"
-    }
-}

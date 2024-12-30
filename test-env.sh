@@ -1,59 +1,44 @@
 if   [[ $HOSTNAME == scc-03-3062-dev  ]]; then
     export P4CLIENT=wanliz_p4sw_dev
-elif [[ $HOSTNAME == scc-03-3062-test ]]; then
+elif [[ $HOSTNAME == wanliz-test ]]; then
     export P4CLIENT=wanliz_p4sw_test
-elif [[ $HOSTNAME == scc-03-3062-wfh  ]]; then
+elif [[ $HOSTNAME == wanliz-wfh ]]; then
     export P4CLIENT=wanliz_p4sw_wfh
 fi
 if [[ -z $DISPLAY ]]; then
     export DISPLAY=:0
 fi  
-export P4ROOT=/home/wanliz/$P4CLIENT
+export P4ROOT=$HOME/$P4CLIENT
 export P4IGNORE=$HOME/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
-export PATH=~/wanliz_workspace:$PATH
-export PATH=~/wanliz_workspace/test_vp:$PATH
-export PATH=~/wanliz_workspace/test_wayland:$PATH
-export PATH=~/.local/bin:$PATH
-export PATH=~/viewperf2020:$PATH
-export PATH=~/nsight_systems/bin:$PATH
-export PATH=~/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
-export PATH=~/PIC-X_Package/SinglePassCapture:$PATH
-export PATH=~/apitrace/bin:$PATH
+export PATH=$HOME/wanliz_workspace:$PATH
+export PATH=$HOME/wanliz_workspace/test_vp:$PATH
+export PATH=$HOME/wanliz_workspace/test_wayland:$PATH
+export PATH=$HOME/.local/bin:$PATH
+export PATH=$HOME/viewperf2020:$PATH
+export PATH=$HOME/nsight_systems/bin:$PATH
+export PATH=$HOME/nvidia-nomad-internal/host/linux-desktop-nomad-x64:$PATH
+export PATH=$HOME/PIC-X_Package/SinglePassCapture:$PATH
+export PATH=$HOME/apitrace/bin:$PATH
 export PATH=$HOME:$PATH
 alias  ss="source ~/.bashrc"
 alias  pp="pushd ~/wanliz_workspace >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
 alias  uu="pushd ~/wanliz_workspace >/dev/null && git add . && git commit -m uu && git push && popd >/dev/null"
 
-function check_and_install {
-    if [[ -z $(which $1) ]]; then
-        sudo apt install -y $2
-    fi
-}
-
-function apt_install_any {
-    rm -rf /tmp/apt_failed /tmp/aptitude_failed
-    for pkg in "$@"; do 
-        sudo apt install -y $pkg || echo "$pkg" >> /tmp/apt_failed
-    done
-    if [[ -f /tmp/apt_failed ]]; then
-        echo "Failed to install $(wc -l /tmp/apt_failed) packages using apt: "
-        cat /tmp/apt_failed
-        
-        read -e -i "yes" -p "Retry with aptitude? (yes/no): " ans
-        if [[ $ans == yes ]]; then
-            while IFS= read -r pkg; do 
-                sudo aptitude install $pkg || echo "$pkg" >> /tmp/aptitude_failed
-            done < /tmp/apt_failed 
-            
-            if [[ -f /tmp/aptitude_failed ]]; then
-                echo "Failed to install $(wc -l /tmp/aptitude_failed) packages using aptitude: "
-                cat /tmp/aptitude_failed
-                return -1
+function install-if-not-yet {
+    for item in "$@"; do 
+        if [[ $item == *":"* ]]; then
+            if [[ -z $(which $(echo $item | awk -F ':' '{print $1}')) ]]; then
+                pkgname=$(echo $item | awk -F ':' '{print $2}')
+                sudo apt install -y $pkgname || echo "Failed to install $pkgname"
+            fi
+        else 
+            if [[ -z $(which $item) ]]; then
+                sudo apt install -y $item || echo "Failed to install $item"
             fi
         fi
-    fi
+    done 
 }
 
 function chd {
@@ -75,18 +60,20 @@ function p4sync {
                 echo "Sync $P4CLIENT (forced)  [OK]" ||
                 echo "Sync $P4CLIENT (forced)  [FAILED]"
         fi
+    else
+        p4 sync //sw/... 
     fi
 }
 
-function get_src_version {
+function nvsrc-version {
     grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g'
 }
 
-function get_mod_version {
+function nvmod-version {
     modinfo nvidia | grep ^version | awk '{print $2}'
 }
 
-function get_build_type {
+function nvmod-build-type {
     if [[ ! -z $(cat /proc/driver/nvidia/version | awk '{print tolower($0)}' | grep "debug build") ]]; then
         echo debug
     elif [[ ! -z $(cat /proc/driver/nvidia/version | awk '{print tolower($0)}' | grep "develop build") ]]; then
@@ -96,17 +83,17 @@ function get_build_type {
     fi
 }
 
-function check_version {
-    echo "Installed dso ($(get_build_type) build) version: $(get_mod_version)" 
-    echo "Source code ($P4CLIENT) version: $(get_src_version)"
+function nvidia-version {
+    echo "Nvidia MOD ($(nvmod-build-type) build) version: $(nvmod-version)" 
+    echo "Nvidia SRC ($P4CLIENT) version: $(nvsrc-version)"
 }
 
-function nvmake_unix {
+function nvmake-unix {
     if [[ -z $1 ]]; then
         if [[ $(basename $(pwd)) == bugfix_main ]]; then
-            default_args="drivers dist linux amd64 $(get_build_type) -j$(nproc)"
+            default_args="drivers dist linux amd64 $(nvmod-build-type) -j$(nproc)"
         else
-            default_args="linux amd64 $(get_build_type) -j$(nproc)"
+            default_args="linux amd64 $(nvmod-build-type) -j$(nproc)"
         fi
         echo "Auto-generated nvmake arguments: $default_args"
         read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
@@ -126,24 +113,27 @@ function nvmake_unix {
         NV_GUARDWORD=0 $default_args $@ 
 }
 
-function nvmake_ppp {
+function nvmake-ppp {
     config=${1:-release}
-    nvmake_unix drivers dist linux amd64 $config -j$(nproc) &&
-    nvmake_unix drivers dist linux x86   $config -j$(nproc) &&
-    nvmake_unix drivers dist linux amd64 $config post-process-packages &&
-    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(get_src_version).run
+    nvmake-unix drivers dist linux amd64 $config -j$(nproc) &&
+    nvmake-unix drivers dist linux x86   $config -j$(nproc) &&
+    nvmake-unix drivers dist linux amd64 $config post-process-packages &&
+    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(nvsrc-version).run
 }
 
-function install_driver {
+function install-driver {
     if [[ -z $1 ]]; then
-        echo "Download by changelist : http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Release_Linux_AMD64_unix-build_Test_Driver/?C=M;O=D"
-        echo "                         http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Debug_Linux_AMD64_unix-build_Driver/?C=M;O=D"
-        echo "Download by version    : http://linuxqa/builds/release/display/x86_64/?C=M;O=D"
-        echo "                         http://linuxqa/builds/release/display/x86_64/debug/?C=M;O=D"
-        echo "                         http://linuxqa/builds/release/display/x86_64/develop/?C=M;O=D"
-        echo "Download by date       : http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
-        echo "                         http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D"
-        echo "                         http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D"
+        echo "Download by changelist:"
+        echo "    http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Release_Linux_AMD64_unix-build_Test_Driver/?C=M;O=D"
+        echo "    http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Debug_Linux_AMD64_unix-build_Driver/?C=M;O=D"
+        echo "Download by version:"
+        echo "    http://linuxqa/builds/release/display/x86_64/?C=M;O=D"
+        echo "    http://linuxqa/builds/release/display/x86_64/debug/?C=M;O=D"
+        echo "    http://linuxqa/builds/release/display/x86_64/develop/?C=M;O=D"
+        echo "Download by date:"
+        echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
+        echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D"
+        echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D"
     elif [[ $1 == local ]]; then
         echo "[1] Linux_amd64_release $([[ -d $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_release ]] || echo '(NULL)')"
         echo "[2] Linux_amd64_debug   $([[ -d $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_debug   ]] || echo '(NULL)')"
@@ -154,16 +144,16 @@ function install_driver {
             2) outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_debug   ;;
             3) outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_develop ;;
         esac
-        if [[ -f  $outdir/NVIDIA-Linux-x86_64-$(get_src_version).run ]]; then
+        if [[ -f  $outdir/NVIDIA-Linux-x86_64-$(nvsrc-version).run ]]; then
             echo "32-bits compatible packages are available"
             read -e -i "yes" -p "Install PPP (amd64 + x86) driver? (yes/no): " ans
             if [[ $ans == yes ]]; then
-                install_driver $outdir/NVIDIA-Linux-x86_64-$(get_src_version).run
+                install-driver $outdir/NVIDIA-Linux-x86_64-$(nvsrc-version).run
             else
-                install_driver $outdir/NVIDIA-Linux-x86_64-$(get_src_version)-internal.run
+                install-driver $outdir/NVIDIA-Linux-x86_64-$(nvsrc-version)-internal.run
             fi
         else
-            install_driver $outdir/NVIDIA-Linux-x86_64-$(get_src_version)-internal.run
+            install-driver $outdir/NVIDIA-Linux-x86_64-$(nvsrc-version)-internal.run
         fi 
     elif [[ -d $(realpath $1) ]]; then
         idx=0
@@ -179,7 +169,7 @@ function install_driver {
             return -1
         else
             read -e -i 0 -p "Select: " idx
-            install_driver $(cat /tmp/$idx)
+            install-driver $(cat /tmp/$idx)
         fi
     else 
         if [[ $XDG_SESSION_TYPE != tty ]]; then
@@ -223,14 +213,15 @@ function install_driver {
 	    chmod +x $driver 
         sudo $driver && 
         sudo systemctl isolate graphical || {
+            # TODO: handle known errors
             echo "Failed to install NVIDIA driver"
             cat /var/log/nvidia-installer.log
         }
     fi
 }
 
-function deploy_dso_glcore {
-    version=$(get_mod_version)
+function deploy-dso-glcore {
+    version=$(nvmod-version)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libnvidia-glcore.so.$version.backup /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
         sudo rm -v -f $HOME/libnvidia-glcore.so.$version.backup
@@ -241,8 +232,8 @@ function deploy_dso_glcore {
             fi
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
         else
-            config=$(get_build_type)
-            echo "Copy OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so ($(get_src_version)) to /lib/x86_64-linux-gnu as *.so.$version"
+            config=$(nvmod-build-type)
+            echo "Copy OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so ($(nvsrc-version)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libnvidia-glcore.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version $HOME/libnvidia-glcore.so.$version.backup
@@ -252,8 +243,8 @@ function deploy_dso_glcore {
     fi
 }
 
-function deploy_dso_eglcore {
-    version=$(get_mod_version)
+function deploy-dso-eglcore {
+    version=$(nvmod-version)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libnvidia-eglcore.so.$version.backup /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
         sudo rm -v -f $HOME/libnvidia-eglcore.so.$version.backup
@@ -264,8 +255,8 @@ function deploy_dso_eglcore {
             fi
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
         else
-            config=$(get_build_type)
-            echo "Copy OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so ($(get_src_version)) to /lib/x86_64-linux-gnu as *.so.$version"
+            config=$(nvmod-build-type)
+            echo "Copy OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so ($(nvsrc-version)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libnvidia-eglcore.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version $HOME/libnvidia-eglcore.so.$version.backup
@@ -275,8 +266,8 @@ function deploy_dso_eglcore {
     fi
 }
 
-function deploy_dso_glx {
-    version=$(get_mod_version)
+function deploy-dso-glx {
+    version=$(nvmod-version)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libGLX_nvidia.so.$version.backup /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version
         sudo rm -v -f $HOME/libGLX_nvidia.so.$version.backup
@@ -287,8 +278,8 @@ function deploy_dso_glx {
             fi
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version
         else
-            config=$(get_build_type)
-            echo "Copy OpenGL/win/glx/lib/_out/Linux_amd64_$config/libGLX_nvidia.so ($(get_src_version)) to /lib/x86_64-linux-gnu as *.so.$version"
+            config=$(nvmod-build-type)
+            echo "Copy OpenGL/win/glx/lib/_out/Linux_amd64_$config/libGLX_nvidia.so ($(nvsrc-version)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libGLX_nvidia.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version $HOME/libGLX_nvidia.so.$version.backup
@@ -298,7 +289,7 @@ function deploy_dso_glx {
     fi
 }
 
-function deploy_dso_xorg {
+function deploy-dso-xorg {
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/nvidia_drv.so.backup /lib/xorg/modules/drivers/nvidia_drv.so
         sudo rm -v -f $HOME/nvidia_drv.so.backup
@@ -309,8 +300,8 @@ function deploy_dso_xorg {
             fi
             sudo cp -v --remove-destination $1 /lib/xorg/modules/drivers/nvidia_drv.so
         else
-            config=$(get_build_type)
-            echo "Copy xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so ($(get_src_version)) to /lib/xorg/modules/drivers/nvidia_drv.so"
+            config=$(nvmod-build-type)
+            echo "Copy xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so ($(nvsrc-version)) to /lib/xorg/modules/drivers/nvidia_drv.so"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/nvidia_drv.so.backup ]]; then
                 sudo cp -v /lib/xorg/modules/drivers/nvidia_drv.so $HOME/nvidia_drv.so.backup
@@ -382,7 +373,7 @@ function nopasswd {
     fi
 }
 
-function resize_display {
+function resize-display {
     read -p "New size: " size
     outputname=$(xrandr | grep " connected" | awk '{print $1}')
     if [[ ! -z $(xrandr | grep $size) ]]; then
@@ -404,12 +395,12 @@ function xdgst {
     echo $XDG_SESSION_TYPE
 }
 
-function change_p4client {
+function change-p4client {
     export P4CLIENT=$1
-    export P4ROOT=/home/wanliz/$P4CLIENT
+    export P4ROOT=$HOME/$P4CLIENT
 }
 
-function check_p4ignore {
+function check-p4ignore {
     if [[ -f $HOME/.p4ignore ]]; then
         cat $HOME/.p4ignore
     else
@@ -425,7 +416,8 @@ function dvsbuild {
     $P4ROOT/automation/dvs/dvsbuild/dvsbuild.pl -c $1 
 }
 
-function install_viewperf {
+# TODO: Use multithreads
+function install-viewperf {
     pushd $HOME/Downloads >/dev/null
     wget http://linuxqa.nvidia.com/people/nvtest/pynv_files/viewperf2020v3/viewperf2020v3.tar.gz || exit -1
     tar -zxvf viewperf2020v3.tar.gz
@@ -433,7 +425,7 @@ function install_viewperf {
     popd >/dev/null
 }
 
-function start_plain_x {
+function start-plain-x {
     if [[ $XDG_SESSION_TYPE != tty ]]; then
         echo "Please run through a tty or ssh session"
         return 
@@ -464,22 +456,22 @@ function start_plain_x {
     X :0 
 }
 
-function load_pic_env {
+function load-pic-env {
     pushd $HOME/PIC-X_Package/SinglePassCapture/Scripts >/dev/null
     source ./setup-symbollinks.sh 
     source ./setup-env.sh 
     popd >/dev/null 
 }
 
-function check_vnc {
+function check-vnc {
     sudo lsof -i :5900-5909
 }
 
-function restart_vnc {
+function restart-vnc {
     sudo systemctl restart x11vnc.service
 }
 
-function uninstall_vnc {
+function uninstall-vnc {
     sudo systemctl stop x11vnc.service
     sudo systemctl disable x11vnc.service
     sudo rm -rf /etc/systemd/system/x11vnc.service
@@ -487,7 +479,7 @@ function uninstall_vnc {
     sudo systemctl reset-failed
 }
 
-function load_vksdk {
+function load-vksdk {
     version=1.3.296.0
     if [[ ! -d $HOME/VulkanSDK/$version ]]; then
         cd $HOME/Downloads
@@ -501,7 +493,7 @@ function load_vksdk {
     echo $VULKAN_SDK
 }
 
-function install_nsys {
+function install-nsys {
     if [[ -d ~/nsight_systems ]]; then
         echo "Nsight systems has already installed"
         read -e -i "no" -p "Reinstall? (yes/no): " ans
@@ -528,7 +520,7 @@ function install_nsys {
     sudo chmod -R 777 /root/.nsightsystems
 }
 
-function install_ngfx {
+function install-ngfx {
     if [[ -d ~/nvidia-nomad-internal ]]; then
         echo "Nsight graphics has already installed"
         read -e -i "no" -p "Reinstall? (yes/no): " ans
@@ -568,7 +560,7 @@ function install_ngfx {
     fi
 }
 
-function install_apitrace {
+function install-apitrace {
     if [[ -z $(which bzip2) ]]; then
         sudo apt install -y bzip2
     fi
@@ -582,7 +574,7 @@ function install_apitrace {
     popd
 }
 
-function sync_root_docs {
+function sync-root-docs {
     if [[ ! -d ~/Documents/root_documents_sync ]]; then
         mkdir -p ~/Documents/root_documents_sync
     fi
@@ -596,11 +588,11 @@ function sync_root_docs {
     sudo chown -R $USER:$USER ~/Documents
 }
 
-function listen_ports {
+function show-listen-ports {
     sudo ss -tunlp
 }
 
-function sync_workspace {
+function sync-workspace {
     echo "[1] Sync from local to remote"
     echo "[2] Sync from remote to local"
     read -e -i "1" -p "Mode: " mode
@@ -608,16 +600,16 @@ function sync_workspace {
 
     if [[ $mode == 1 ]]; then
         if [[ $(uname) == Darwin ]]; then
-            rsync -avz /Users/wanliz/wanliz_workspace/ wanliz@$remote:/home/wanliz/wanliz_workspace
+            rsync -avz /Users/$USER/wanliz_workspace/ $USER@$remote:/home/$USER/wanliz_workspace
         else
-            rsync -avz /home/wanliz/wanliz_workspace/ wanliz@$remote:/home/wanliz/wanliz_workspace
+            rsync -avz /home/$USER/wanliz_workspace/ $USER@$remote:/home/$USER/wanliz_workspace
         fi
     else
-        rsync -avz wanliz@$remote:/home/wanliz/wanliz_workspace/ /home/wanliz/wanliz_workspace
+        rsync -avz $USER@$remote:/home/$USER/wanliz_workspace/ /home/$USER/wanliz_workspace
     fi 
 }
 
-function install_kernel {
+function install-kernel {
     read -p "Linux kernel version: " version
     if [[ ! -z $(apt search linux-image-$version | grep -E "linux-image-$version-.*-generic") ]]; then
         apt search linux-image-$version | grep -E "linux-image-$version-.*-generic"
@@ -642,3 +634,320 @@ function install_kernel {
         echo "Ready to reboot now"
     fi
 }
+
+if [[ $1 == config ]]; then
+    if [[ $2 == remote ]]; then
+        read -e -i "local" -p "Remote host: " machine 
+        read -e -i "$USER" -p "Run as user: " user
+        scp $HOME/wanliz_workspace/test-env.sh $user@$machine:/tmp/test-env.sh
+        ssh -t $user@$machine 'bash /tmp/test-env.sh config'
+        echo "Configuration finished on $machine"
+        exit
+    fi
+
+    rm -rf /tmp/config.log 
+
+    if [[ -z $DISPLAY ]]; then
+        export DISPLAY=:0
+        echo "export DISPLAY=:0"
+    fi
+
+    if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
+        echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
+        sudo cat /etc/sudoers | tail -1
+        echo "- sudo with nopasswd  [OK]" >> /tmp/config.log
+    fi
+
+    read -e -i "yes" -p "Update apt sources? (yes/no): " apt_update
+    if [[ $apt_update == yes ]]; then
+        sudo apt update
+    fi
+
+    if [[ -z $(which vkcube) ]]; then
+        sudo apt install -y vulkan-tools
+    fi
+
+    if ! vkcube --c 10; then
+        read -p 'Run command `xhost +x` on test machine, then press [ENTER] to continue: ' _
+    fi
+
+    install-if-not-yet vim htop vkcube:vulkan-tools ifconfig:net-tools unzip libglfw3:libglfw3-dev 
+
+    if [[ -z $(which perf) ]]; then
+        sudo apt install -y linux-tools-common linux-tools-generic
+    fi
+
+    if [[ -z $(which git) ]]; then
+        sudo apt install -y git
+        git config --global user.name "Wanli Zhu"
+        git config --global user.email zhu.wanli@icloud.com
+        git config --global pull.rebase false
+        echo "- git config ...  [OK]" >> /tmp/config.log
+    fi
+
+    if [[ ! -d $HOME/wanliz_workspace ]]; then
+        if ! ping -c2 linuxqa; then
+            if [[ ! -f ~/vpn_with_sso.sh ]]; then
+                cat >> ~/vpn_with_sso.sh << 'EOF'
+    read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        if [[ -z $(which openconnect) ]]; then
+            sudo apt install -y openconnect
+        fi
+        read -e -i "firefox" -p "Complete authentication in browser: " browser
+        read -e -i "no" -p "Run in background? (yes/no): " runinbg
+        eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
+        [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
+    fi
+EOF
+                chmod +x ~/vpn_with_sso.sh
+            fi
+            read -p "Run command ~/vpn_with_sso.sh, then press [ENTER] to continue: " _
+        fi
+        
+        git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_workspace $HOME/wanliz_workspace
+        apt_install_any build-essential gcc g++ cmake pkg-config libglvnd-dev 
+        
+        if [[ -d $HOME/wanliz_workspace ]]; then
+            echo "- Clone wanliz_workspace  [OK]" >> /tmp/config.log
+        else
+            echo "- Clone wanliz_workspace  [FAILED]" >> /tmp/config.log
+        fi
+    fi
+
+    if [[ -z $(grep wanliz_workspace ~/.bashrc) ]]; then
+        if [[ -d $HOME/wanliz_workspace ]]; then
+            echo "" >> ~/.bashrc
+            echo "source $HOME/wanliz_workspace/test-env.sh" >> ~/.bashrc
+            echo "- Source test-env.sh in ~/.bashrc  [OK]" >> /tmp/config.log
+        fi
+    fi
+
+    if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
+        sudo apt install -y openssh-server
+        sudo systemctl enable ssh
+        sudo systemctl start ssh
+        echo "- Install openssh-server  [OK]" >> /tmp/config.log
+    fi
+
+    if [[ $XDG_SESSION_TYPE == tty ]]; then
+        read -e -i "x11" -p "XDG session type: " XDG_SESSION_TYPE
+    fi
+
+    if [[ $XDG_SESSION_TYPE == x11 ]]; then
+        if [[ -z $(sudo lsof -i :5900-5909) ]]; then
+            if [[ $(systemctl is-active x11vnc) == active ]]; then
+                echo "x11vnc.service is already running"
+            else 
+                if [[ -z $(command -v x11vnc) ]]; then
+                    sudo apt install -y x11vnc
+                fi
+
+                if [[ ! -f $HOME/.vnc/passwd ]]; then
+                    x11vnc -storepasswd
+                fi
+
+                if [[ ! -f /etc/systemd/system/x11vnc.service ]]; then
+                    echo "[Unit]
+Description=x11vnc server
+After=display-manager.service
+
+[Service]
+Type=simple
+User=$USER
+ExecStart=$(command -v x11vnc) -display :0 -rfbport 5900 -auth guess -forever -loop -noxdamage -repeat -usepw
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
+                fi
+
+                sudo systemctl daemon-reload 
+                sudo systemctl enable x11vnc.service
+                sudo systemctl start  x11vnc.service
+                echo "- Register x11vnc as service  [OK]" >> /tmp/config.log
+            fi
+        fi
+    elif [[ $XDG_SESSION_TYPE == wayland ]]; then
+        if [[ -z $(sudo lsof -i :3389) ]]; then
+            apt_install_any gnome-remote-desktop xdg-desktop-portal xdg-desktop-portal-gnome
+            gsettings set org.gnome.desktop.remote-desktop.rdp enable true
+            gsettings set org.gnome.desktop.remote-desktop.rdp.authentication-method 'password'
+            echo -n "zhujie" | base64 | gsettings set org.gnome.desktop.remote-desktop.rdp.password-hash
+            gsettings set org.gnome.desktop.remote-desktop.rdp.enable-remote-control true
+            sudo ufw disable
+            systemctl --user enable gnome-remote-desktop
+            systemctl --user start gnome-remote-desktop
+            sleep 1
+
+            if [[ ! -z $(ip -br a | grep 3389) ]]; then
+                echo "- Share wayland display  [OK]" >> /tmp/config.log
+            else
+                echo "- Share wayland display  [FAILED]" >> /tmp/config.log
+            fi
+        fi
+    else
+        echo "- Share $XDG_SESSION_TYPE display  [FAILED]" >> /tmp/config.log 
+    fi
+
+    if [[ -z $(which p4) ]]; then
+        sudo apt install -y helix-p4d || {
+            if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
+                pushd ~/Downloads 
+                codename=$(lsb_release -c | cut -f2)
+                wget https://package.perforce.com/perforce.pubkey
+                gpg -n --import --import-options import-show perforce.pubkey
+                wget -qO - https://package.perforce.com/perforce.pubkey | sudo apt-key add -
+                #echo "deb http://package.perforce.com/apt/ubuntu $codename release" | sudo tee /etc/apt/sources.list.d/perforce.list
+                echo "deb http://package.perforce.com/apt/ubuntu noble release" | sudo tee /etc/apt/sources.list.d/perforce.list
+                sudo apt update 
+                sudo apt install -y helix-p4d
+                popd 
+            fi
+        }
+        if [[ ! -z $(which p4) ]]; then
+            echo "- Install p4 command  [OK]" >> /tmp/config.log
+        else
+            echo "- Install p4 command  [FAILED]" >> /tmp/config.log
+        fi
+    fi
+
+    if [[ -z $(which p4v) ]]; then
+        pushd ~/Downloads
+        wget https://www.perforce.com/downloads/perforce/r24.4/bin.linux26x86_64/p4v.tgz
+        tar -zxvf p4v.tgz 
+        sudo cp -R p4v-2024.4.2690487/bin/* /usr/local/bin
+        sudo cp -R p4v-2024.4.2690487/lib/* /usr/local/lib 
+        popd
+
+        [[ ! -z $(which p4v) ]] && 
+        echo "- Install p4v command  [OK]" >> /tmp/config.log ||
+        echo "- Install p4v command  [FAILED]" >> /tmp/config.log 
+    fi
+
+    if [[ ! -f $HOME/.p4ignore ]]; then
+        if [[ -f $HOME/.p4ignore ]]; then
+            cat $HOME/.p4ignore
+        else
+            read -e -i "yes" -p "$HOME/.p4ignore doesn't exist, create with default value? (yes/no): " ans
+            if [[ $ans == yes ]]; then
+                echo -e "_out\n.git\n.vscode\n" > $HOME/.p4ignore
+                cat $HOME/.p4ignore
+            fi
+        fi
+        echo "- Create file ~/.p4ignore  [OK]" >> /tmp/config.log
+    fi
+
+    if [[ -z $(which gtlfs) ]]; then
+        sudo wget --no-check-certificate -O /usr/local/bin/gtlfs https://gtlfs.nvidia.com/client/linux && {
+            sudo chmod +x /usr/local/bin/gtlfs
+            echo "- Install gtlfs  [OK]" >> /tmp/config.log
+        } || echo "- Install gtlfs  [FAILED]" >> /tmp/config.log
+    fi
+
+    ubuntu=$(grep '^VERSION_ID=' /etc/os-release | cut -d'"' -f2)
+    if dpkg --compare-versions "$ubuntu" ge "24.0"; then
+        if [[ ! -f /etc/sysctl.d/99-userns.conf ]]; then
+            echo "kernel.apparmor_restrict_unprivileged_userns = 0" | sudo tee /etc/sysctl.d/99-userns.conf
+            sudo sysctl --system
+            echo "- Set kernel.apparmor_restrict_unprivileged_userns=0 for unix-build  [OK]" >> /tmp/config.log
+        fi
+    fi
+
+    if [[ -z $(which code) ]]; then
+        pushd ~/Downloads 
+        sudo apt install -y software-properties-common apt-transport-https wget
+        wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+        sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
+        sudo sh -c 'echo "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+        sudo apt update
+        sudo apt install -y code && 
+            echo "- Install VS Code  [OK]" >> /tmp/config.log ||
+            echo "- Install VS Code  [FAILED]" >> /tmp/config.log 
+        popd 
+    fi
+
+    if [[ -z $(which slack) ]]; then
+        sudo snap install slack --classic
+    fi
+
+    if [[ ! -f ~/.local/share/fonts/VerilySerifMono.otf ]]; then
+        mkdir -p ~/.local/share/fonts
+        if [[ -f ~/wanliz_workspace/resources/VerilySerifMono.otf ]]; then
+            cp ~/wanliz_workspace/resources/VerilySerifMono.otf ~/.local/share/fonts
+        else
+            pushd ~/Downloads 
+            wget -O verily_serif_mono.zip https://dl.dafont.com/dl/?f=verily_serif_mono &&
+            unzip verily_serif_mono.zip && 
+            cp verily_serif_mono/VerilySerifMono.otf ~/.local/share/fonts
+            popd 
+        fi
+        fc-cache -f -v &&
+        echo "- Install font VerilySerifMono  [OK]" >> /tmp/config.log ||
+        echo "- Install font VerilySerifMono  [FAILED]" >> /tmp/config.log
+    fi
+
+    PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
+    FONT_NAME=$(gsettings get org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font)
+    if [[ $FONT_NAME != 'VerilySerifMono 14' ]]; then
+        PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
+        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ use-system-font false
+        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font 'VerilySerifMono 14'
+        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ background-color '#ffffff'
+        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ foreground-color '#171421'
+        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-columns 100
+        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-rows 30
+    fi
+
+    #if [[ ! -f ~/.config/autostart/wanliz_post_startup.desktop ]]; then
+    #    if [[ ! -f ~/wanliz_post_startup.sh ]]; then
+    #        cat <<EOF > ~/wanliz_post_startup.sh
+    ##!/bin/bash
+    #echo "This works, $USER" | tee ~/log
+    #ifconfig | grep "inet " | tee -a ~/log
+    #bash
+    #EOF
+    #        chmod +x ~/wanliz_post_startup.sh
+    #    fi
+    #
+    #    mkdir -p ~/.config/autostart
+    #    cat <<EOF > ~/.config/autostart/wanliz_post_startup.desktop
+    #[Desktop Entry]
+    #Type=Application
+    #Exec=~/wanliz_post_startup.sh
+    #Hidden=false
+    #NoDisplay=false
+    #X-GNOME-AutoStart-enabled=true
+    #Name=wanliz_post_startup
+    #Comment="This is wanli's custom startup application"
+    #EOF
+    #    echo "- Register autostart application: ~/wanliz_post_startup.sh"
+    #fi
+
+    if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
+        cat >> /tmp/xhost.desktop << 'EOF'
+    [Desktop Entry]
+    Type=Application
+    Exec=bash -c "xhost + > /tmp/xhost.log"
+    Hidden=false
+    NoDisplay=false
+    X-GNOME-Autostart-enabled=true
+    Name=XHost Command
+    Comment=Disable access control
+EOF
+        sudo mv /tmp/xhost.desktop ~/.config/autostart/xhost.desktop
+        echo "- Disable access control  [OK]" >> /tmp/config.log
+    fi
+
+    # TODO - show grub menu
+
+    ip -br a
+    mokutil --sb-state 
+    cat /tmp/config.log && {
+        echo "Things to do post config: "
+        echo "    - Install nvidia driver"
+        echo "    - install viewperf (if needed)"
+        echo "    - Install Nsight graphics/systems"
+        echo "    - Install PIC-X"
+    } || echo "Nothing to configure!"
+fi # End of config 
