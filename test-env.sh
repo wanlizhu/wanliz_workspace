@@ -965,4 +965,6 @@ EOF
         echo "    - Install Nsight graphics/systems"
         echo "    - Install PIC-X"
     } || echo "Nothing to configure!"
+
+    source ~/.bashrc
 fi # End of config 
