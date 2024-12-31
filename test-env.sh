@@ -734,6 +734,19 @@ function gdb-attach-xorg {
     sudo gdb -ex "handle SIGPIPE nostop noprint pass" -ex "cont" $(nvidia-smi | grep Xorg | awk '{print $7}') $(pgrep Xorg)
 }
 
+function install-dcgm {
+    if [[ -z $(dpkg -l | grep datacenter-gpu-manager) ]]; then
+        pushd ~/Downloads 
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb || return -1
+        sudo dpkg -i cuda-keyring_1.0-1_all.deb
+        sudo apt update
+        sudo apt install -y datacenter-gpu-manager
+        sudo systemctl --now enable nvidia-dcgm
+        dcgmi discovery -l
+        popd 
+    fi
+}
+
 ###########################################################
 ###########################################################
 ###########################################################
