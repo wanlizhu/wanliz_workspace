@@ -777,8 +777,8 @@ function encrypt {
         txt="$1"
     fi
 
-    read -s -p "Password: " passwd
-    echo "$txt" | gpg --symmetric --armor --batch --passphrase "$passwd"
+    read -s -p "Password: " password
+    echo "$txt" | openssl enc -aes-256-cbc -a -salt -pass pass:"$password" -pbkdf2
 }
 
 function decrypt {
@@ -788,8 +788,8 @@ function decrypt {
         txt="$1"
     fi
 
-    read -s -p "Password: " passwd
-    echo "$txt" | gpg --decrypt --armor --batch --passphrase "$passwd"
+    read -s -p "Password: " password
+    echo "$txt" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"$password" -pbkdf2
 }
 
 function send-email {
