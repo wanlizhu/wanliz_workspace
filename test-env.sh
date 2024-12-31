@@ -770,6 +770,77 @@ function change-hostname {
     fi
 }
 
+function encrypt {
+    if [[ -z $1 ]]; then
+        read -p "Text: " txt
+    else
+        txt="$1"
+    fi
+
+    read -s -p "Password: " passwd
+    echo "$txt" | gpg --symmetric --armor --batch --passphrase "$passwd"
+}
+
+function decrypt {
+    if [[ -z $1 ]]; then
+        read -p "Encrypted: " txt
+    else
+        txt="$1"
+    fi
+
+    read -s -p "Password: " passwd
+    echo "$txt" | gpg --decrypt --armor --batch --passphrase "$passwd"
+}
+
+function send-email {
+    if [[ -z $(which mutt) ]]; then
+        sudo apt install -y mutt 
+    fi
+
+    if [[ ! -f $HOME/.muttrc ]]; then
+        gmail=$(decrypt xxx)
+        gmailpass=$(decrypt xxx)
+        echo "set from = \"$gmail\"" > $HOME/.muttrc
+        echo "set realname = \"Wanli Zhu from Linux Terminal\"" >> $HOME/.muttrc
+        echo "" >> $HOME/.muttrc
+        echo "# IMAP (for receiving emails)" >> $HOME/.muttrc
+        echo "set imap_user = \"$gmail\"" >> $HOME/.muttrc
+        echo "set imap_pass = \"$gmailpass\"" >> $HOME/.muttrc
+        echo "set folder = \"imaps://imap.gmail.com:993\"" >> $HOME/.muttrc
+        echo "set spoolfile = \"+INBOX\"" >> $HOME/.muttrc
+        echo "set postponed = \"+[Gmail]/Drafts\"" >> $HOME/.muttrc
+        echo "" >> $HOME/.muttrc
+        echo "# SMTP (for sending emails)" >> $HOME/.muttrc
+        echo "set smtp_url = \"smtps://your-email@gmail.com@smtp.gmail.com:465/\"" >> $HOME/.muttrc
+        echo "set smtp_pass = \"$gmailpass\"" >> $HOME/.muttrc
+    fi
+
+    if [[ -z $recipient ]]; then
+        read -p "Recipient: " recipient
+    fi
+
+    if [[ -z $subject ]]; then
+        read -p "Subject: " subject
+    fi
+
+    if [[ ! -z $attachment ]]; then
+        if [[ ! -e $attachment ]]; then
+            echo "Attachment: $attachment, doesn't exist, ignore it"
+            attachment=''
+        fi
+    fi
+
+    if [[ -z $body ]]; then
+        read -p "Body: " body 
+    fi
+
+    if [[ -z $attachment ]]; then
+        echo "$body" | mutt -s "$subject" -- $recipient
+    else
+        echo "$body" | mutt -s "$subject" -a "$attachment" -- $recipient
+    fi
+}
+
 ###########################################################
 ###########################################################
 ###########################################################
