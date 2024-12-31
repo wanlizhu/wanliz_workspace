@@ -1,9 +1,5 @@
-if   [[ $HOSTNAME == scc-03-3062-dev  ]]; then
-    export P4CLIENT=wanliz_p4sw_dev
-elif [[ $HOSTNAME == wanliz-test ]]; then
-    export P4CLIENT=wanliz_p4sw_test
-elif [[ $HOSTNAME == wanliz-wfh ]]; then
-    export P4CLIENT=wanliz_p4sw_wfh
+if   [[ $HOSTNAME == wanliz-dev  ]]; then
+    export P4CLIENT=wanliz-p4sw-dev
 fi
 if [[ -z $DISPLAY ]]; then
     export DISPLAY=:0
