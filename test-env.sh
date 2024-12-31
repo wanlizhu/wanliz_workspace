@@ -759,6 +759,21 @@ function enable-nvidia-debug {
     fi
 }
 
+function change-hostname {
+    if [[ -z $1 ]]; then
+        read -p "New hostname: " name
+    else
+        name=$1
+    fi
+
+    if [[ ! -z $name ]]; then 
+        oldname=$(hostname)
+        sudo hostnamectl set-hostname $name 
+        sudo sed -i "s/$oldname/$name/g" /etc/hosts
+        echo "Hostname changed from $oldname to $name"
+    fi
+}
+
 ###########################################################
 ###########################################################
 ###########################################################
