@@ -751,6 +751,14 @@ function nvidia-smi-watch {
     watch -n 1 nvidia-smi
 }
 
+function enable-nvidia-debug {
+    if [[ ! -f /etc/modprobe.d/nvidia-debug.conf ]]; then
+        echo 'options nvidia NVreg_RegistryDwords="RMLogLevel=0x1"' | sudo tee /etc/modprobe.d/nvidia-debug.conf
+        sudo update-initramfs -u
+        echo "Ready to reboot"
+    fi
+}
+
 ###########################################################
 ###########################################################
 ###########################################################
