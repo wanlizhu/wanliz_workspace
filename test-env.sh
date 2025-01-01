@@ -957,18 +957,18 @@ fi' > /tmp/vpn-with-sso.sh
         echo 'ip addr > /tmp/ip-addr
 if [[ -f ~/.last-reported-ip-addr ]]; then
     if cmp -s /tmp/ip-addr ~/.last-reported-ip-addr; then
-        echo "[$(date)] IP has not changed since last report" > /tmp/report-ip.log 
+        echo "[$(date)] IP has not changed since last report" 
         exit
     fi 
 fi
 
 source ~/wanliz_workspace/test-env.sh || {
-    echo "~/wanliz_workspace/test-env.sh does not exist" > /tmp/report-ip.log 
+    echo "~/wanliz_workspace/test-env.sh does not exist" 
     exit -1
 }
 
 ' > /tmp/report-ip.sh
-        echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"$(ip addr)\" send-email && cp -f /tmp/ip-addr ~/.last-reported-ip-addr || echo 'Failed to send email' > /tmp/report-ip.log" >> /tmp/report-ip.sh
+        echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"$(ip addr)\" send-email && cp -f /tmp/ip-addr ~/.last-reported-ip-addr || echo 'Failed to send email'" >> /tmp/report-ip.sh
         sudo mv /tmp/report-ip.sh /usr/local/bin/report-ip.sh
         sudo chown $USER /usr/local/bin/report-ip.sh
         sudo chmod +x /usr/local/bin/report-ip.sh
