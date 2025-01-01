@@ -894,6 +894,10 @@ if [[ $1 == config ]]; then
         echo "- sudo with nopasswd  [OK]" >> /tmp/config.log
     fi
 
+    if [[ ! -d ~/.config/autostart ]]; then
+        mkdir -p ~/.config/autostart
+    fi
+
     read -e -i "yes" -p "Update apt sources? (yes/no): " apt_update
     if [[ $apt_update == yes ]]; then
         sudo apt update
