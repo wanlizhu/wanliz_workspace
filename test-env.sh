@@ -1131,7 +1131,8 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         sudo sh -c 'echo "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
         sudo apt update
         sudo apt install -y code && { 
-            code --command "workbench.action.sync.enable"
+            code --command "workbench.action.sync.enable" &
+            read -p "Press [ENTER] to continue: " _
             echo "- Install VS Code  [OK]" >> /tmp/config.log 
         } ||
             echo "- Install VS Code  [FAILED]" >> /tmp/config.log 
