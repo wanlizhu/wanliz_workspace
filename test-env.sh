@@ -799,8 +799,8 @@ function send-email {
     fi
 
     if [[ ! -f $HOME/.muttrc ]]; then
-        gmail=$(decrypt xxx)
-        gmailpass=$(decrypt xxx)
+        gmail=$(decrypt 'U2FsdGVkX1/ftnBAbmGmt6BVRc7gdD2aU8UN0EaEVb4yoVjPGvKQGMvon40nkMXf')
+        gmailpass=$(decrypt 'U2FsdGVkX1+wVKiN/NT+/lxhikkDYmaFok9maq5e4sfuL8NQsxgkqRkGComyd5+L')
         echo "set from = \"$gmail\"" > $HOME/.muttrc
         echo "set realname = \"Wanli Zhu from Linux Terminal\"" >> $HOME/.muttrc
         echo "" >> $HOME/.muttrc
