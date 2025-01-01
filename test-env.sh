@@ -847,11 +847,11 @@ function send-email {
 }
 
 function code-dev-drivers {
-    code --folder-uri "vscode-remote://ssh-remote+wanliz-dev/home/wanliz/wanliz_p4sw_dev/"
+    code --folder-uri "vscode-remote://ssh-remote+wanliz-dev/home/wanliz/wanliz_p4sw_dev/dev/gpu_drv/bugfix_main/drivers"
 }
 
 function code-dev-drivers-opengl {
-    
+    code --folder-uri "vscode-remote://ssh-remote+wanliz-dev/home/wanliz/wanliz_p4sw_dev/dev/gpu_drv/bugfix_main/drivers/OpenGL"
 }
 
 ###########################################################
