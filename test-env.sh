@@ -1132,6 +1132,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         sudo apt update
         sudo apt install -y code && { 
             code --command "workbench.action.sync.enable" &
+            sleep 3
             read -p "Press [ENTER] to continue: " _
             echo "- Install VS Code  [OK]" >> /tmp/config.log 
         } ||
