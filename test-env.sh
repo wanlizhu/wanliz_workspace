@@ -964,7 +964,7 @@ fi' > /tmp/vpn-with-sso.sh
     fi
 
     if [[ ! -f /usr/local/bin/report-ip.sh ]]; then
-        echo 'ip addr > /tmp/ip-addr
+        echo 'ip addr | grep inet > /tmp/ip-addr
 if [[ -f ~/.last-reported-ip-addr ]]; then
     if cmp -s /tmp/ip-addr ~/.last-reported-ip-addr; then
         echo "[$(date)] IP has not changed since last report" 
