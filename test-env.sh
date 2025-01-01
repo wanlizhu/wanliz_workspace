@@ -1077,8 +1077,8 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         pushd ~/Downloads
         wget https://www.perforce.com/downloads/perforce/r24.4/bin.linux26x86_64/p4v.tgz
         tar -zxvf p4v.tgz 
-        sudo cp -R p4v-2024.4.2690487/bin/* /usr/local/bin
-        sudo cp -R p4v-2024.4.2690487/lib/* /usr/local/lib 
+        sudo cp -R p4v-2024.4.*/bin/* /usr/local/bin
+        sudo cp -R p4v-2024.4.*/lib/* /usr/local/lib 
         popd
 
         [[ ! -z $(which p4v) ]] && 
