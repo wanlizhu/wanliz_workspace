@@ -1160,9 +1160,11 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-rows 30
     fi
 
-    read -e -i "yes" -p "Configure Email sending profile? (yes/no): " ans
-    if [[ $ans == yes ]]; then
-        send-email config 
+    if [[ ! -f ~/.muttrc ]]; then
+        read -e -i "yes" -p "Configure Email sending profile? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            send-email config 
+        fi
     fi
 
     read -e -i "no" -p "Re-configure ~/.config/autostart? (yes/no): " ans 
