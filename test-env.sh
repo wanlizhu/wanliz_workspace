@@ -1158,6 +1158,11 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-rows 30
     fi
 
+    read -e -i "yes" -p "Configure Email sending profile? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        send-email config 
+    fi
+
     if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
         echo '[Desktop Entry]
 Type=Application
@@ -1172,7 +1177,8 @@ Comment=Disable access control' > /tmp/xhost.desktop
     fi
 
     if [[ ! -f ~/.config/autostart/report-ip.desktop ]]; then
-        echo '[Desktop Entry]
+        if [[ -f ~/.muttrc ]]; then
+            echo '[Desktop Entry]
 Type=Application
 Exec=bash -c "/usr/local/bin/report-ip.sh > /tmp/report-ip.log"
 Hidden=false
@@ -1180,8 +1186,9 @@ NoDisplay=false
 X-GNOME-Autostart-enabled=true
 Name=Report IP through Email
 Comment=Report IP through Email' > /tmp/report-ip.desktop
-        sudo mv /tmp/report-ip.desktop ~/.config/autostart/report-ip.desktop
-        echo "- Report IP through Email after GNOME startup  [OK]" >> /tmp/config.log
+            sudo mv /tmp/report-ip.desktop ~/.config/autostart/report-ip.desktop
+            echo "- Report IP through Email after GNOME startup  [OK]" >> /tmp/config.log
+        fi
     fi
 
     # TODO - show grub menu
