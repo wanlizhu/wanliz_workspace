@@ -919,22 +919,22 @@ if [[ $1 == config ]]; then
 
     if [[ ! -d $HOME/wanliz_workspace ]]; then
         if ! ping -c2 linuxqa; then
-            if [[ ! -f ~/vpn_with_sso.sh ]]; then
-                cat >> ~/vpn_with_sso.sh << 'EOF'
-    read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
-    if [[ $ans == yes ]]; then
-        if [[ -z $(which openconnect) ]]; then
-            sudo apt install -y openconnect
-        fi
-        read -e -i "firefox" -p "Complete authentication in browser: " browser
-        read -e -i "no" -p "Run in background? (yes/no): " runinbg
-        eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
-        [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
+            if [[ ! -f /usr/local/bin/vpn-with-sso.sh ]]; then
+                echo 'read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
+if [[ $ans == yes ]]; then
+    if [[ -z $(which openconnect) ]]; then
+        sudo apt install -y openconnect
     fi
-EOF
-                chmod +x ~/vpn_with_sso.sh
+    read -e -i "firefox" -p "Complete authentication in browser: " browser
+    read -e -i "no" -p "Run in background? (yes/no): " runinbg
+    eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
+    [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
+fi' > /tmp/vpn-with-sso.sh
+                sudo mv /tmp/vpn-with-sso.sh /usr/local/bin/vpn-with-sso.sh
+                sudo chown $USER /usr/local/bin/vpn-with-sso.sh
+                chmod +x /usr/local/bin/vpn-with-sso.sh
             fi
-            read -p "Run command ~/vpn_with_sso.sh, then press [ENTER] to continue: " _
+            read -p "Run command /usr/local/bin/vpn-with-sso.sh, then press [ENTER] to continue: " _
         fi
         
         git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_workspace $HOME/wanliz_workspace
@@ -945,6 +945,27 @@ EOF
         else
             echo "- Clone wanliz_workspace  [FAILED]" >> /tmp/config.log
         fi
+    fi
+
+    if [[ ! -f /usr/local/bin/report-ip.sh ]]; then
+        echo 'ip addr > /tmp/ip-addr
+if [[ -f ~/.last-reported-ip-addr ]]; then
+    if cmp -s /tmp/ip-addr ~/.last-reported-ip-addr; then
+        echo "[$(date)] IP has not changed since last report" > /tmp/report-ip.log 
+        exit
+    fi 
+fi
+
+source ~/wanliz_workspace/test-env.sh || {
+    echo "~/wanliz_workspace/test-env.sh does not exist" > /tmp/report-ip.log 
+    exit -1
+}
+
+' > /tmp/report-ip.sh
+        echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"$(ip addr)\" send-email && cp -f /tmp/ip-addr ~/.last-reported-ip-addr || echo 'Failed to send email' > /tmp/report-ip.log" >> /tmp/report-ip.sh
+        sudo mv /tmp/report-ip.sh /usr/local/bin/report-ip.sh
+        sudo chown $USER /usr/local/bin/report-ip.sh
+        sudo chmod +x /usr/local/bin/report-ip.sh
     fi
 
     if [[ -z $(grep wanliz_workspace ~/.bashrc) ]]; then
@@ -1131,44 +1152,30 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-rows 30
     fi
 
-    #if [[ ! -f ~/.config/autostart/wanliz_post_startup.desktop ]]; then
-    #    if [[ ! -f ~/wanliz_post_startup.sh ]]; then
-    #        cat <<EOF > ~/wanliz_post_startup.sh
-    ##!/bin/bash
-    #echo "This works, $USER" | tee ~/log
-    #ifconfig | grep "inet " | tee -a ~/log
-    #bash
-    #EOF
-    #        chmod +x ~/wanliz_post_startup.sh
-    #    fi
-    #
-    #    mkdir -p ~/.config/autostart
-    #    cat <<EOF > ~/.config/autostart/wanliz_post_startup.desktop
-    #[Desktop Entry]
-    #Type=Application
-    #Exec=~/wanliz_post_startup.sh
-    #Hidden=false
-    #NoDisplay=false
-    #X-GNOME-AutoStart-enabled=true
-    #Name=wanliz_post_startup
-    #Comment="This is wanli's custom startup application"
-    #EOF
-    #    echo "- Register autostart application: ~/wanliz_post_startup.sh"
-    #fi
-
     if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
-        cat >> /tmp/xhost.desktop << 'EOF'
-    [Desktop Entry]
-    Type=Application
-    Exec=bash -c "xhost + > /tmp/xhost.log"
-    Hidden=false
-    NoDisplay=false
-    X-GNOME-Autostart-enabled=true
-    Name=XHost Command
-    Comment=Disable access control
-EOF
+        echo '[Desktop Entry]
+Type=Application
+Exec=bash -c "xhost + > /tmp/xhost.log"
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=XHost Command
+Comment=Disable access control' > /tmp/xhost.desktop
         sudo mv /tmp/xhost.desktop ~/.config/autostart/xhost.desktop
-        echo "- Disable access control  [OK]" >> /tmp/config.log
+        echo "- Disable access control after GNOME startup  [OK]" >> /tmp/config.log
+    fi
+
+    if [[ ! -f ~/.config/autostart/report-ip.desktop ]]; then
+        echo '[Desktop Entry]
+Type=Application
+Exec=bash -c "/usr/local/bin/report-ip.sh > /tmp/report-ip.log"
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=Report IP through Email
+Comment=Report IP through Email' > /tmp/report-ip.desktop
+        sudo mv /tmp/report-ip.desktop ~/.config/autostart/report-ip.desktop
+        echo "- Report IP through Email after GNOME startup  [OK]" >> /tmp/config.log
     fi
 
     # TODO - show grub menu
