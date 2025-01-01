@@ -777,8 +777,7 @@ function encrypt {
         txt="$1"
     fi
 
-    echo "Encrypting a string of ${#txt} bytes"
-    read -s -p "Password: " password
+    read -s -p "Encryption Password: " password
     echo 
     echo "$txt" | openssl enc -aes-256-cbc -a -salt -pass pass:"$password" -pbkdf2
 }
@@ -789,9 +788,8 @@ function decrypt {
     else
         txt="$1"
     fi
-
-    echo "Decrypting a string of ${#txt} bytes"
-    read -s -p "Password: " password
+    
+    read -s -p "Decryption Password: " password
     echo "$txt" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"$password" -pbkdf2
 }
 
