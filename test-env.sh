@@ -812,7 +812,7 @@ function send-email {
         echo "set postponed = \"+[Gmail]/Drafts\"" >> $HOME/.muttrc
         echo "" >> $HOME/.muttrc
         echo "# SMTP (for sending emails)" >> $HOME/.muttrc
-        echo "set smtp_url = \"smtps://your-email@gmail.com@smtp.gmail.com:465/\"" >> $HOME/.muttrc
+        echo "set smtp_url = \"smtps://$gmail@smtp.gmail.com:465/\"" >> $HOME/.muttrc
         echo "set smtp_pass = \"$gmailpass\"" >> $HOME/.muttrc
     fi
 
