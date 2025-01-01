@@ -818,6 +818,10 @@ function send-email {
         echo "set smtp_pass = \"$gmailpass\"" >> $HOME/.muttrc
     fi
 
+    if [[ $1 == config ]]; then
+        return 
+    fi
+
     if [[ -z $recipient ]]; then
         read -p "Recipient: " recipient
     fi
