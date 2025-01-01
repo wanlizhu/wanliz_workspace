@@ -1165,6 +1165,12 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         send-email config 
     fi
 
+    read -e -i "no" -p "Re-configure ~/.config/autostart? (yes/no): " ans 
+    if [[ $ans == yes ]]; then
+        rm -rf ~/.config/autostart
+        mkdir -p ~/.config/autostart
+    fi
+
     if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
         echo '[Desktop Entry]
 Type=Application
@@ -1182,7 +1188,7 @@ Comment=Disable access control' > /tmp/xhost.desktop
         if [[ -f ~/.muttrc ]]; then
             echo '[Desktop Entry]
 Type=Application
-Exec=bash -c "/usr/local/bin/report-ip.sh > /tmp/report-ip.log"
+Exec=bash -c "echo 'Sleep 30 sec prior to IP reporting'; sleep 30; /usr/local/bin/report-ip.sh > /tmp/report-ip.log"
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true
