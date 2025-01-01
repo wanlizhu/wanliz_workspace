@@ -778,6 +778,7 @@ function encrypt {
     fi
 
     read -s -p "Password: " password
+    echo 
     echo "$txt" | openssl enc -aes-256-cbc -a -salt -pass pass:"$password" -pbkdf2
 }
 
