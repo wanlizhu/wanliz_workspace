@@ -137,13 +137,19 @@ function install-driver {
         read -e -i "release" -p "Build type: " buildtype
         pushd ~/Downloads 
         if [[ $buildtype == release ]]; then
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1.run http://linuxqa/builds/release/display/x86_64/$1/NVIDIA-Linux-x86_64-$1.run || return -1
+            if [[ ! -f NVIDIA-Linux-x86_64-$1.run ]]; then
+                wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1.run http://linuxqa/builds/release/display/x86_64/$1/NVIDIA-Linux-x86_64-$1.run || return -1
+            fi 
             install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1.run
         elif [[ $buildtype == debug ]]; then
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-debug.run http://linuxqa/builds/release/display/x86_64/debug/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
+            if [[ ! -f NVIDIA-Linux-x86_64-$1-debug.run ]]; then
+                wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-debug.run http://linuxqa/builds/release/display/x86_64/debug/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
+            fi 
             install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-debug.run
         elif [[ $buildtype == develop ]]; then
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-develop.run http://linuxqa/builds/release/display/x86_64/develop/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
+            if [[ ! -f NVIDIA-Linux-x86_64-$1-develop.run ]]; then
+                wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-develop.run http://linuxqa/builds/release/display/x86_64/develop/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
+            fi
             install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-develop.run
         fi
         popd
