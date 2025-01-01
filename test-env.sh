@@ -1,5 +1,5 @@
 if   [[ $HOSTNAME == wanliz-dev  ]]; then
-    export P4CLIENT=wanliz-p4sw-dev
+    export P4CLIENT=wanliz_p4sw_dev
 fi
 if [[ -z $DISPLAY ]]; then
     export DISPLAY=:0
@@ -844,6 +844,14 @@ function send-email {
     else
         echo "$body" | mutt -s "$subject" -a "$attachment" -- $recipient
     fi
+}
+
+function code-dev-drivers {
+    code --folder-uri "vscode-remote://ssh-remote+wanliz-dev/home/wanliz/wanliz_p4sw_dev/"
+}
+
+function code-dev-drivers-opengl {
+    
 }
 
 ###########################################################
