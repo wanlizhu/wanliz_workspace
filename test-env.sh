@@ -860,6 +860,19 @@ function code-dev-drivers-opengl {
     code --folder-uri "vscode-remote://ssh-remote+wanliz-dev/home/wanliz/wanliz_p4sw_dev/dev/gpu_drv/bugfix_main/drivers/OpenGL"
 }
 
+function dmesg-nvidia {
+    sudo dmesg | grep -i -E 'nvidia|nvrm|drm'
+}
+
+function show-gpu {
+    if [[ ! -z $(which nvidia-smi) ]]; then
+        nvidia-smi -q | grep -i "Product Name"
+        nvidia-smi -L 
+    fi
+    lspci | grep -i nvidia
+    sudo lshw -C display | grep -i product
+}
+
 ###########################################################
 ###########################################################
 ###########################################################
