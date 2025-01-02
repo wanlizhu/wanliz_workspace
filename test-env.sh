@@ -1009,7 +1009,7 @@ source ~/wanliz_workspace/test-env.sh || {
     if [[ -z $(grep wanliz_workspace ~/.bashrc) ]]; then
         if [[ -d $HOME/wanliz_workspace ]]; then
             echo "" >> ~/.bashrc
-            echo "source $HOME/wanliz_workspace/test-env.sh" >> ~/.bashrc
+            echo "[[ -f $HOME/wanliz_workspace/test-env.sh ]] && source $HOME/wanliz_workspace/test-env.sh" >> ~/.bashrc
             echo "- Source test-env.sh in ~/.bashrc  [OK]" >> /tmp/config.log
         fi
     fi
