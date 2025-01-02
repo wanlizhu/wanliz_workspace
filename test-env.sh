@@ -1021,7 +1021,7 @@ source ~/wanliz_workspace/test-env.sh || {
         echo "- Install openssh-server  [OK]" >> /tmp/config.log
     fi
 
-    read -e -i "yes" -p "Add and run VNC server as system service? (yes/no): " ans
+    read -e -i "yes" -p "Add VNC server as system service? (yes/no): " ans
     if [[ $ans == yes ]]; then
         if [[ $XDG_SESSION_TYPE == tty ]]; then
             read -e -i "x11" -p "XDG session type: " XDG_SESSION_TYPE
