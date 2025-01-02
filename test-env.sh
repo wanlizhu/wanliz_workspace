@@ -869,7 +869,7 @@ function show-gpu {
         nvidia-smi -q | grep -i "Product Name"
         nvidia-smi -L 
     fi
-    lspci | grep -i nvidia
+    lspci | grep -i nvidia | grep -v "Audio device"
     sudo lshw -C display | grep -i product
 }
 
