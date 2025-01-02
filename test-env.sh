@@ -983,7 +983,9 @@ fi' > /tmp/vpn-with-sso.sh
     fi
 
     if [[ ! -f /usr/local/bin/report-ip.sh ]]; then
-        echo 'ip addr | grep inet > /tmp/ip-addr
+        read -e -i "yes" -p "Add report-ip.sh to /usr/local/bin? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            echo 'ip addr | grep inet > /tmp/ip-addr
 if [[ -f ~/.last-reported-ip-addr ]]; then
     if cmp -s /tmp/ip-addr ~/.last-reported-ip-addr; then
         echo "[$(date)] IP has not changed since last report" 
@@ -997,10 +999,11 @@ source ~/wanliz_workspace/test-env.sh || {
 }
 
 ' > /tmp/report-ip.sh
-        echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"$(ip addr)\" send-email && cp -f /tmp/ip-addr ~/.last-reported-ip-addr || echo 'Failed to send email'" >> /tmp/report-ip.sh
-        sudo mv /tmp/report-ip.sh /usr/local/bin/report-ip.sh
-        sudo chown $USER /usr/local/bin/report-ip.sh
-        sudo chmod +x /usr/local/bin/report-ip.sh
+            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"$(ip addr)\" send-email && cp -f /tmp/ip-addr ~/.last-reported-ip-addr || echo 'Failed to send email'" >> /tmp/report-ip.sh
+            sudo mv /tmp/report-ip.sh /usr/local/bin/report-ip.sh
+            sudo chown $USER /usr/local/bin/report-ip.sh
+            sudo chmod +x /usr/local/bin/report-ip.sh
+        fi 
     fi
 
     if [[ -z $(grep wanliz_workspace ~/.bashrc) ]]; then
@@ -1018,25 +1021,27 @@ source ~/wanliz_workspace/test-env.sh || {
         echo "- Install openssh-server  [OK]" >> /tmp/config.log
     fi
 
-    if [[ $XDG_SESSION_TYPE == tty ]]; then
-        read -e -i "x11" -p "XDG session type: " XDG_SESSION_TYPE
-    fi
+    read -e -i "yes" -p "Add and run VNC server as system service? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        if [[ $XDG_SESSION_TYPE == tty ]]; then
+            read -e -i "x11" -p "XDG session type: " XDG_SESSION_TYPE
+        fi
 
-    if [[ $XDG_SESSION_TYPE == x11 ]]; then
-        if [[ -z $(sudo lsof -i :5900-5909) ]]; then
-            if [[ $(systemctl is-active x11vnc) == active ]]; then
-                echo "x11vnc.service is already running"
-            else 
-                if [[ -z $(command -v x11vnc) ]]; then
-                    sudo apt install -y x11vnc
-                fi
+        if [[ $XDG_SESSION_TYPE == x11 ]]; then
+            if [[ -z $(sudo lsof -i :5900-5909) ]]; then
+                if [[ $(systemctl is-active x11vnc) == active ]]; then
+                    echo "x11vnc.service is already running"
+                else 
+                    if [[ -z $(command -v x11vnc) ]]; then
+                        sudo apt install -y x11vnc
+                    fi
 
-                if [[ ! -f $HOME/.vnc/passwd ]]; then
-                    x11vnc -storepasswd
-                fi
+                    if [[ ! -f $HOME/.vnc/passwd ]]; then
+                        x11vnc -storepasswd
+                    fi
 
-                if [[ ! -f /etc/systemd/system/x11vnc.service ]]; then
-                    echo "[Unit]
+                    if [[ ! -f /etc/systemd/system/x11vnc.service ]]; then
+                        echo "[Unit]
 Description=x11vnc server
 After=display-manager.service
 
@@ -1048,69 +1053,76 @@ Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
+                    fi
+
+                    sudo systemctl daemon-reload 
+                    sudo systemctl enable x11vnc.service
+                    sudo systemctl start  x11vnc.service
+                    echo "- Register x11vnc as service  [OK]" >> /tmp/config.log
                 fi
-
-                sudo systemctl daemon-reload 
-                sudo systemctl enable x11vnc.service
-                sudo systemctl start  x11vnc.service
-                echo "- Register x11vnc as service  [OK]" >> /tmp/config.log
             fi
-        fi
-    elif [[ $XDG_SESSION_TYPE == wayland ]]; then
-        if [[ -z $(sudo lsof -i :3389) ]]; then
-            apt_install_any gnome-remote-desktop xdg-desktop-portal xdg-desktop-portal-gnome
-            gsettings set org.gnome.desktop.remote-desktop.rdp enable true
-            gsettings set org.gnome.desktop.remote-desktop.rdp.authentication-method 'password'
-            echo -n "zhujie" | base64 | gsettings set org.gnome.desktop.remote-desktop.rdp.password-hash
-            gsettings set org.gnome.desktop.remote-desktop.rdp.enable-remote-control true
-            sudo ufw disable
-            systemctl --user enable gnome-remote-desktop
-            systemctl --user start gnome-remote-desktop
-            sleep 1
+        elif [[ $XDG_SESSION_TYPE == wayland ]]; then
+            if [[ -z $(sudo lsof -i :3389) ]]; then
+                apt_install_any gnome-remote-desktop xdg-desktop-portal xdg-desktop-portal-gnome
+                gsettings set org.gnome.desktop.remote-desktop.rdp enable true
+                gsettings set org.gnome.desktop.remote-desktop.rdp.authentication-method 'password'
+                echo -n "zhujie" | base64 | gsettings set org.gnome.desktop.remote-desktop.rdp.password-hash
+                gsettings set org.gnome.desktop.remote-desktop.rdp.enable-remote-control true
+                sudo ufw disable
+                systemctl --user enable gnome-remote-desktop
+                systemctl --user start gnome-remote-desktop
+                sleep 1
 
-            if [[ ! -z $(ip -br a | grep 3389) ]]; then
-                echo "- Share wayland display  [OK]" >> /tmp/config.log
-            else
-                echo "- Share wayland display  [FAILED]" >> /tmp/config.log
+                if [[ ! -z $(ip -br a | grep 3389) ]]; then
+                    echo "- Share wayland display  [OK]" >> /tmp/config.log
+                else
+                    echo "- Share wayland display  [FAILED]" >> /tmp/config.log
+                fi
             fi
+        else
+            echo "- Share $XDG_SESSION_TYPE display  [FAILED]" >> /tmp/config.log 
         fi
-    else
-        echo "- Share $XDG_SESSION_TYPE display  [FAILED]" >> /tmp/config.log 
-    fi
+    fi # End of "add vnc server as system service"
 
     if [[ -z $(which p4) ]]; then
-        sudo apt install -y helix-p4d || {
-            if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
-                pushd ~/Downloads 
-                codename=$(lsb_release -c | cut -f2)
-                wget https://package.perforce.com/perforce.pubkey
-                gpg -n --import --import-options import-show perforce.pubkey
-                wget -qO - https://package.perforce.com/perforce.pubkey | sudo apt-key add -
-                #echo "deb http://package.perforce.com/apt/ubuntu $codename release" | sudo tee /etc/apt/sources.list.d/perforce.list
-                echo "deb http://package.perforce.com/apt/ubuntu noble release" | sudo tee /etc/apt/sources.list.d/perforce.list
-                sudo apt update 
-                sudo apt install -y helix-p4d
-                popd 
+        read -e -i "yes" -p "Install p4 command? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            sudo apt install -y helix-p4d || {
+                if [[ $(lsb_release -i | cut -f2) == Ubuntu ]]; then
+                    pushd ~/Downloads 
+                    codename=$(lsb_release -c | cut -f2)
+                    wget https://package.perforce.com/perforce.pubkey
+                    gpg -n --import --import-options import-show perforce.pubkey
+                    wget -qO - https://package.perforce.com/perforce.pubkey | sudo apt-key add -
+                    #echo "deb http://package.perforce.com/apt/ubuntu $codename release" | sudo tee /etc/apt/sources.list.d/perforce.list
+                    echo "deb http://package.perforce.com/apt/ubuntu noble release" | sudo tee /etc/apt/sources.list.d/perforce.list
+                    sudo apt update 
+                    sudo apt install -y helix-p4d
+                    popd 
+                fi
+            }
+            if [[ ! -z $(which p4) ]]; then
+                echo "- Install p4 command  [OK]" >> /tmp/config.log
+            else
+                echo "- Install p4 command  [FAILED]" >> /tmp/config.log
             fi
-        }
-        if [[ ! -z $(which p4) ]]; then
-            echo "- Install p4 command  [OK]" >> /tmp/config.log
-        else
-            echo "- Install p4 command  [FAILED]" >> /tmp/config.log
         fi
     fi
 
     if [[ -z $(which p4v) ]]; then
-        pushd ~/Downloads
-        wget https://www.perforce.com/downloads/perforce/r24.4/bin.linux26x86_64/p4v.tgz
-        tar -zxvf p4v.tgz 
-        sudo cp -R p4v-2024.4.*/bin/* /usr/local/bin
-        sudo cp -R p4v-2024.4.*/lib/* /usr/local/lib 
-        popd
+        read -e -i "yes" -p "Install p4v command? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            pushd ~/Downloads
+            wget https://www.perforce.com/downloads/perforce/r24.4/bin.linux26x86_64/p4v.tgz
+            tar -zxvf p4v.tgz 
+            sudo cp -R p4v-2024.4.*/bin/* /usr/local/bin
+            sudo cp -R p4v-2024.4.*/lib/* /usr/local/lib 
+            popd
 
-        [[ ! -z $(which p4v) ]] && 
-        echo "- Install p4v command  [OK]" >> /tmp/config.log ||
-        echo "- Install p4v command  [FAILED]" >> /tmp/config.log 
+            [[ ! -z $(which p4v) ]] && 
+            echo "- Install p4v command  [OK]" >> /tmp/config.log ||
+            echo "- Install p4v command  [FAILED]" >> /tmp/config.log 
+        fi 
     fi
 
     if [[ ! -f $HOME/.p4ignore ]]; then
@@ -1143,53 +1155,65 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
     fi
 
     if [[ -z $(which code) ]]; then
-        pushd ~/Downloads 
-        sudo apt install -y software-properties-common apt-transport-https wget
-        wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-        sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
-        sudo sh -c 'echo "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
-        sudo apt update
-        sudo apt install -y code && { 
-            code --command "workbench.action.sync.enable" &
-            sleep 3
-            read -p "Press [ENTER] to continue: " _
-            echo "- Install VS Code  [OK]" >> /tmp/config.log 
-        } ||
-            echo "- Install VS Code  [FAILED]" >> /tmp/config.log 
-        popd 
+        read -e -i "yes" -p "Install Visual Studio Code? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            pushd ~/Downloads 
+            sudo apt install -y software-properties-common apt-transport-https wget
+            wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+            sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
+            sudo sh -c 'echo "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
+            sudo apt update
+            sudo apt install -y code && { 
+                code --command "workbench.action.sync.enable" &
+                sleep 3
+                read -p "Press [ENTER] to continue: " _
+                echo "- Install VS Code  [OK]" >> /tmp/config.log 
+            } ||
+                echo "- Install VS Code  [FAILED]" >> /tmp/config.log 
+            popd 
+        fi 
     fi
 
     if [[ -z $(which slack) ]]; then
-        sudo snap install slack --classic
+        read -e -i "yes" -p "Install Slack? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            sudo snap install slack --classic
+        fi 
     fi
 
     if [[ ! -f ~/.local/share/fonts/VerilySerifMono.otf ]]; then
-        mkdir -p ~/.local/share/fonts
-        if [[ -f ~/wanliz_workspace/resources/VerilySerifMono.otf ]]; then
-            cp ~/wanliz_workspace/resources/VerilySerifMono.otf ~/.local/share/fonts
-        else
-            pushd ~/Downloads 
-            wget -O verily_serif_mono.zip https://dl.dafont.com/dl/?f=verily_serif_mono &&
-            unzip verily_serif_mono.zip && 
-            cp verily_serif_mono/VerilySerifMono.otf ~/.local/share/fonts
-            popd 
-        fi
-        fc-cache -f -v &&
-        echo "- Install font VerilySerifMono  [OK]" >> /tmp/config.log ||
-        echo "- Install font VerilySerifMono  [FAILED]" >> /tmp/config.log
+        read -e -i "yes" -p "Install new font: VerilySerifMono.otf? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            mkdir -p ~/.local/share/fonts
+            if [[ -f ~/wanliz_workspace/resources/VerilySerifMono.otf ]]; then
+                cp ~/wanliz_workspace/resources/VerilySerifMono.otf ~/.local/share/fonts
+            else
+                pushd ~/Downloads 
+                wget -O verily_serif_mono.zip https://dl.dafont.com/dl/?f=verily_serif_mono &&
+                unzip verily_serif_mono.zip && 
+                cp verily_serif_mono/VerilySerifMono.otf ~/.local/share/fonts
+                popd 
+            fi
+            fc-cache -f -v &&
+            echo "- Install font VerilySerifMono  [OK]" >> /tmp/config.log ||
+            echo "- Install font VerilySerifMono  [FAILED]" >> /tmp/config.log
+        fi 
     fi
 
-    PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
-    FONT_NAME=$(gsettings get org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font)
-    if [[ $FONT_NAME != 'VerilySerifMono 14' ]]; then
+    read -e -i "yes" -p "Configure GNOME Terminal profile? (yes/no): " ans
+    if [[ $ans == yes ]]; then
         PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
-        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ use-system-font false
-        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font 'VerilySerifMono 14'
-        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ background-color '#ffffff'
-        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ foreground-color '#171421'
-        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-columns 100
-        gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-rows 30
-    fi
+        FONT_NAME=$(gsettings get org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font)
+        if [[ $FONT_NAME != 'VerilySerifMono 14' && -f ~/.local/share/fonts/VerilySerifMono.otf ]]; then
+            PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
+            gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ use-system-font false
+            gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font 'VerilySerifMono 14'
+            gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ background-color '#ffffff'
+            gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ foreground-color '#171421'
+            gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-columns 100
+            gsettings set org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ default-size-rows 30
+        fi
+    fi 
 
     if [[ ! -f ~/.muttrc ]]; then
         read -e -i "yes" -p "Configure Email sending profile? (yes/no): " ans
@@ -1198,14 +1222,16 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         fi
     fi
 
-    read -e -i "no" -p "Re-configure ~/.config/autostart? (yes/no): " ans 
+    read -e -i "yes" -p "Add autostart tasks? (yes/no): " ans
     if [[ $ans == yes ]]; then
-        rm -rf ~/.config/autostart
-        mkdir -p ~/.config/autostart
-    fi
+        read -e -i "no" -p "Delete ~/.config/autostart? (yes/no): " ans 
+        if [[ $ans == yes ]]; then
+            rm -rf ~/.config/autostart
+            mkdir -p ~/.config/autostart
+        fi
 
-    if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
-        echo '[Desktop Entry]
+        if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
+            echo '[Desktop Entry]
 Type=Application
 Exec=bash -c "xhost + > /tmp/xhost.log"
 Hidden=false
@@ -1213,13 +1239,13 @@ NoDisplay=false
 X-GNOME-Autostart-enabled=true
 Name=XHost Command
 Comment=Disable access control' > /tmp/xhost.desktop
-        sudo mv /tmp/xhost.desktop ~/.config/autostart/xhost.desktop
-        echo "- Disable access control after GNOME startup  [OK]" >> /tmp/config.log
-    fi
+            sudo mv /tmp/xhost.desktop ~/.config/autostart/xhost.desktop
+            echo "- Disable access control after GNOME startup  [OK]" >> /tmp/config.log
+        fi
 
-    if [[ ! -f ~/.config/autostart/report-ip.desktop ]]; then
-        if [[ -f ~/.muttrc ]]; then
-            echo '[Desktop Entry]
+        if [[ ! -f ~/.config/autostart/report-ip.desktop ]]; then
+            if [[ -f ~/.muttrc ]]; then
+                echo '[Desktop Entry]
 Type=Application
 Exec=bash -c "echo 'Sleep 30 sec prior to IP reporting'; sleep 30; /usr/local/bin/report-ip.sh > /tmp/report-ip.log"
 Hidden=false
@@ -1227,10 +1253,11 @@ NoDisplay=false
 X-GNOME-Autostart-enabled=true
 Name=Report IP through Email
 Comment=Report IP through Email' > /tmp/report-ip.desktop
-            sudo mv /tmp/report-ip.desktop ~/.config/autostart/report-ip.desktop
-            echo "- Report IP through Email after GNOME startup  [OK]" >> /tmp/config.log
+                sudo mv /tmp/report-ip.desktop ~/.config/autostart/report-ip.desktop
+                echo "- Report IP through Email after GNOME startup  [OK]" >> /tmp/config.log
+            fi
         fi
-    fi
+    fi # End of "add autostart tasks"
 
     # TODO - show grub menu
 
