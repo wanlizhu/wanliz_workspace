@@ -39,6 +39,12 @@ function install-if-not-yet {
     done 
 }
 
+function install-any {
+    for item in "$@"; do 
+        sudo apt install -y $item 
+    done
+}
+
 function chd {
     case $1 in
         gl|opengl|glcore) cd $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL ;;
@@ -198,7 +204,7 @@ function install-driver {
 
         read -e -i "no" -p "Install dependencies? (yes/no): " ans
         if [[ $ans == yes ]]; then
-            apt_install_any pkg-config gcc gcc-12 g++ libglvnd-dev  
+            install-any pkg-config gcc gcc-12 g++ libglvnd-dev  
         fi
 
         # TODO - gcc-12
@@ -530,7 +536,7 @@ function load-vksdk {
         tar -xvf vulkansdk-linux-x86_64-$version.tar.xz
         mkdir -p $HOME/VulkanSDK
         mv $version $HOME/VulkanSDK
-        apt_install_any libxcb-xinerama0 libxcb-xinput0
+        install-any libxcb-xinerama0 libxcb-xinput0
     fi
     source $HOME/VulkanSDK/$version/setup-env.sh
     echo $VULKAN_SDK
@@ -973,7 +979,7 @@ fi' > /tmp/vpn-with-sso.sh
         fi
         
         git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_workspace $HOME/wanliz_workspace
-        apt_install_any build-essential gcc g++ cmake pkg-config libglvnd-dev 
+        install-any build-essential gcc g++ cmake pkg-config libglvnd-dev 
         
         if [[ -d $HOME/wanliz_workspace ]]; then
             echo "- Clone wanliz_workspace  [OK]" >> /tmp/config.log
@@ -1063,7 +1069,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
             fi
         elif [[ $XDG_SESSION_TYPE == wayland ]]; then
             if [[ -z $(sudo lsof -i :3389) ]]; then
-                apt_install_any gnome-remote-desktop xdg-desktop-portal xdg-desktop-portal-gnome
+                install-any gnome-remote-desktop xdg-desktop-portal xdg-desktop-portal-gnome
                 gsettings set org.gnome.desktop.remote-desktop.rdp enable true
                 gsettings set org.gnome.desktop.remote-desktop.rdp.authentication-method 'password'
                 echo -n "zhujie" | base64 | gsettings set org.gnome.desktop.remote-desktop.rdp.password-hash
