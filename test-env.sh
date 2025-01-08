@@ -138,6 +138,30 @@ function install-driver {
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D"
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D"
+    elif [[ $1 == current ]]; then
+        pushd ~/Downloads 
+        echo "Available build types for $1: release, debug and develop"
+        read -e -i "release" -p "Build type: " buildtype
+        if [[ $buildtype == release ]]; then
+            current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
+            if [[ ! -f NVIDIA-Linux-x86_64-${current}-release.run ]]; then
+                wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-release.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
+            fi 
+            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$current.run
+        elif [[ $buildtype == debug ]]; then
+            current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
+            if [[ ! -f NVIDIA-Linux-x86_64-${current}-debug.run ]]; then
+                wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-debug.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
+            fi 
+            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-debug.run
+        elif [[ $buildtype == develop ]]; then
+            current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
+            if [[ ! -f NVIDIA-Linux-x86_64-${current}-develop.run ]]; then
+                wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-develop.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
+            fi 
+            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-develop.run
+        fi
+        popd 
     elif [[ $1 =~ ^[0-9]+\.[0-9]+$ ]]; then
         echo "Available build types for $1: release, debug and develop"
         read -e -i "release" -p "Build type: " buildtype
