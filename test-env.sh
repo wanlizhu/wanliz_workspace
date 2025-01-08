@@ -742,6 +742,10 @@ function gdb-attach-xorg {
     sudo gdb -ex "handle SIGPIPE nostop noprint pass" -ex "cont" $(nvidia-smi | grep Xorg | awk '{print $7}') $(pgrep Xorg)
 }
 
+function gdb-attach-gdm-x-session {
+    sudo gdb -ex "handle SIGPIPE nostop noprint pass" -ex "cont" /usr/libexec/gdm-x-session $(pgrep gdm-x-session)
+}
+
 function install-dcgm {
     if [[ -z $(dpkg -l | grep datacenter-gpu-manager) ]]; then
         pushd ~/Downloads 
