@@ -30,6 +30,7 @@ else
     for i in `seq 1 $rounds`; do 
         ./viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size || exit -1
         fps=$(grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}')
+        fps=${fps%%.*}
         total=$((total + fps))
     done
     echo "Average FPS: $((total / rounds))"
