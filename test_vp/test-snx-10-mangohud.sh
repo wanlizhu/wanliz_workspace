@@ -21,8 +21,10 @@ cat <<EOF > viewsets/snx/config/snx_10.xml
 </SPECGWPG>
 EOF
 
+echo "- 1920x1080"
+echo "- 3840x2160"
+read -e -i "1920x1080" -p "Resolution: " size
 mkdir -p results/snx-04/ 
-read -e -i "1920x1080" -p "Resolution: " size 
 
 mangohud viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size 
 

@@ -16,7 +16,9 @@ cat <<EOF > viewsets/snx/config/snx_10.xml
 </SPECGWPG>
 EOF
 
-read -e -i "1920x1080" -p "Resolution: " size 
+echo "- 1920x1080"
+echo "- 3840x2160"
+read -e -i "1920x1080" -p "Resolution: " size
 read -e -i "$(date +%H%M%S)" -p "Output folder suffix: " suffix
 
 export workdir=`pwd`
