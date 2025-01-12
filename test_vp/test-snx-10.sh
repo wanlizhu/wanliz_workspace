@@ -20,6 +20,18 @@ echo "- 1920x1080"
 echo "- 3840x2160"
 read -e -i "1920x1080" -p "Resolution: " size
 
-mkdir -p results/snx-04/ &&
-./viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size &&
-grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}' 
+mkdir -p results/snx-04/
+
+if [[ -z $rounds ]]; then
+    ./viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size || exit -1
+    grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}' 
+else
+    total=0
+    for i in `seq 1 $rounds`; do 
+        ./viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size || exit -1
+        fps=$(grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}')
+        total=$((total + fps))
+    done
+    echo "Average FPS: $((total / rounds))"
+fi
+
