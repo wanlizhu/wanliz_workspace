@@ -395,8 +395,9 @@ function cpdir {
         src=$(realpath .)
     fi
 
-    echo "Copy dir of $(du -sh $src | cut -f1) to:"
+    echo "Src dir contains $(du -sh $src | cut -f1)"
     read -p "Dst host: " host
+    ismacos=no
     if [[ $host == wanliz-test || $host == wanliz-dev || $host == mac ]]; then
         if [[ $host == mac ]]; then
             if [[ ! -f /tmp/mac.ip ]]; then
@@ -404,13 +405,18 @@ function cpdir {
                 echo $macip > /tmp/mac.ip
             fi
             host=$(cat /tmp/mac.ip)
+            ismacos=yes
         fi
         user=wanliz 
     else
         read -e -i "$USER" -p "Dst user: " user
     fi
 
-    rsync -avz --delete --force $src $user@$host:/home/$user/Documents/$HOSTNAME/$(basename $src) 
+    if [[ $ismacos == yes ]]; then
+        rsync -avz --delete --force $src $user@$host:/Users/$user/Documents/$HOSTNAME/$(basename $src) 
+    else
+        rsync -avz --delete --force $src $user@$host:/home/$user/Documents/$HOSTNAME/$(basename $src) 
+    fi
 }
 
 function flamegraph {
