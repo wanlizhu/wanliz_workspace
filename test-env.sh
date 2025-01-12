@@ -387,6 +387,25 @@ function perfhelp {
     echo 'sudo perf record -g --call-graph dwarf --freq=1000 --output=$(date +%H%M%S).perf.data -- "$@"'
 }
 
+function cpdir {
+    if [[ -z $1 ]]; then
+        read -e -i "$(pwd)" -p "Src dir: " src
+        src=$(realpath $src)
+    else
+        src=$(realpath .)
+    fi
+
+    echo "Copy dir of $(du -sh $src | cut -f1) to:"
+    read -p "Dst host: " host
+    if [[ $host == test || $host == dev || $host == mac ]]; then
+        user=wanliz 
+    else
+        read -e -i "$USER" -p "Dst user: " user
+    fi
+
+    rsync -avz --delete --force $src $user@$host:/home/$user/Documents/$HOSTNAME/$(basename $src) 
+}
+
 function flamegraph {
     if [[ ! -f ~/Flamegraph/flamegraph.pl ]]; then
         git clone --depth 1 https://github.com/brendangregg/FlameGraph.git $HOME/Flamegraph || return -1
