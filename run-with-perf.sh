@@ -78,6 +78,6 @@ else
 fi
 
 if [[ -f $outfile ]]; then
-    source ~/wanliz_workspace/bashrc_inc.sh
+    source ~/wanliz_workspace/test-env.sh
     flamegraph $outfile
 fi
