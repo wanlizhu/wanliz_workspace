@@ -397,7 +397,14 @@ function cpdir {
 
     echo "Copy dir of $(du -sh $src | cut -f1) to:"
     read -p "Dst host: " host
-    if [[ $host == test || $host == dev || $host == mac ]]; then
+    if [[ $host == wanliz-test || $host == wanliz-dev || $host == mac ]]; then
+        if [[ $host == mac ]]; then
+            if [[ ! -f /tmp/mac.ip ]]; then
+                read -p "IP address of MacBook: " macip
+                echo $macip > /tmp/mac.ip
+            fi
+            host=$(cat /tmp/mac.ip)
+        fi
         user=wanliz 
     else
         read -e -i "$USER" -p "Dst user: " user
@@ -994,6 +1001,16 @@ if [[ $1 == config ]]; then
         echo "set debuginfod enabled on" > ~/.gdbinit
         echo "If env XDG_CACHE_HOME is empty, then ~/.cache/debuginfod_client is used instead."
         echo "- create ~/.gdbinit  [OK]" >> /tmp/config.log
+    fi
+
+    if [[ -z $(grep wanliz-test /etc/hosts) ]]; then
+        echo "172.16.179.38 wanliz-test" | sudo tee -a /etc/hosts
+        echo "- config wanliz-test in /etc/hosts  [OK]" >> /tmp/config.log
+    fi
+
+    if [[ -z $(grep wanliz-dev /etc/hosts) ]]; then
+        echo "172.16.178.29 wanliz-dev" | sudo tee -a /etc/hosts
+        echo "- config wanliz-dev in /etc/hosts  [OK]" >> /tmp/config.log
     fi
 
     if [[ ! -f /etc/apt/sources.list.d/ddebs.list ]]; then
