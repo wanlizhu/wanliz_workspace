@@ -32,6 +32,7 @@ else
         fps=$(grep '<Test Index=' results/snx-04/results.xml | awk -F '"' '{print $10}')
         fps=${fps%%.*}
         total=$((total + fps))
+        echo "$fps"
     done
     echo "Average FPS: $((total / rounds))"
 fi
