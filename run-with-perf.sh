@@ -43,6 +43,14 @@ if [[ -f $outfile ]]; then
     fi
 fi
 
+if [[ ! -z $(cat /proc/driver/nvidia/version | grep -i 'Release Build') ]]; then
+    echo "The installed nvidia driver is a release build"
+    read -e -i "yes" -p "Continue without nvidia debug symbols? (yes/no): " ans
+    if [[ $ans != yes ]]; then
+        exit -1
+    fi
+fi
+
 if [[ $lifecycle == yes ]]; then 
     if [[ $exe == *.sh ]]; then
         echo "Do NOT run script file in this mode!"
