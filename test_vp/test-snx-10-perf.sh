@@ -29,7 +29,7 @@ export wait_sec=2
 export record_sec=5
 
 mkdir -p results/snx-04/ 
-run_with_perf.sh viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size 
+run-with-perf.sh viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size 
 
 while [[ ! -z $(pidof viewperf) ]]; do
     sleep 1
