@@ -425,8 +425,8 @@ function cpdir {
     fi
 
     if [[ $ismacos == yes ]]; then
-        ssh $user@$host "[[ ! -d /Users/$user/Documents/$HOSTNAME ]] && mkdir -p /Users/$user/Documents/$HOSTNAME"
-        rsync -avz --delete --force --progress $src/ $user@$host:/Users/$user/Documents/$HOSTNAME/$(basename $src) 
+        ssh $user@$host "[[ ! -d /Users/$user/$HOSTNAME ]] && mkdir -p /Users/$user/$HOSTNAME"
+        rsync -avz --delete --force --progress $src/ $user@$host:/Users/$user/$HOSTNAME/$(basename $src) 
     else
         ssh $user@$host "[[ ! -d /home/$user/Documents/$HOSTNAME ]] && mkdir -p /home/$user/Documents/$HOSTNAME"
         rsync -avz --delete --force --progress $src/ $user@$host:/home/$user/Documents/$HOSTNAME/$(basename $src)
