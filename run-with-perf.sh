@@ -35,9 +35,10 @@ if [[ -f $outfile ]]; then
     read -e -i "yes" -p "$outfile already exists, overwrite it? (yes/no): " ans
     if [[ $ans == yes ]]; then
         rm -rf $outfile
-        read -e -i "no" -p "Remove directory $(dirname $outfile)? (yes/no): " ans
+        read -e -i "yes" -p "Clean up directory $(dirname $outfile)? (yes/no): " ans
         if [[ $ans == yes ]]; then
             rm -rf $(dirname $outfile)
+            mkdir -p $(dirname $outfile)
         fi
     fi
 fi
