@@ -953,6 +953,11 @@ if [[ $1 == config ]]; then
         echo "export DISPLAY=:0"
     fi
 
+    read -e -i "yes" -p "Update apt sources? (yes/no): " apt_update
+    if [[ $apt_update == yes ]]; then
+        sudo apt update
+    fi
+
     if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
         echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
         sudo cat /etc/sudoers | tail -1
@@ -990,11 +995,6 @@ EOF
 
     if [[ ! -d ~/.config/autostart ]]; then
         mkdir -p ~/.config/autostart
-    fi
-
-    read -e -i "yes" -p "Update apt sources? (yes/no): " apt_update
-    if [[ $apt_update == yes ]]; then
-        sudo apt update
     fi
 
     if [[ -z $(which vkcube) ]]; then
@@ -1088,7 +1088,7 @@ source ~/wanliz_workspace/test-env.sh || {
         echo "- Install openssh-server  [OK]" >> /tmp/config.log
     fi
 
-    read -e -i "yes" -p "Add VNC server as system service? (yes/no): " ans
+    ans=yes 
     if [[ $ans == yes ]]; then
         if [[ $XDG_SESSION_TYPE == tty ]]; then
             read -e -i "x11" -p "XDG session type: " XDG_SESSION_TYPE
@@ -1267,7 +1267,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         fi 
     fi
 
-    read -e -i "yes" -p "Configure GNOME Terminal profile? (yes/no): " ans
+    ans=yes 
     if [[ $ans == yes ]]; then
         PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
         FONT_NAME=$(gsettings get org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font)
@@ -1289,7 +1289,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         fi
     fi
 
-    read -e -i "yes" -p "Add autostart tasks? (yes/no): " ans
+    ans=yes 
     if [[ $ans == yes ]]; then
         read -e -i "no" -p "Delete ~/.config/autostart? (yes/no): " ans 
         if [[ $ans == yes ]]; then
