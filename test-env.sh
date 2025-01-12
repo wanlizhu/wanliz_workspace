@@ -401,7 +401,7 @@ function cpdir {
     if [[ $host == wanliz-test || $host == wanliz-dev || $host == mac ]]; then
         if [[ $host == mac ]]; then
             if [[ ! -f /tmp/mac.ip ]]; then
-                read -p "IP address of MacBook: " macip
+                read -p "Add and remember IP address of MacBook: " macip
                 echo $macip > /tmp/mac.ip
             fi
             host=$(cat /tmp/mac.ip)
