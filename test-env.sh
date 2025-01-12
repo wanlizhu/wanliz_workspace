@@ -395,7 +395,7 @@ function cpdir {
         read -e -i "$(pwd)" -p "Src dir: " src
         src=$(realpath $src)
     else
-        src=$(realpath .)
+        src=$(realpath $1)
     fi
 
     echo "Src dir contains $(du -sh $src | cut -f1)"
