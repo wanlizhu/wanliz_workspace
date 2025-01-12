@@ -1291,11 +1291,11 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
 
     ans=yes 
     if [[ $ans == yes ]]; then
-        read -e -i "no" -p "Delete ~/.config/autostart? (yes/no): " ans 
-        if [[ $ans == yes ]]; then
-            rm -rf ~/.config/autostart
-            mkdir -p ~/.config/autostart
-        fi
+        # read -e -i "no" -p "Delete ~/.config/autostart? (yes/no): " ans 
+        # if [[ $ans == yes ]]; then
+        #     rm -rf ~/.config/autostart
+        #     mkdir -p ~/.config/autostart
+        # fi
 
         if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
             echo '[Desktop Entry]
