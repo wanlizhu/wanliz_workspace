@@ -392,6 +392,7 @@ function flamegraph {
         git clone --depth 1 https://github.com/brendangregg/FlameGraph.git $HOME/Flamegraph || return -1
         sudo apt install -y python3-pip
         sudo apt install -y graphviz
+        pip install gprof2dot 
         pip install --break-system-packages gprof2dot 
     fi
     
