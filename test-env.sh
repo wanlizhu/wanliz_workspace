@@ -19,6 +19,7 @@ export PATH=$HOME/PIC-X_Package/SinglePassCapture:$PATH
 export PATH=$HOME/apitrace/bin:$PATH
 export PATH=$HOME:$PATH
 export __GL_DEBUG_BYPASS_ASSERT=c 
+export DEBUGINFOD_URLS="https://debuginfod.ubuntu.com"
 ulimit -c unlimited
 alias  ss="source ~/.bashrc"
 alias  pp="pushd ~/wanliz_workspace >/dev/null && git pull && popd >/dev/null && source ~/.bashrc"
@@ -957,6 +958,35 @@ if [[ $1 == config ]]; then
         sudo cat /etc/sudoers | tail -1
         echo "- sudo with nopasswd  [OK]" >> /tmp/config.log
     fi
+
+    if [[ ! -f ~/.gdbinit ]]; then
+        echo "set debuginfod enabled on" > ~/.gdbinit
+        echo "If env XDG_CACHE_HOME is empty, then ~/.cache/debuginfod_client is used instead."
+        echo "- create ~/.gdbinit  [OK]" >> /tmp/config.log
+    fi
+
+    if [[ ! -f /etc/apt/sources.list.d/ddebs.list ]]; then
+        sudo mkdir -p /etc/apt/sources.list.d
+        sudo tee /etc/apt/sources.list.d/ddebs.list << EOF
+deb http://ddebs.ubuntu.com/ $(lsb_release -cs) main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ $(lsb_release -cs)-updates main restricted universe multiverse
+deb http://ddebs.ubuntu.com/ $(lsb_release -cs)-security main restricted universe multiverse
+EOF
+        echo "- create /etc/apt/sources.list.d/ddebs.list  [OK]" >> /tmp/config.log
+    fi
+
+    if [[ -z $(dpkg -l | grep xserver-xorg-core-dbgsym) ]]; then
+        read -e -i "yes" -p "Install debug symbol packages? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            sudo apt install ubuntu-dbgsym-keyring
+            sudo apt update
+            sudo apt install -y xserver-xorg-core-dbgsym
+            sudo apt install -y libxcb1-dbgsym
+            sudo apt install -y libxext6-dbgsym libxi6-dbgsym
+            sudo apt install -y libxrender1-dbgsym
+            sudo apt install -y x11-utils-dbgsym
+        fi 
+    fi 
 
     if [[ ! -d ~/.config/autostart ]]; then
         mkdir -p ~/.config/autostart
