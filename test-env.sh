@@ -127,6 +127,9 @@ function nvmake-ppp {
 }
 
 function install-driver {
+    if [[ -z $(which curl) ]]; then
+        sudo apt install -y curl
+    fi
     if [[ -z $1 ]]; then
         echo "Download by changelist:"
         echo "    http://linuxqa.nvidia.com/dvsbuilds/gpu_drv_bugfix_main_Release_Linux_AMD64_unix-build_Test_Driver/?C=M;O=D"
