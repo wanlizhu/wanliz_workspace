@@ -958,6 +958,12 @@ if [[ $1 == config ]]; then
         sudo apt update
     fi
 
+    if [[ -z $(dpkg -l | grep linux-tools-`uname -r`) ]]; then
+        sudo apt install -y linux-tools-`uname -r` 
+        sudo apt install -y linux-cloud-tools-`uname -r`
+        sudo apt install -y linux-tools-generic linux-cloud-tools-generic
+    fi
+
     if [[ -z $(sudo cat /etc/sudoers | grep "$USER ALL=(ALL) NOPASSWD:ALL") ]]; then
         echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers >/dev/null
         sudo cat /etc/sudoers | tail -1

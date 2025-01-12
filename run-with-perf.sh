@@ -31,6 +31,17 @@ if [[ -z $outfile ]]; then
 fi
 mkdir -p $(dirname $outfile)
 
+if [[ -f $outfile ]]; then
+    read -e -i "yes" -p "$outfile already exists, overwrite it? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        rm -rf $outfile
+        read -e -i "no" -p "Remove directory $(dirname $outfile)? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            rm -rf $(dirname $outfile)
+        fi
+    fi
+fi
+
 if [[ $lifecycle == yes ]]; then 
     if [[ $exe == *.sh ]]; then
         echo "Do NOT run script file in this mode!"
