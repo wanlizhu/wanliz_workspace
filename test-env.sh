@@ -412,6 +412,18 @@ function cpdir {
         read -e -i "$USER" -p "Dst user: " user
     fi
 
+    if ssh -o BatchMode=yes -o ConnectTimeout=1 $user@$host exit 2>/dev/null; then
+        echo "" >/dev/null
+    else
+        read -e -i "yes" -p "Set up SSH key to $host? (yes/no): " ans
+        if [[ $ans == yes ]]; then
+            if [[ ! -f ~/.ssh/id_rsa ]]; then
+                ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -q -N ""
+            fi
+            ssh-copy-id $user@$host
+        fi
+    fi
+
     if [[ $ismacos == yes ]]; then
         ssh $user@$host "[[ ! -d /Users/$user/Documents/$HOSTNAME ]] && mkdir -p /Users/$user/Documents/$HOSTNAME"
         rsync -avz --delete --force --progress $src $user@$host:/Users/$user/Documents/$HOSTNAME/$(basename $src) 
