@@ -1400,7 +1400,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
             sudo mv /tmp/autostart-xhost.sh /usr/local/bin/autostart-xhost.sh
             sudo chown $USER /usr/local/bin/autostart-xhost.sh
             sudo chmod +x /usr/local/bin/autostart-xhost.sh
-            echo "- Add 'xhost +' to autostart  [OK]" >> /tmp/config.log
+            echo "- Create /usr/local/bin/autostart-xhost.sh  [OK]" >> /tmp/config.log
         fi
 
         if [[ ! -f /usr/local/bin/autostart-reportIP.sh ]]; then
@@ -1423,6 +1423,7 @@ source ~/wanliz_workspace/test-env.sh || {
             sudo mv /tmp/autostart-reportIP.sh /usr/local/bin/autostart-reportIP.sh
             sudo chown $USER /usr/local/bin/autostart-reportIP.sh
             sudo chmod +x /usr/local/bin/autostart-reportIP.sh
+            echo "- Create /usr/local/bin/autostart-reportIP.sh  [OK]" >> /tmp/config.log
         fi
 
         for command in /usr/local/bin/autostart-xhost.sh /usr/local/bin/autostart-reportIP.sh; do
@@ -1431,7 +1432,7 @@ source ~/wanliz_workspace/test-env.sh || {
                 echo "$newjob - already exists" >/dev/null
             else
                 (crontab -l 2>/dev/null; echo "$newjob") | crontab -
-                echo "- Add $command to crontab  [OK]" >> /tmp/config.log
+                echo "- Add $command to crontab  [OK]" | tee -a /tmp/config.log
             fi
         done
     fi # End of "add autostart tasks"
