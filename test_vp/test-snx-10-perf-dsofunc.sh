@@ -26,6 +26,7 @@ export workdir=`pwd`
 export lifecycle=no
 export freq=max
 export outfile=$HOME/Documents/viewperf_snx10_$suffix/perf.data
+export dsofunc=$dsofunc
 export wait_sec=2
 export record_sec=5
 
