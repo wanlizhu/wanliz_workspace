@@ -1418,7 +1418,7 @@ fi
 
 source $HOME/wanliz_workspace/test-env.sh 
 ' > /tmp/autostart-reportIP.sh
-            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"\$(ip addr)\" send-email >> /tmp/reportIP.log 2>&" >> /tmp/autostart-reportIP.sh
+            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"\$(ip addr)\" send-email >> /tmp/reportIP.log 2>&1" >> /tmp/autostart-reportIP.sh
             echo "" >> /tmp/autostart-reportIP.sh
             echo "if [[ -f /tmp/reportIP_done ]]; then" >> /tmp/autostart-reportIP.sh
             echo "    cp -f /tmp/reportIP.info ~/.last-reported-ip" >> /tmp/autostart-reportIP.sh
