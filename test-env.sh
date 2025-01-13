@@ -1416,10 +1416,7 @@ if [[ -f ~/.last-reported-ip ]]; then
     fi 
 fi
 
-source $HOME/wanliz_workspace/test-env.sh || {
-    echo "$HOME/wanliz_workspace/test-env.sh does not exist" >> /tmp/reportIP.log 
-    exit -1
-}
+source $HOME/wanliz_workspace/test-env.sh 
 ' > /tmp/autostart-reportIP.sh
             echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"\$(ip addr)\" send-email >> /tmp/reportIP.log 2>&" >> /tmp/autostart-reportIP.sh
             echo "" >> /tmp/autostart-reportIP.sh
