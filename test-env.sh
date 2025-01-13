@@ -1405,9 +1405,9 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
 
         if [[ ! -f /usr/local/bin/autostart-reportIP.sh ]]; then
             echo 'sleep 30
-ip addr | grep inet > /tmp/ip-addr
+ip addr | grep inet > /tmp/reportIP.info
 if [[ -f ~/.last-reported-ip-addr ]]; then
-    if cmp -s /tmp/ip-addr ~/.last-reported-ip-addr; then
+    if cmp -s /tmp/reportIP.info ~/.last-reported-ip-addr; then
         echo "[$(date)] IP has not changed since last report" 
         touch /tmp/reportIP_skip
         exit
@@ -1418,9 +1418,8 @@ source ~/wanliz_workspace/test-env.sh || {
     echo "~/wanliz_workspace/test-env.sh does not exist" 
     exit -1
 }
-
 ' > /tmp/autostart-reportIP.sh
-            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"\$(ip addr)\" send-email && { cp -f /tmp/ip-addr ~/.last-reported-ip-addr; touch /tmp/reportIP_done } || touch /tmp/reportIP_fail" >> /tmp/autostart-reportIP.sh
+            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"\$(ip addr)\" send-email && { cp -f /tmp/reportIP.info ~/.last-reported-ip-addr; touch /tmp/reportIP_done } || touch /tmp/reportIP_fail" >> /tmp/autostart-reportIP.sh
             sudo mv /tmp/autostart-reportIP.sh /usr/local/bin/autostart-reportIP.sh
             sudo chown $USER /usr/local/bin/autostart-reportIP.sh
             sudo chmod +x /usr/local/bin/autostart-reportIP.sh
