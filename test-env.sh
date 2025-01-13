@@ -1396,7 +1396,9 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
 
         if [[ ! -f /usr/local/bin/autostart-xhost.sh ]]; then
             echo 'sleep 30' > /tmp/autostart-xhost.sh 
-            echo 'xhost + && touch /tmp/xhost+_done || touch /tmp/xhost+_fail' >> /tmp/autostart-xhost.sh
+            echo 'export DISPLAY=:0' >> /tmp/autostart-xhost.sh
+            echo "export XAUTHORITY=$HOME/.Xauthority" >> /tmp/autostart-xhost.sh
+            echo 'xhost + >/tmp/xhost.log 2>&1' >> /tmp/autostart-xhost.sh
             sudo mv /tmp/autostart-xhost.sh /usr/local/bin/autostart-xhost.sh
             sudo chown $USER /usr/local/bin/autostart-xhost.sh
             sudo chmod +x /usr/local/bin/autostart-xhost.sh
@@ -1419,7 +1421,7 @@ source ~/wanliz_workspace/test-env.sh || {
     exit -1
 }
 ' > /tmp/autostart-reportIP.sh
-            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"\$(ip addr)\" send-email && touch /tmp/reportIP_done || touch /tmp/reportIP_fail" >> /tmp/autostart-reportIP.sh
+            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"\$(ip addr)\" send-email >/tmp/reportIP.log 2>&" >> /tmp/autostart-reportIP.sh
             echo "" >> /tmp/autostart-reportIP.sh
             echo "if [[ -f /tmp/reportIP_done ]]; then" >> /tmp/autostart-reportIP.sh
             echo "    cp -f /tmp/reportIP.info ~/.last-reported-ip" >> /tmp/autostart-reportIP.sh
