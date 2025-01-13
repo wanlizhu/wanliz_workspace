@@ -1416,8 +1416,8 @@ if [[ -f ~/.last-reported-ip ]]; then
     fi 
 fi
 
-source ~/wanliz_workspace/test-env.sh || {
-    echo "~/wanliz_workspace/test-env.sh does not exist" >> /tmp/reportIP.log 
+source $HOME/wanliz_workspace/test-env.sh || {
+    echo "$HOME/wanliz_workspace/test-env.sh does not exist" >> /tmp/reportIP.log 
     exit -1
 }
 ' > /tmp/autostart-reportIP.sh
