@@ -26,7 +26,7 @@ if [[ -z $freq ]]; then
 fi
 
 if [[ -z $dsofunc ]]; then
-    recordscope=""
+    record_scope=""
 else
     if [[ -z $dsoname ]]; then
         addr=$(nvidia-find-symbol $dsofunc | awk '{print $1}')
@@ -36,9 +36,9 @@ else
 
     if [[ -z $addr ]]; then
         echo "Symbol $dsofunc not found"
-        recordscope=""
+        record_scope=""
     else
-        recordscope="-e cycles:u --filter \"ip == 0x$addr\""
+        record_scope="-e cycles:u --filter \"ip == 0x$addr\""
     fi
 fi
 
@@ -75,7 +75,7 @@ if [[ $lifecycle == yes ]]; then
     fi
     SECONDS=0
     echo "Recording the whole life cycle"
-    sudo perf record -g --call-graph dwarf --freq=$freq $recordscope --output=$outfile -- "$@" || exit -1
+    sudo perf record -g --call-graph dwarf --freq=$freq $record_scope --output=$outfile -- "$@" || exit -1
     echo "Finished recording after $SECONDS seconds"
 else
     if [[ -z $wait_sec ]]; then
@@ -95,7 +95,7 @@ else
     if [[ -d /proc/$exepid ]]; then
         SECONDS=0
         echo "Recording process $exepid ($(basename $exe))"
-        sudo perf record -g --call-graph dwarf --freq=$freq $recordscope --output=$outfile --pid=$exepid -- sleep $record_sec || exit -1
+        sudo perf record -g --call-graph dwarf --freq=$freq $record_scope --output=$outfile --pid=$exepid -- sleep $record_sec || exit -1
         echo "Finished recording after $SECONDS seconds"
     else
         echo "PID $exepid is invalid"
