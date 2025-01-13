@@ -1403,7 +1403,8 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         fi
 
         if [[ ! -f /usr/local/bin/autostart-reportIP.sh ]]; then
-            echo 'ip addr | grep inet > /tmp/ip-addr
+            echo 'sleep 30
+ip addr | grep inet > /tmp/ip-addr
 if [[ -f ~/.last-reported-ip-addr ]]; then
     if cmp -s /tmp/ip-addr ~/.last-reported-ip-addr; then
         echo "[$(date)] IP has not changed since last report" 
