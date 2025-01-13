@@ -1406,18 +1406,10 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         fi
 
         if [[ ! -f /usr/local/bin/autostart-reportIP.sh ]]; then
-            echo 'sleep 30
-rm -rf /tmp/reportIP.log
-ip addr | grep inet > /tmp/reportIP.info
-if [[ -f ~/.last-reported-ip ]]; then
-    if cmp -s /tmp/reportIP.info ~/.last-reported-ip; then
-        echo "[$(date)] IP has not changed since last report" >> /tmp/reportIP.log 
-        exit
-    fi 
-fi
-
-source $HOME/wanliz_workspace/test-env.sh ' > /tmp/autostart-reportIP.sh
-            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"\$(ip addr)\" send-email >> /tmp/reportIP.log 2>&1" >> /tmp/autostart-reportIP.sh
+            echo "sleep 30" > /tmp/autostart-reportIP.sh
+            echo "rm -rf /tmp/reportIP.log" >> /tmp/autostart-reportIP.sh 
+            echo "ip addr | grep inet > /tmp/reportIP.info" >> /tmp/autostart-reportIP.sh
+            echo "echo \"\$(ip addr)\" | mutt -s \"IP Address of $(hostname)\" -- $(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') >> /tmp/reportIP.log 2>&1" >> /tmp/autostart-reportIP.sh
             echo "" >> /tmp/autostart-reportIP.sh
             sudo mv /tmp/autostart-reportIP.sh /usr/local/bin/autostart-reportIP.sh
             sudo chown $USER /usr/local/bin/autostart-reportIP.sh
