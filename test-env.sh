@@ -1149,30 +1149,6 @@ fi' > /tmp/vpn-with-sso.sh
         fi
     fi
 
-    if [[ ! -f /usr/local/bin/report-ip.sh ]]; then
-        read -e -i "yes" -p "Add report-ip.sh to /usr/local/bin? (yes/no): " ans
-        if [[ $ans == yes ]]; then
-            echo 'ip addr | grep inet > /tmp/ip-addr
-if [[ -f ~/.last-reported-ip-addr ]]; then
-    if cmp -s /tmp/ip-addr ~/.last-reported-ip-addr; then
-        echo "[$(date)] IP has not changed since last report" 
-        exit
-    fi 
-fi
-
-source ~/wanliz_workspace/test-env.sh || {
-    echo "~/wanliz_workspace/test-env.sh does not exist" 
-    exit -1
-}
-
-' > /tmp/report-ip.sh
-            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"$(ip addr)\" send-email && cp -f /tmp/ip-addr ~/.last-reported-ip-addr || echo 'Failed to send email'" >> /tmp/report-ip.sh
-            sudo mv /tmp/report-ip.sh /usr/local/bin/report-ip.sh
-            sudo chown $USER /usr/local/bin/report-ip.sh
-            sudo chmod +x /usr/local/bin/report-ip.sh
-        fi 
-    fi
-
     if [[ -z $(grep wanliz_workspace ~/.bashrc) ]]; then
         if [[ -d $HOME/wanliz_workspace ]]; then
             echo "" >> ~/.bashrc
@@ -1247,7 +1223,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
                 fi
             fi
         else
-            echo "- Share $XDG_SESSION_TYPE display  [FAILED]" >> /tmp/config.log 
+            echo "- Share $XDG_SESSION_TYPE display  [SKIPPED]" >> /tmp/config.log 
         fi
     fi # End of "add vnc server as system service"
 
@@ -1407,7 +1383,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
 #            if [[ -f ~/.muttrc ]]; then
 #                echo '[Desktop Entry]
 #Type=Application
-#Exec=bash -c "echo 'Sleep 30 sec prior to IP reporting'; sleep 30; /usr/local/bin/report-ip.sh > /tmp/report-ip.log"
+#Exec=bash -c "echo 'Sleep 30 sec prior to IP reporting'; sleep 30; /usr/local/bin/autostart-reportIP.sh > /tmp/report-ip.log"
 #Hidden=false
 #NoDisplay=false
 #X-GNOME-Autostart-enabled=true
@@ -1417,13 +1393,43 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
 #                echo "- Report IP through Email after GNOME startup  [OK]" >> /tmp/config.log
 #            fi
 #        fi
-        for command in `find ~/wanliz_workspace/autostart -maxdepth 1 -type f -name '*.sh'`; do
+
+        if [[ ! -f /usr/local/bin/autostart-xhost.sh ]]; then
+            echo 'xhost +' > /tmp/autostart-xhost.sh
+            sudo mv /tmp/autostart-xhost.sh /usr/local/bin/autostart-xhost.sh
+            sudo chown $USER /usr/local/bin/autostart-xhost.sh
+            sudo chmod +x /usr/local/bin/autostart-xhost.sh
+            echo "- Add 'xhost +' to autostart  [OK]" >> /tmp/config.log
+        fi
+
+        if [[ ! -f /usr/local/bin/autostart-reportIP.sh ]]; then
+            echo 'ip addr | grep inet > /tmp/ip-addr
+if [[ -f ~/.last-reported-ip-addr ]]; then
+    if cmp -s /tmp/ip-addr ~/.last-reported-ip-addr; then
+        echo "[$(date)] IP has not changed since last report" 
+        exit
+    fi 
+fi
+
+source ~/wanliz_workspace/test-env.sh || {
+    echo "~/wanliz_workspace/test-env.sh does not exist" 
+    exit -1
+}
+
+' > /tmp/autostart-reportIP.sh
+            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"$(ip addr)\" send-email && cp -f /tmp/ip-addr ~/.last-reported-ip-addr || echo 'Failed to send email'" >> /tmp/autostart-reportIP.sh
+            sudo mv /tmp/autostart-reportIP.sh /usr/local/bin/autostart-reportIP.sh
+            sudo chown $USER /usr/local/bin/autostart-reportIP.sh
+            sudo chmod +x /usr/local/bin/autostart-reportIP.sh
+        fi
+
+        for command in /usr/local/bin/autostart-xhost.sh /usr/local/bin/autostart-reportIP.sh; do
             newjob="@reboot $command"
             if crontab -l 2>/dev/null | grep -Fq "$newjob"; then
                 echo "$newjob - already exists"
             else
                 (crontab -l 2>/dev/null; echo "$newjob") | crontab -
-                echo "Add $command to crontab  [OK]" >> /tmp/config.log
+                echo "- Add $command to crontab  [OK]" >> /tmp/config.log
             fi
         done
     fi # End of "add autostart tasks"
