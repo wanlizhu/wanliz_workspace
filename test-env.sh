@@ -1395,7 +1395,8 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
 #        fi
 
         if [[ ! -f /usr/local/bin/autostart-xhost.sh ]]; then
-            echo 'xhost +' > /tmp/autostart-xhost.sh
+            echo 'sleep 30' > /tmp/autostart-xhost.sh 
+            echo 'xhost + && touch /tmp/xhost+_done || touch /tmp/xhost+_fail' >> /tmp/autostart-xhost.sh
             sudo mv /tmp/autostart-xhost.sh /usr/local/bin/autostart-xhost.sh
             sudo chown $USER /usr/local/bin/autostart-xhost.sh
             sudo chmod +x /usr/local/bin/autostart-xhost.sh
