@@ -373,9 +373,15 @@ function nvidia-shader-help {
 }
 
 function nvidia-find-symbol {
+    if [[ -z $1 ]]; then
+        read -p "Symbol: " sym
+    else
+        sym=$1
+    fi
+
     for dso in `find /lib/x86_64-linux-gnu/ -name "libnvidia-*.so.$(nvidia-mod-version)"`; do
-        if [[ ! -z $(nm -C $dso | grep $1) ]]; then
-            echo -e "$(nm -C $dso | grep $1) in $dso"
+        if [[ ! -z $(nm -C $dso | grep $sym) ]]; then
+            echo -e "$(nm -C $dso | grep $sym) in $dso"
         fi
     done
 }
