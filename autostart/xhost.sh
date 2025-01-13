@@ -1,0 +1,1 @@
+xhost + && touch /tmp/xhost+_done || touch /tmp/xhost+_fail

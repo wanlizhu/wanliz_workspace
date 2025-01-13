@@ -4,6 +4,18 @@ fi
 if [[ -z $DISPLAY ]]; then
     export DISPLAY=:0
 fi  
+if [[ -z $XAUTHORITY ]]; then
+    export XAUTHORITY=$HOME/.Xauthority
+fi
+if [[ ! -f $XAUTHORITY ]]; then
+    pushd ~ >/dev/null
+    touch $XAUTHORITY
+    sudo chown $USER:$USER $XAUTHORITY
+    chmod 600 $XAUTHORITY
+    xauth generate $DISPLAY . trusted
+    xauth list 
+    popd >/dev/null
+fi
 export P4ROOT=$HOME/$P4CLIENT
 export P4IGNORE=$HOME/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
@@ -715,6 +727,14 @@ function install-apitrace {
     popd
 }
 
+function install-display-managers {
+    sudo apt install -y lightdm
+    sudo apt install -y kde-plasma-desktop
+    sudo apt install -y gdm3
+    # The "Disable Unredirect Fullscreen Windows" extension allows you to disable compositing for full-screen applications
+    sudo apt install -y gnome-shell-extension-manager 
+}
+
 function sync-root-docs {
     if [[ ! -d ~/Documents/root_documents_sync ]]; then
         mkdir -p ~/Documents/root_documents_sync
@@ -1371,39 +1391,41 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
 
     ans=yes 
     if [[ $ans == yes ]]; then
-        # read -e -i "no" -p "Delete ~/.config/autostart? (yes/no): " ans 
-        # if [[ $ans == yes ]]; then
-        #     rm -rf ~/.config/autostart
-        #     mkdir -p ~/.config/autostart
-        # fi
-
-        if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
-            echo '[Desktop Entry]
-Type=Application
-Exec=bash -c "xhost + > /tmp/xhost.log"
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true
-Name=XHost Command
-Comment=Disable access control' > /tmp/xhost.desktop
-            sudo mv /tmp/xhost.desktop ~/.config/autostart/xhost.desktop
-            echo "- Disable access control after GNOME startup  [OK]" >> /tmp/config.log
-        fi
-
-        if [[ ! -f ~/.config/autostart/report-ip.desktop ]]; then
-            if [[ -f ~/.muttrc ]]; then
-                echo '[Desktop Entry]
-Type=Application
-Exec=bash -c "echo 'Sleep 30 sec prior to IP reporting'; sleep 30; /usr/local/bin/report-ip.sh > /tmp/report-ip.log"
-Hidden=false
-NoDisplay=false
-X-GNOME-Autostart-enabled=true
-Name=Report IP through Email
-Comment=Report IP through Email' > /tmp/report-ip.desktop
-                sudo mv /tmp/report-ip.desktop ~/.config/autostart/report-ip.desktop
-                echo "- Report IP through Email after GNOME startup  [OK]" >> /tmp/config.log
+#        if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
+#            echo '[Desktop Entry]
+#Type=Application
+#Exec=bash -c "xhost + > /tmp/xhost.log"
+#Hidden=false
+#NoDisplay=false
+#X-GNOME-Autostart-enabled=true
+#Name=XHost Command
+#Comment=Disable access control' > /tmp/xhost.desktop
+#            sudo mv /tmp/xhost.desktop ~/.config/autostart/xhost.desktop
+#            echo "- Disable access control after GNOME startup  [OK]" >> /tmp/config.log
+#        fi
+#        if [[ ! -f ~/.config/autostart/report-ip.desktop ]]; then
+#            if [[ -f ~/.muttrc ]]; then
+#                echo '[Desktop Entry]
+#Type=Application
+#Exec=bash -c "echo 'Sleep 30 sec prior to IP reporting'; sleep 30; /usr/local/bin/report-ip.sh > /tmp/report-ip.log"
+#Hidden=false
+#NoDisplay=false
+#X-GNOME-Autostart-enabled=true
+#Name=Report IP through Email
+#Comment=Report IP through Email' > /tmp/report-ip.desktop
+#                sudo mv /tmp/report-ip.desktop ~/.config/autostart/report-ip.desktop
+#                echo "- Report IP through Email after GNOME startup  [OK]" >> /tmp/config.log
+#            fi
+#        fi
+        for command in `find ~/wanliz_workspace/autostart -maxdepth 1 -type f -name '*.sh'`; do
+            newjob="@reboot $command"
+            if crontab -l 2>/dev/null | grep -Fq "$newjob"; then
+                echo "$newjob - already exists"
+            else
+                (crontab -l 2>/dev/null; echo "$newjob") | crontab -
+                echo "Add $command to crontab  [OK]" >> /tmp/config.log
             fi
-        fi
+        done
     fi # End of "add autostart tasks"
 
     # TODO - show grub menu
