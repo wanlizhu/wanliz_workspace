@@ -46,7 +46,7 @@ else
     else
         record_scope="-e cycles:u --filter \"ip == 0x$addr\""
     fi
-    echo "Additional record options: \"$record_scope\""
+    echo "Additional record options: $record_scope"
 fi
 
 if [[ -z $outfile ]]; then
