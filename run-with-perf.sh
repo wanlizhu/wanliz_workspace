@@ -36,6 +36,10 @@ else
 
     if [[ -z $addr ]]; then
         echo "Symbol $dsofunc not found"
+        read -e -i "yes" -p "Continue without symbol? (yes/no): " ans
+        if [[ $ans != yes ]]; then
+            exit -1
+        fi
         record_scope=""
     else
         record_scope="-e cycles:u --filter \"ip == 0x$addr\""
