@@ -1,3 +1,17 @@
+function nvidia-find-symbol {
+    if [[ -z $1 ]]; then
+        read -p "Symbol: " sym
+    else
+        sym=$1
+    fi
+
+    for dso in `find /lib/x86_64-linux-gnu/ -name "libnvidia-*.so.$(nvidia-mod-version)"`; do
+        if [[ ! -z $(nm -C $dso | grep -i $sym) ]]; then
+            echo -e "$(nm -C $dso | grep -i $sym) in $dso"
+        fi
+    done
+}
+
 if [[ $1 == setup ]]; then
     echo "TODO"
     exit    
