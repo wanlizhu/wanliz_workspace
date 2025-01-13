@@ -380,8 +380,8 @@ function nvidia-find-symbol {
     fi
 
     for dso in `find /lib/x86_64-linux-gnu/ -name "libnvidia-*.so.$(nvidia-mod-version)"`; do
-        if [[ ! -z $(nm -C $dso | grep $sym) ]]; then
-            echo -e "$(nm -C $dso | grep $sym) in $dso"
+        if [[ ! -z $(nm -C $dso | grep -i $sym) ]]; then
+            echo -e "$(nm -C $dso | grep -i $sym) in $dso"
         fi
     done
 }
