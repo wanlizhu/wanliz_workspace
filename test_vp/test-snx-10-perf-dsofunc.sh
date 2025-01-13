@@ -20,6 +20,7 @@ echo "- 1920x1080"
 echo "- 3840x2160"
 read -e -i "1920x1080" -p "Resolution: " size
 read -e -i "$(date +%H%M%S)" -p "Output folder suffix: " suffix
+read -e -i "__glNVChalGF100_executeCached" -p "DSO function (optional): " dsofunc
 
 export workdir=`pwd`
 export lifecycle=no
@@ -27,7 +28,6 @@ export freq=2000
 export outfile=$HOME/Documents/viewperf_snx10_$suffix/perf.data
 export wait_sec=2
 export record_sec=5
-export dsofunc=__glNVChalGF100_executeCached
 
 mkdir -p results/snx-04/ 
 run-with-perf.sh viewperf/bin/viewperf viewsets/snx/config/snx_10.xml -resolution $size 
