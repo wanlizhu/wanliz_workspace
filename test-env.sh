@@ -1426,13 +1426,12 @@ source ~/wanliz_workspace/test-env.sh || {
         for command in /usr/local/bin/autostart-xhost.sh /usr/local/bin/autostart-reportIP.sh; do
             newjob="@reboot $command"
             if crontab -l 2>/dev/null | grep -Fq "$newjob"; then
-                echo "$newjob - already exists"
+                echo "$newjob - already exists" >/dev/null
             else
                 (crontab -l 2>/dev/null; echo "$newjob") | crontab -
                 echo "- Add $command to crontab  [OK]" >> /tmp/config.log
             fi
         done
-        crontab -l
     fi # End of "add autostart tasks"
 
     # TODO - show grub menu
