@@ -70,15 +70,15 @@ function p4sync {
     fi
 }
 
-function nvsrc-version {
+function nvidia-src-version {
     grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g'
 }
 
-function nvmod-version {
+function nvidia-mod-version {
     modinfo nvidia | grep ^version | awk '{print $2}'
 }
 
-function nvmod-build-type {
+function nvidia-build-type {
     if [[ ! -z $(cat /proc/driver/nvidia/version | awk '{print tolower($0)}' | grep "debug build") ]]; then
         echo debug
     elif [[ ! -z $(cat /proc/driver/nvidia/version | awk '{print tolower($0)}' | grep "develop build") ]]; then
@@ -89,16 +89,16 @@ function nvmod-build-type {
 }
 
 function nvidia-version {
-    echo "Nvidia MOD ($(nvmod-build-type) build) version: $(nvmod-version)" 
-    echo "Nvidia SRC ($P4CLIENT) version: $(nvsrc-version)"
+    echo "Nvidia MOD ($(nvidia-build-type) build) version: $(nvidia-mod-version)" 
+    echo "Nvidia SRC ($P4CLIENT) version: $(nvidia-src-version)"
 }
 
-function nvmake-unix {
+function nvidia-make {
     if [[ -z $1 ]]; then
         if [[ $(basename $(pwd)) == bugfix_main ]]; then
-            default_args="drivers dist linux amd64 $(nvmod-build-type) -j$(nproc)"
+            default_args="drivers dist linux amd64 $(nvidia-build-type) -j$(nproc)"
         else
-            default_args="linux amd64 $(nvmod-build-type) -j$(nproc)"
+            default_args="linux amd64 $(nvidia-build-type) -j$(nproc)"
         fi
         echo "Auto-generated nvmake arguments: $default_args"
         read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
@@ -118,15 +118,15 @@ function nvmake-unix {
         NV_GUARDWORD=0 $default_args $@ 
 }
 
-function nvmake-ppp {
+function nvidia-make-ppp {
     config=${1:-release}
-    nvmake-unix drivers dist linux amd64 $config -j$(nproc) &&
-    nvmake-unix drivers dist linux x86   $config -j$(nproc) &&
-    nvmake-unix drivers dist linux amd64 $config post-process-packages &&
-    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(nvsrc-version).run
+    nvidia-make drivers dist linux amd64 $config -j$(nproc) &&
+    nvidia-make drivers dist linux x86   $config -j$(nproc) &&
+    nvidia-make drivers dist linux amd64 $config post-process-packages &&
+    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(nvidia-src-version).run
 }
 
-function install-driver {
+function nvidia-install-driver {
     if [[ -z $(which curl) ]]; then
         sudo apt install -y curl
     fi
@@ -152,21 +152,21 @@ function install-driver {
                 echo "Downloading NVIDIA-Linux-x86_64-${current}.run"
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
             fi 
-            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$current.run
+            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$current.run
         elif [[ $buildtype == debug ]]; then
             current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${current}-debug.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${current}-debug.run"
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-debug.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
             fi 
-            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-debug.run
+            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-debug.run
         elif [[ $buildtype == develop ]]; then
             current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${current}-develop.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${current}-develop.run"
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-develop.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
             fi 
-            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-develop.run
+            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-develop.run
         fi
         popd 
     elif [[ $1 =~ ^[0-9]+\.[0-9]+$ ]]; then
@@ -177,17 +177,17 @@ function install-driver {
             if [[ ! -f NVIDIA-Linux-x86_64-$1.run ]]; then
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1.run http://linuxqa/builds/release/display/x86_64/$1/NVIDIA-Linux-x86_64-$1.run || return -1
             fi 
-            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1.run
+            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1.run
         elif [[ $buildtype == debug ]]; then
             if [[ ! -f NVIDIA-Linux-x86_64-$1-debug.run ]]; then
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-debug.run http://linuxqa/builds/release/display/x86_64/debug/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
             fi 
-            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-debug.run
+            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-debug.run
         elif [[ $buildtype == develop ]]; then
             if [[ ! -f NVIDIA-Linux-x86_64-$1-develop.run ]]; then
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-develop.run http://linuxqa/builds/release/display/x86_64/develop/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
             fi
-            install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-develop.run
+            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-develop.run
         fi
         popd
     elif [[ $1 == local ]]; then
@@ -200,16 +200,16 @@ function install-driver {
             2) outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_debug   ;;
             3) outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_develop ;;
         esac
-        if [[ -f  $outdir/NVIDIA-Linux-x86_64-$(nvsrc-version).run ]]; then
+        if [[ -f  $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version).run ]]; then
             echo "32-bits compatible packages are available"
             read -e -i "yes" -p "Install PPP (amd64 + x86) driver? (yes/no): " ans
             if [[ $ans == yes ]]; then
-                install-driver $outdir/NVIDIA-Linux-x86_64-$(nvsrc-version).run
+                nvidia-install-driver $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version).run
             else
-                install-driver $outdir/NVIDIA-Linux-x86_64-$(nvsrc-version)-internal.run
+                nvidia-install-driver $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version)-internal.run
             fi
         else
-            install-driver $outdir/NVIDIA-Linux-x86_64-$(nvsrc-version)-internal.run
+            nvidia-install-driver $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version)-internal.run
         fi 
     elif [[ -d $(realpath $1) ]]; then
         idx=0
@@ -225,7 +225,7 @@ function install-driver {
             return -1
         else
             read -e -i 0 -p "Select: " idx
-            install-driver $(cat /tmp/$idx)
+            nvidia-install-driver $(cat /tmp/$idx)
         fi
     else 
         if [[ $XDG_SESSION_TYPE != tty ]]; then
@@ -276,8 +276,8 @@ function install-driver {
     fi
 }
 
-function deploy-dso-glcore {
-    version=$(nvmod-version)
+function nvidia-deploy-dso-glcore {
+    version=$(nvidia-mod-version)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libnvidia-glcore.so.$version.backup /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
         sudo rm -v -f $HOME/libnvidia-glcore.so.$version.backup
@@ -288,8 +288,8 @@ function deploy-dso-glcore {
             fi
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version
         else
-            config=$(nvmod-build-type)
-            echo "Copy OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so ($(nvsrc-version)) to /lib/x86_64-linux-gnu as *.so.$version"
+            config=$(nvidia-build-type)
+            echo "Copy OpenGL/_out/Linux_amd64_$config/libnvidia-glcore.so ($(nvidia-src-version)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libnvidia-glcore.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libnvidia-glcore.so.$version $HOME/libnvidia-glcore.so.$version.backup
@@ -299,8 +299,8 @@ function deploy-dso-glcore {
     fi
 }
 
-function deploy-dso-eglcore {
-    version=$(nvmod-version)
+function nvidia-deploy-dso-eglcore {
+    version=$(nvidia-mod-version)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libnvidia-eglcore.so.$version.backup /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
         sudo rm -v -f $HOME/libnvidia-eglcore.so.$version.backup
@@ -311,8 +311,8 @@ function deploy-dso-eglcore {
             fi
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version
         else
-            config=$(nvmod-build-type)
-            echo "Copy OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so ($(nvsrc-version)) to /lib/x86_64-linux-gnu as *.so.$version"
+            config=$(nvidia-build-type)
+            echo "Copy OpenGL/win/egl/build/_out/Linux_amd64_$config/libnvidia-eglcore.so ($(nvidia-src-version)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libnvidia-eglcore.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libnvidia-eglcore.so.$version $HOME/libnvidia-eglcore.so.$version.backup
@@ -322,8 +322,8 @@ function deploy-dso-eglcore {
     fi
 }
 
-function deploy-dso-glx {
-    version=$(nvmod-version)
+function nvidia-deploy-dso-glx {
+    version=$(nvidia-mod-version)
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/libGLX_nvidia.so.$version.backup /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version
         sudo rm -v -f $HOME/libGLX_nvidia.so.$version.backup
@@ -334,8 +334,8 @@ function deploy-dso-glx {
             fi
             sudo cp -v --remove-destination $1 /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version
         else
-            config=$(nvmod-build-type)
-            echo "Copy OpenGL/win/glx/lib/_out/Linux_amd64_$config/libGLX_nvidia.so ($(nvsrc-version)) to /lib/x86_64-linux-gnu as *.so.$version"
+            config=$(nvidia-build-type)
+            echo "Copy OpenGL/win/glx/lib/_out/Linux_amd64_$config/libGLX_nvidia.so ($(nvidia-src-version)) to /lib/x86_64-linux-gnu as *.so.$version"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/libGLX_nvidia.so.$version.backup ]]; then
                 sudo cp -v /lib/x86_64-linux-gnu/libGLX_nvidia.so.$version $HOME/libGLX_nvidia.so.$version.backup
@@ -345,7 +345,7 @@ function deploy-dso-glx {
     fi
 }
 
-function deploy-dso-xorg {
+function nvidia-deploy-dso-xorg {
     if [[ $1 == restore ]]; then
         sudo cp -v --remove-destination $HOME/nvidia_drv.so.backup /lib/xorg/modules/drivers/nvidia_drv.so
         sudo rm -v -f $HOME/nvidia_drv.so.backup
@@ -356,8 +356,8 @@ function deploy-dso-xorg {
             fi
             sudo cp -v --remove-destination $1 /lib/xorg/modules/drivers/nvidia_drv.so
         else
-            config=$(nvmod-build-type)
-            echo "Copy xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so ($(nvsrc-version)) to /lib/xorg/modules/drivers/nvidia_drv.so"
+            config=$(nvidia-build-type)
+            echo "Copy xfree86/4.0/nvidia/_out/Linux_amd64_$config/nvidia_drv.so ($(nvidia-src-version)) to /lib/xorg/modules/drivers/nvidia_drv.so"
             read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
             if [[ ! -f $HOME/nvidia_drv.so.backup ]]; then
                 sudo cp -v /lib/xorg/modules/drivers/nvidia_drv.so $HOME/nvidia_drv.so.backup
@@ -367,9 +367,17 @@ function deploy-dso-xorg {
     fi
 }
 
-function shaderhelp {
+function nvidia-shader-help {
     echo "export __GL_c5e9d7a4=0x4574563 -> dump ogl shaders"
     echo "export __GL_c5e9d7a4=0x6839369 -> replace ogl shaders"
+}
+
+function nvidia-find-symbol {
+    for dso in `find /lib/x86_64-linux-gnu/ -name "libnvidia-*.so.$(nvidia-mod-version)"`; do
+        if [[ ! -z $(nm -C $dso | grep $1) ]]; then
+            echo -e "$(nm -C $dso | grep $1) in $dso"
+        fi
+    done
 }
 
 function prime {
@@ -763,8 +771,8 @@ function install-kernel {
 }
 
 function pull-dvs-source {
-    echo "Installed Nvidia MOD version is $(nvmod-version)"
-    read -e -i "$(nvmod-version | cut -d'.' -f1)" -p "Pull dvs source at version: " version
+    echo "Installed Nvidia MOD version is $(nvidia-mod-version)"
+    read -e -i "$(nvidia-mod-version | cut -d'.' -f1)" -p "Pull dvs source at version: " version
 
     if [[ -d /dvs ]]; then
         read -e -i "no" -p "Delete existing /dvs folder? (yes/no): " ans 
