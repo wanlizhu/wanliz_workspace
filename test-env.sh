@@ -1417,7 +1417,7 @@ source ~/wanliz_workspace/test-env.sh || {
 }
 
 ' > /tmp/autostart-reportIP.sh
-            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"$(ip addr)\" send-email && cp -f /tmp/ip-addr ~/.last-reported-ip-addr || echo 'Failed to send email'" >> /tmp/autostart-reportIP.sh
+            echo "recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') subject=\"IP Address of $(hostname)\" body=\"\$(ip addr)\" send-email && cp -f /tmp/ip-addr ~/.last-reported-ip-addr || echo 'Failed to send email'" >> /tmp/autostart-reportIP.sh
             sudo mv /tmp/autostart-reportIP.sh /usr/local/bin/autostart-reportIP.sh
             sudo chown $USER /usr/local/bin/autostart-reportIP.sh
             sudo chmod +x /usr/local/bin/autostart-reportIP.sh
