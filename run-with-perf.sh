@@ -25,6 +25,23 @@ if [[ -z $freq ]]; then
     read -e -i "max" -p "The sampling frequency: " freq
 fi
 
+if [[ -z $dsofunc ]]; then
+    recordscope=""
+else
+    if [[ -z $dsoname ]]; then
+        addr=$(nvidia-find-symbol $dsofunc | awk '{print $1}')
+    else
+        addr=$(nm -C $dsoname | grep $dsofunc | awk '{print $1}')
+    fi
+
+    if [[ -z $addr ]]; then
+        echo "Symbol $dsofunc not found"
+        recordscope=""
+    else
+        recordscope="-e cycles:u --filter \"ip == 0x$addr\""
+    fi
+fi
+
 if [[ -z $outfile ]]; then
     outdir=$HOME/Documents/$(basename $exe)_$(date +%H%M%S)
     read -e -i "$outdir/perf.data" -p "The output file: " outfile
