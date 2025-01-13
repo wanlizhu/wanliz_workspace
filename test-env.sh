@@ -1432,6 +1432,7 @@ source ~/wanliz_workspace/test-env.sh || {
                 echo "- Add $command to crontab  [OK]" >> /tmp/config.log
             fi
         done
+        crontab -l
     fi # End of "add autostart tasks"
 
     # TODO - show grub menu
