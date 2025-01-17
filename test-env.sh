@@ -995,6 +995,41 @@ function show-gpu {
     sudo lshw -C display | grep -i product
 }
 
+function screenshot {
+    if [[ -z $(which sshpass) ]]; then
+        sudo apt install -y sshpass
+    fi
+
+    if [[ -z $(which scrot) ]]; then
+        sudo apt install -y scrot
+    fi
+
+    if [[ ! -d $HOME/Pictures ]]; then
+        mkdir -p $HOME/Pictures
+    fi
+
+    img=$(date +%Y%m%d_%H%M%S).png
+    scrot $HOME/Pictures/$img || return -1
+
+    if [[ ! -z $1 ]]; then
+        if [[ ! -f /tmp/$1 ]]; then
+            read -e -i "no" -p "Is $1 hosted on macOS? (yes/no): " ans
+            if [[ $ans == yes ]]; then
+                touch /tmp/$1.macos
+            fi
+        fi
+        
+        read -p "Password of $USER on $1: " passwd
+        export SSHPASS=$passwd
+
+        if [[ -f /tmp/$1.macos ]]; then
+            sshpass -e scp $HOME/Pictures/$img $USER@$1:/Users/$USER/Pictures
+        else
+            sshpass -e scp $HOME/Pictures/$img $USER@$1:/home/$USER/Pictures
+        fi
+    fi
+}
+
 ###########################################################
 ###########################################################
 ###########################################################
