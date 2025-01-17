@@ -1019,13 +1019,14 @@ function screenshot {
             fi
         fi
 
-        read -p "Password of $USER on $1: " passwd
+        read -e -i "$USER" -p "Username on $1: " user
+        read -p "Password of $user on $1: " passwd
         export SSHPASS=$passwd
 
         if [[ -f /tmp/$1.macos ]]; then
-            sshpass -e scp $HOME/Pictures/$img $USER@$1:/Users/$USER/Pictures
+            sshpass -e scp $HOME/Pictures/$img $user@$1:/Users/$user/Pictures
         else
-            sshpass -e scp $HOME/Pictures/$img $USER@$1:/home/$USER/Pictures
+            sshpass -e scp $HOME/Pictures/$img $user@$1:/home/$user/Pictures
         fi
     fi
 }
