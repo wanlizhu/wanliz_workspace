@@ -1012,7 +1012,7 @@ function screenshot {
     scrot $HOME/Pictures/$img || return -1
 
     if [[ ! -z $1 ]]; then
-        if [[ ! -f /tmp/$1 ]]; then
+        if [[ ! -f /tmp/$1.macos ]]; then
             read -e -i "no" -p "Is $1 hosted on macOS? (yes/no): " ans
             if [[ $ans == yes ]]; then
                 touch /tmp/$1.macos
