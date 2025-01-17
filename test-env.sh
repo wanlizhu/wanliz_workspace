@@ -1024,9 +1024,15 @@ function screenshot {
         export SSHPASS=$passwd
 
         if [[ -f /tmp/$1.macos ]]; then
-            sshpass -e scp $HOME/Pictures/$img $user@$1:/Users/$user/Pictures
+            hometop=/Users
         else
-            sshpass -e scp $HOME/Pictures/$img $user@$1:/home/$user/Pictures
+            hometop=/home
+        fi
+
+        if [[ -z $SSHPASS ]]; then
+            scp $HOME/Pictures/$img $user@$1:$hometop/$user/Pictures
+        else
+            sshpass -e scp $HOME/Pictures/$img $user@$1:$hometop/$user/Pictures
         fi
     fi
 }
