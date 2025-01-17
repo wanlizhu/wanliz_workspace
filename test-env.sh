@@ -138,7 +138,7 @@ function nvidia-make-ppp {
     stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(nvidia-src-version).run
 }
 
-function nvidia-install-driver {
+function nvidia-install {
     if [[ -z $(which curl) ]]; then
         sudo apt install -y curl
     fi
@@ -164,21 +164,21 @@ function nvidia-install-driver {
                 echo "Downloading NVIDIA-Linux-x86_64-${current}.run"
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
             fi 
-            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$current.run
+            nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-$current.run
         elif [[ $buildtype == debug ]]; then
             current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${current}-debug.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${current}-debug.run"
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-debug.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
             fi 
-            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-debug.run
+            nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-debug.run
         elif [[ $buildtype == develop ]]; then
             current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${current}-develop.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${current}-develop.run"
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-develop.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
             fi 
-            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-develop.run
+            nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-develop.run
         fi
         popd 
     elif [[ $1 =~ ^[0-9]+\.[0-9]+$ ]]; then
@@ -189,17 +189,17 @@ function nvidia-install-driver {
             if [[ ! -f NVIDIA-Linux-x86_64-$1.run ]]; then
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1.run http://linuxqa/builds/release/display/x86_64/$1/NVIDIA-Linux-x86_64-$1.run || return -1
             fi 
-            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1.run
+            nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-$1.run
         elif [[ $buildtype == debug ]]; then
             if [[ ! -f NVIDIA-Linux-x86_64-$1-debug.run ]]; then
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-debug.run http://linuxqa/builds/release/display/x86_64/debug/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
             fi 
-            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-debug.run
+            nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-$1-debug.run
         elif [[ $buildtype == develop ]]; then
             if [[ ! -f NVIDIA-Linux-x86_64-$1-develop.run ]]; then
                 wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-develop.run http://linuxqa/builds/release/display/x86_64/develop/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
             fi
-            nvidia-install-driver $HOME/Downloads/NVIDIA-Linux-x86_64-$1-develop.run
+            nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-$1-develop.run
         fi
         popd
     elif [[ $1 == local ]]; then
@@ -216,12 +216,12 @@ function nvidia-install-driver {
             echo "32-bits compatible packages are available"
             read -e -i "yes" -p "Install PPP (amd64 + x86) driver? (yes/no): " ans
             if [[ $ans == yes ]]; then
-                nvidia-install-driver $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version).run
+                nvidia-install $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version).run
             else
-                nvidia-install-driver $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version)-internal.run
+                nvidia-install $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version)-internal.run
             fi
         else
-            nvidia-install-driver $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version)-internal.run
+            nvidia-install $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version)-internal.run
         fi 
     elif [[ -d $(realpath $1) ]]; then
         idx=0
@@ -237,7 +237,7 @@ function nvidia-install-driver {
             return -1
         else
             read -e -i 0 -p "Select: " idx
-            nvidia-install-driver $(cat /tmp/$idx)
+            nvidia-install $(cat /tmp/$idx)
         fi
     else 
         if [[ $XDG_SESSION_TYPE != tty ]]; then
