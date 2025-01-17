@@ -1018,7 +1018,7 @@ function screenshot {
                 touch /tmp/$1.macos
             fi
         fi
-        
+
         read -p "Password of $USER on $1: " passwd
         export SSHPASS=$passwd
 
@@ -1400,7 +1400,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         fi
     fi
 
-    ans=yes 
+    read -e -i "yes" -p "Set up autostart scripts? (yes/no): " ans
     if [[ $ans == yes ]]; then
 #        if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
 #            echo '[Desktop Entry]
