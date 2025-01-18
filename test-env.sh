@@ -1176,15 +1176,16 @@ EOF
 
     if ! ping -c2 linuxqa; then
         if [[ ! -f /usr/local/bin/vpn-with-sso.sh ]]; then
-            echo 'read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
+            echo '#!/bin/bash
+read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
 if [[ $ans == yes ]]; then
-if [[ -z $(which openconnect) ]]; then
-    sudo apt install -y openconnect
-fi
-read -e -i "firefox" -p "Complete authentication in browser: " browser
-read -e -i "no" -p "Run in background? (yes/no): " runinbg
-eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
-[ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
+    if [[ -z $(which openconnect) ]]; then
+        sudo apt install -y openconnect
+    fi
+    read -e -i "firefox" -p "Complete authentication in browser: " browser
+    read -e -i "no" -p "Run in background? (yes/no): " runinbg
+    eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
+    [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
 fi' > /tmp/vpn-with-sso.sh
             sudo mv /tmp/vpn-with-sso.sh /usr/local/bin/vpn-with-sso.sh
             sudo chown $USER /usr/local/bin/vpn-with-sso.sh
