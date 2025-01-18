@@ -1176,7 +1176,9 @@ EOF
 
     if ! ping -c2 linuxqa; then
         if [[ ! -f /usr/local/bin/vpn-with-sso.sh ]]; then
-            echo '#!/bin/bash
+            rm -rf /tmp/vpn-with-sso.sh
+            sudo tee /tmp/vpn-with-sso.sh << EOF 
+#!/bin/bash
 read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
 if [[ $ans == yes ]]; then
     if [[ -z $(which openconnect) ]]; then
@@ -1200,7 +1202,8 @@ if [[ $ans == yes ]]; then
 
     eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser firefox --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
     [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
-fi' > /tmp/vpn-with-sso.sh
+fi
+EOF
             sudo mv /tmp/vpn-with-sso.sh /usr/local/bin/vpn-with-sso.sh
             sudo chown $USER /usr/local/bin/vpn-with-sso.sh
             chmod +x /usr/local/bin/vpn-with-sso.sh
