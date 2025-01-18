@@ -1174,34 +1174,35 @@ EOF
         echo "- git config ...  [OK]" >> /tmp/config.log
     fi
 
-    if [[ ! -d $HOME/wanliz_workspace ]]; then
-        if ! ping -c2 linuxqa; then
-            if [[ ! -f /usr/local/bin/vpn-with-sso.sh ]]; then
-                echo 'read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
+    if ! ping -c2 linuxqa; then
+        if [[ ! -f /usr/local/bin/vpn-with-sso.sh ]]; then
+            echo 'read -e -i "yes" -p "Connect to NVIDIA VPN with SSO? (yes/no): " ans
 if [[ $ans == yes ]]; then
-    if [[ -z $(which openconnect) ]]; then
-        sudo apt install -y openconnect
-    fi
-    read -e -i "firefox" -p "Complete authentication in browser: " browser
-    read -e -i "no" -p "Run in background? (yes/no): " runinbg
-    eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
-    [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
+if [[ -z $(which openconnect) ]]; then
+    sudo apt install -y openconnect
+fi
+read -e -i "firefox" -p "Complete authentication in browser: " browser
+read -e -i "no" -p "Run in background? (yes/no): " runinbg
+eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which $browser) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
+[ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
 fi' > /tmp/vpn-with-sso.sh
-                sudo mv /tmp/vpn-with-sso.sh /usr/local/bin/vpn-with-sso.sh
-                sudo chown $USER /usr/local/bin/vpn-with-sso.sh
-                chmod +x /usr/local/bin/vpn-with-sso.sh
-            fi
-            read -p "Run command /usr/local/bin/vpn-with-sso.sh, then press [ENTER] to continue: " _
+            sudo mv /tmp/vpn-with-sso.sh /usr/local/bin/vpn-with-sso.sh
+            sudo chown $USER /usr/local/bin/vpn-with-sso.sh
+            chmod +x /usr/local/bin/vpn-with-sso.sh
         fi
-        
+        read -p "Run command /usr/local/bin/vpn-with-sso.sh, then press [ENTER] to continue: " _
+    fi
+    
+    if [[ ! -d ~/wanliz_workspace ]]; then
         git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_workspace $HOME/wanliz_workspace
-        install-any build-essential gcc g++ cmake pkg-config libglvnd-dev 
-        
-        if [[ -d $HOME/wanliz_workspace ]]; then
-            echo "- Clone wanliz_workspace  [OK]" >> /tmp/config.log
-        else
-            echo "- Clone wanliz_workspace  [FAILED]" >> /tmp/config.log
-        fi
+    fi
+
+    install-any build-essential gcc g++ cmake pkg-config libglvnd-dev 
+    
+    if [[ -d $HOME/wanliz_workspace ]]; then
+        echo "- Clone wanliz_workspace  [OK]" >> /tmp/config.log
+    else
+        echo "- Clone wanliz_workspace  [FAILED]" >> /tmp/config.log
     fi
 
     if [[ -z $(grep wanliz_workspace ~/.bashrc) ]]; then
