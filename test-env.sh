@@ -154,6 +154,19 @@ function nvidia-install {
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D"
         echo "    http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D"
+    elif [[ $1 == 'http'* ]]; then
+        if [[ "$1" =~ *"debug"* || "$1" =~ *"Debug"* ]]; then
+            buildtype=-debug
+        elif [[ "$1" =~ *"develop"* || "$1" =~ *"Develop"* ]]; then
+            buildtype=-develop
+        else
+            buildtype=""
+        fi
+        pushd ~/Downloads >/dev/null
+        name=${1##*/}
+        wget --no-check-certificate -O NVIDIA-Linux-x86_64-$name$buildtype.run $1 || return -1
+        popd >/dev/null
+        nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-$name$buildtype.run
     elif [[ $1 == current || $1 == tot ]]; then
         pushd ~/Downloads 
         echo "Available build types for $1: release, debug and develop"
