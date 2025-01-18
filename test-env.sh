@@ -163,7 +163,7 @@ function nvidia-install {
             buildtype=""
         fi
         pushd ~/Downloads >/dev/null
-        name=${1##*/}
+        name="${1##*/}"
         wget --no-check-certificate -O NVIDIA-Linux-x86_64-$name$buildtype.run $1 || return -1
         popd >/dev/null
         nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-$name$buildtype.run
