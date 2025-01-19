@@ -4,18 +4,18 @@ fi
 if [[ -z $DISPLAY ]]; then
     export DISPLAY=:0
 fi  
-if [[ -z $XAUTHORITY ]]; then
-    export XAUTHORITY=$HOME/.Xauthority
-fi
-if [[ ! -f $XAUTHORITY ]]; then
-    pushd ~ >/dev/null
-    touch $XAUTHORITY
-    sudo chown $USER:$USER $XAUTHORITY
-    chmod 600 $XAUTHORITY
-    xauth generate $DISPLAY . trusted
-    xauth list 
-    popd >/dev/null
-fi
+#if [[ -z $XAUTHORITY ]]; then
+#    export XAUTHORITY=$HOME/.Xauthority
+#fi
+#if [[ ! -f $XAUTHORITY ]]; then
+#    pushd ~ >/dev/null
+#    touch $XAUTHORITY
+#    sudo chown $USER:$USER $XAUTHORITY
+#    chmod 600 $XAUTHORITY
+#    xauth generate $DISPLAY . trusted
+#    xauth list 
+#    popd >/dev/null
+#fi
 export P4ROOT=$HOME/$P4CLIENT
 export P4IGNORE=$HOME/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
@@ -258,38 +258,33 @@ function nvidia-install {
             return -1
         fi
 
-        read -e -i "no" -p "Install dependencies? (yes/no): " ans
-        if [[ $ans == yes ]]; then
-            install-any pkg-config gcc gcc-12 g++ libglvnd-dev  
-        fi
-
         # TODO - gcc-12
         # Disable nouveau
-        if [[ ! -z $(lsmod | grep nouveau) ]]; then
-            if [[ -z $(grep -r "nouveau" /etc/modprobe.d/) ]]; then
-                read -e -i "ignore" -p "Nouveau has loaded, disable or ignore it? (disable/ignore): " ans
-                if [[ $ans == disable ]]; then
-                    echo "blacklist nouveau" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
-                    echo "options nouveau modeset=0" | sudo tee -a /etc/modprobe.d/blacklist-nouveau.conf
-                    sudo update-initramfs -u
-                    echo "Nouveau is disabled since next boot"
-                    echo "Reboot and try again"
-                    return -1
-                fi
-            fi
-        fi
+        #if [[ ! -z $(lsmod | grep nouveau) ]]; then
+        #    if [[ -z $(grep -r "nouveau" /etc/modprobe.d/) ]]; then
+        #        read -e -i "ignore" -p "Nouveau has loaded, disable or ignore it? (disable/ignore): " ans
+        #        if [[ $ans == disable ]]; then
+        #            echo "blacklist nouveau" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
+        #            echo "options nouveau modeset=0" | sudo tee -a /etc/modprobe.d/blacklist-nouveau.conf
+        #            sudo update-initramfs -u
+        #            echo "Nouveau is disabled since next boot"
+        #            echo "Reboot and try again"
+        #            return -1
+        #        fi
+        #    fi
+        #fi
 
         driver=$(realpath $1)
         echo "NVIDIA driver: $driver"
         read -p "Press [ENTER] to continue: " _
         sudo systemctl isolate multi-user
         
-        read -e -i "no" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
-        if [[ $ans == yes ]]; then
-            sudo nvidia-uninstall 
-            sudo apt remove -y --purge '^nvidia-.*'
-            sudo apt autoremove -y
-        fi
+        #read -e -i "no" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
+        #if [[ $ans == yes ]]; then
+        #    sudo nvidia-uninstall 
+        #    sudo apt remove -y --purge '^nvidia-.*'
+        #    sudo apt autoremove -y
+        #fi
 
 	    chmod +x $driver 
         sudo $driver && 
@@ -299,6 +294,14 @@ function nvidia-install {
             cat /var/log/nvidia-installer.log
         }
     fi
+}
+
+function nvidia-uninstall-again {
+    if [[ -f /usr/bin/nvidia-uninstall ]]; then
+        sudo /usr/bin/nvidia-uninstall
+    fi
+    sudo apt remove -y --purge '^nvidia-.*'
+    sudo apt autoremove -y
 }
 
 function nvidia-deploy-dso-glcore {
@@ -413,6 +416,7 @@ function nvidia-find-symbol {
 
 function prime {
     if [[ $XDG_SESSION_TYPE == wayland ]]; then
+        echo "\$XDG_SESSION_TYPE is wayland" 
         export GBM_BACKEND=nvidia-drm
         echo "export GBM_BACKEND=nvidia-drm"
     fi
@@ -1089,13 +1093,17 @@ if [[ $1 == config ]]; then
 
     if [[ -z $DISPLAY ]]; then
         export DISPLAY=:0
-        echo "export DISPLAY=:0"
     fi
 
     read -e -i "yes" -p "Update apt sources? (yes/no): " apt_update
     if [[ $apt_update == yes ]]; then
         sudo apt update
     fi
+
+    install-if-not-yet vim htop vkcube:vulkan-tools ifconfig:net-tools unzip libglfw3:libglfw3-dev 
+    install-any pkg-config gcc gcc-12 g++ libglvnd-dev 
+    install-any build-essential gcc g++ cmake pkg-config libglvnd-dev 
+    sudo apt install -y vulkan-tools
 
     if [[ -z $(dpkg -l | grep linux-tools-`uname -r`) ]]; then
         sudo apt install -y linux-tools-`uname -r` 
@@ -1156,12 +1164,6 @@ EOF
         sudo apt install -y vulkan-tools
     fi
 
-    if ! vkcube --c 10; then
-        read -p 'Run command `xhost +x` on test machine, then press [ENTER] to continue: ' _
-    fi
-
-    install-if-not-yet vim htop vkcube:vulkan-tools ifconfig:net-tools unzip libglfw3:libglfw3-dev 
-
     if [[ -z $(which perf) ]]; then
         sudo apt install -y linux-tools-common linux-tools-generic
     fi
@@ -1175,6 +1177,12 @@ EOF
     fi
 
     if ! ping -c2 linuxqa; then
+        if [[ -f /usr/local/bin/vpn-with-sso.sh ]]; then
+            read -e -i "yes" -p "Update /usr/local/bin/vpn-with-sso.sh? (yes/no): " ans
+            if [[ $ans == yes ]]; then
+                sudo rm -rf /usr/local/bin/vpn-with-sso.sh
+            fi
+        fi
         if [[ ! -f /usr/local/bin/vpn-with-sso.sh ]]; then
             rm -rf /tmp/vpn-with-sso.sh
             sudo tee /tmp/vpn-with-sso.sh << EOF 
@@ -1205,19 +1213,6 @@ EOF
             sudo chown $USER /usr/local/bin/vpn-with-sso.sh
             chmod +x /usr/local/bin/vpn-with-sso.sh
         fi
-        read -p "Run command /usr/local/bin/vpn-with-sso.sh, then press [ENTER] to continue: " _
-    fi
-    
-    if [[ ! -d ~/wanliz_workspace ]]; then
-        git clone https://wanliz:glpat-HDR4kyQBbsRxwBEBZtz7@gitlab-master.nvidia.com/wanliz/wanliz_workspace $HOME/wanliz_workspace
-    fi
-
-    install-any build-essential gcc g++ cmake pkg-config libglvnd-dev 
-    
-    if [[ -d $HOME/wanliz_workspace ]]; then
-        echo "- Clone wanliz_workspace  [OK]" >> /tmp/config.log
-    else
-        echo "- Clone wanliz_workspace  [FAILED]" >> /tmp/config.log
     fi
 
     if [[ -z $(grep wanliz_workspace ~/.bashrc) ]]; then
@@ -1235,7 +1230,7 @@ EOF
         echo "- Install openssh-server  [OK]" >> /tmp/config.log
     fi
 
-    ans=yes 
+    read -e -i "yes" -p "Add vnc server as system service? (yes/no): " ans   
     if [[ $ans == yes ]]; then
         if [[ $XDG_SESSION_TYPE == tty ]]; then
             read -e -i "x11" -p "XDG session type: " XDG_SESSION_TYPE
@@ -1339,17 +1334,11 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         fi 
     fi
 
-    if [[ ! -f $HOME/.p4ignore ]]; then
-        if [[ -f $HOME/.p4ignore ]]; then
-            cat $HOME/.p4ignore
-        else
-            read -e -i "yes" -p "$HOME/.p4ignore doesn't exist, create with default value? (yes/no): " ans
-            if [[ $ans == yes ]]; then
-                echo -e "_out\n.git\n.vscode\n" > $HOME/.p4ignore
-                cat $HOME/.p4ignore
-            fi
-        fi
-        echo "- Create file ~/.p4ignore  [OK]" >> /tmp/config.log
+    if [[ -f $HOME/.p4ignore ]]; then
+        cat $HOME/.p4ignore
+    else
+        echo -e "_out\n.git\n.vscode\n" > $HOME/.p4ignore
+        cat $HOME/.p4ignore
     fi
 
     if [[ -z $(which gtlfs) ]]; then
@@ -1377,13 +1366,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
             sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
             sudo sh -c 'echo "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/vscode stable main" > /etc/apt/sources.list.d/vscode.list'
             sudo apt update
-            sudo apt install -y code && { 
-                code --command "workbench.action.sync.enable" &
-                sleep 3
-                read -p "Press [ENTER] to continue: " _
-                echo "- Install VS Code  [OK]" >> /tmp/config.log 
-            } ||
-                echo "- Install VS Code  [FAILED]" >> /tmp/config.log 
+            sudo apt install -y code 
             popd 
         fi 
     fi
@@ -1414,7 +1397,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         fi 
     fi
 
-    ans=yes 
+    read -e -i "yes" -p "Configure default profile in Terminal? (yes/no): " ans
     if [[ $ans == yes ]]; then
         PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
         FONT_NAME=$(gsettings get org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$PROFILE_ID/ font)
@@ -1436,7 +1419,7 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
         fi
     fi
 
-    read -e -i "yes" -p "Set up autostart scripts? (yes/no): " ans
+    read -e -i "yes" -p "Register autostart scripts? (yes/no): " ans
     if [[ $ans == yes ]]; then
 #        if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
 #            echo '[Desktop Entry]
