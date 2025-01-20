@@ -1206,8 +1206,8 @@ if [[ -z \$(openconnect --version | head -1 | grep "v9") ]]; then
     popd 
 fi
 
-eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser firefox --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
-[ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 
+eval \$(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser firefox --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
+[ -n ["\$COOKIE"] ] && echo -n "\$COOKIE" | sudo openconnect --cookie-on-stdin \$CONNECT_URL --servercert \$FINGERPRINT --resolve \$RESOLVE 
 EOF
             sudo mv /tmp/vpn-with-sso.sh /usr/local/bin/vpn-with-sso.sh
             sudo chown $USER /usr/local/bin/vpn-with-sso.sh
