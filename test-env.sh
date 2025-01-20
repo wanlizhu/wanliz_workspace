@@ -1421,33 +1421,6 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
 
     read -e -i "yes" -p "Register autostart scripts? (yes/no): " ans
     if [[ $ans == yes ]]; then
-#        if [[ ! -f ~/.config/autostart/xhost.desktop ]]; then
-#            echo '[Desktop Entry]
-#Type=Application
-#Exec=bash -c "xhost + > /tmp/xhost.log"
-#Hidden=false
-#NoDisplay=false
-#X-GNOME-Autostart-enabled=true
-#Name=XHost Command
-#Comment=Disable access control' > /tmp/xhost.desktop
-#            sudo mv /tmp/xhost.desktop ~/.config/autostart/xhost.desktop
-#            echo "- Disable access control after GNOME startup  [OK]" >> /tmp/config.log
-#        fi
-#        if [[ ! -f ~/.config/autostart/report-ip.desktop ]]; then
-#            if [[ -f ~/.muttrc ]]; then
-#                echo '[Desktop Entry]
-#Type=Application
-#Exec=bash -c "echo 'Sleep 30 sec prior to IP reporting'; sleep 30; /usr/local/bin/autostart-reportIP.sh > /tmp/report-ip.log"
-#Hidden=false
-#NoDisplay=false
-#X-GNOME-Autostart-enabled=true
-#Name=Report IP through Email
-#Comment=Report IP through Email' > /tmp/report-ip.desktop
-#                sudo mv /tmp/report-ip.desktop ~/.config/autostart/report-ip.desktop
-#                echo "- Report IP through Email after GNOME startup  [OK]" >> /tmp/config.log
-#            fi
-#        fi
-
         if [[ ! -f /usr/local/bin/autostart-xhost.sh ]]; then
             echo 'sleep 30' > /tmp/autostart-xhost.sh 
             echo 'export DISPLAY=:0' >> /tmp/autostart-xhost.sh
