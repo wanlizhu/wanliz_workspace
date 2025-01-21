@@ -614,9 +614,9 @@ function start-plain-x {
         sudo sed -i 's/console/anybody/g' /etc/X11/Xwrapper.config
     fi
 
-    if [[ -z $(grep 'needs_root_rights=no' /etc/X11/Xwrapper.config) ]]; then
-        echo -e '\nneeds_root_rights=no' | sudo tee -a /etc/X11/Xwrapper.config >/dev/null
-    fi
+    #if [[ -z $(grep 'needs_root_rights=no' /etc/X11/Xwrapper.config) ]]; then
+    #    echo -e '\nneeds_root_rights=no' | sudo tee -a /etc/X11/Xwrapper.config >/dev/null
+    #fi
 
     if [[ ! -z $(pidof Xorg) ]]; then
         pkill Xorg
@@ -630,11 +630,6 @@ function disable-only-console-users-are-allowed-to-run-the-x-server {
     if [[ -z $(grep anybody /etc/X11/Xwrapper.config) ]]; then
         sudo sed -i 's/console/anybody/g' /etc/X11/Xwrapper.config
         echo "Replaced console with anybody in /etc/X11/Xwrapper.config"
-    fi
-
-    if [[ -z $(grep 'needs_root_rights=no' /etc/X11/Xwrapper.config) ]]; then
-        echo -e '\nneeds_root_rights=no' | sudo tee -a /etc/X11/Xwrapper.config >/dev/null
-        echo "Added needs_root_rights=no in /etc/X11/Xwrapper.config"
     fi
 }
 
