@@ -1183,8 +1183,7 @@ EOF
     if [[ -z $(which git) ]]; then
         sudo apt install -y git
         git config --global user.name "Wanli Zhu"
-        tmp=icloud
-        git config --global user.email zhu.wanli@$tmp.com
+        #git config --global user.email zhu.wanli@icloud.com
         git config --global pull.rebase false
         echo "- git config ...  [OK]" >> /tmp/config.log
     fi
