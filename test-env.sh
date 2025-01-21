@@ -969,7 +969,7 @@ function decrypt {
         txt="$1"
     fi
     
-    read -s -p "Decryption Password: " password
+    read -s -p "Password: " password
     echo "$txt" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"$password" -pbkdf2
 }
 
@@ -979,7 +979,9 @@ function send-email {
     fi
 
     if [[ ! -f $HOME/.muttrc ]]; then
+        echo "Decode Gmail address:"
         gmail=$(decrypt 'U2FsdGVkX1/ftnBAbmGmt6BVRc7gdD2aU8UN0EaEVb4yoVjPGvKQGMvon40nkMXf')
+        echo "Decode Gmail passkey:"
         gmailpass=$(decrypt 'U2FsdGVkX1+wVKiN/NT+/lxhikkDYmaFok9maq5e4sfuL8NQsxgkqRkGComyd5+L')
         echo "set from = \"$gmail\"" > $HOME/.muttrc
         echo "set realname = \"Wanli Zhu from Linux Terminal\"" >> $HOME/.muttrc
@@ -1482,13 +1484,15 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
             fi
         fi
         if [[ ! -f /usr/local/bin/autostart-reportIP.sh ]]; then
+            echo "Decode automation email recipient:"
+            recipient=$(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20')
             echo "sleep 30" > /tmp/autostart-reportIP.sh
             echo "rm -rf /tmp/reportIP.log" >> /tmp/autostart-reportIP.sh 
             echo "ip addr | grep inet > /tmp/reportIP.info" >> /tmp/autostart-reportIP.sh
             echo "if cmp -s ~/.reportIP.info /tmp/reportIP.info; then" >> /tmp/autostart-reportIP.sh
             echo "    exit" >> /tmp/autostart-reportIP.sh
             echo "fi" >> /tmp/autostart-reportIP.sh
-            echo "echo \"\$(ip addr)\" | mutt -s \"IP Address of $(hostname)\" -- $(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') >> /tmp/reportIP.log 2>&1" >> /tmp/autostart-reportIP.sh
+            echo "echo \"\$(ip addr)\" | mutt -s \"IP Address of $(hostname)\" -- $recipient >> /tmp/reportIP.log 2>&1" >> /tmp/autostart-reportIP.sh
             echo "if [ \$? -eq 0 ]; then" >> /tmp/autostart-reportIP.sh
             echo "    cp -f /tmp/reportIP.info ~/.reportIP.info" >> /tmp/autostart-reportIP.sh
             echo "fi" >> /tmp/autostart-reportIP.sh
