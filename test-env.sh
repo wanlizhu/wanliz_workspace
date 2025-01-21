@@ -1458,6 +1458,12 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
 
     read -e -i "yes" -p "Register autostart scripts? (yes/no): " ans
     if [[ $ans == yes ]]; then
+        if [[ -f /usr/local/bin/autostart-xhost.sh ]]; then
+            read -e -i "yes" -p "Update existing autostart-xhost.sh? (yes/no): " ans
+            if [[ $ans == yes ]]; then
+                sudo rm -rf /usr/local/bin/autostart-xhost.sh
+            fi
+        fi
         if [[ ! -f /usr/local/bin/autostart-xhost.sh ]]; then
             echo 'sleep 30' > /tmp/autostart-xhost.sh 
             echo 'export DISPLAY=:0' >> /tmp/autostart-xhost.sh
@@ -1469,11 +1475,23 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
             echo "- Create /usr/local/bin/autostart-xhost.sh  [OK]" >> /tmp/config.log
         fi
 
+        if [[ -f /usr/local/bin/autostart-reportIP.sh ]]; then
+            read -e -i "yes" -p "Update existing autostart-reportIP.sh? (yes/no): " ans
+            if [[ $ans == yes ]]; then
+                sudo rm -rf /usr/local/bin/autostart-reportIP.sh
+            fi
+        fi
         if [[ ! -f /usr/local/bin/autostart-reportIP.sh ]]; then
             echo "sleep 30" > /tmp/autostart-reportIP.sh
             echo "rm -rf /tmp/reportIP.log" >> /tmp/autostart-reportIP.sh 
             echo "ip addr | grep inet > /tmp/reportIP.info" >> /tmp/autostart-reportIP.sh
+            echo "if cmp -s ~/.reportIP.info /tmp/reportIP.info; then" >> /tmp/autostart-reportIP.sh
+            echo "    exit" >> /tmp/autostart-reportIP.sh
+            echo "fi" >> /tmp/autostart-reportIP.sh
             echo "echo \"\$(ip addr)\" | mutt -s \"IP Address of $(hostname)\" -- $(decrypt 'U2FsdGVkX197SenegVS26FX0eZ0iUzMLnb0yqa7IIZCDHwK8flnDoWxzj+wzkG20') >> /tmp/reportIP.log 2>&1" >> /tmp/autostart-reportIP.sh
+            echo "if [ \$? -eq 0 ]; then" >> /tmp/autostart-reportIP.sh
+            echo "    cp -f /tmp/reportIP.info ~/.reportIP.info" >> /tmp/autostart-reportIP.sh
+            echo "fi" >> /tmp/autostart-reportIP.sh
             echo "" >> /tmp/autostart-reportIP.sh
             sudo mv /tmp/autostart-reportIP.sh /usr/local/bin/autostart-reportIP.sh
             sudo chown $USER /usr/local/bin/autostart-reportIP.sh
