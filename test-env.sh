@@ -1,5 +1,7 @@
 if   [[ $HOSTNAME == wanliz-dev  ]]; then
     export P4CLIENT=wanliz_p4sw_dev
+elif [[ $HOSTNAME == wanliz-test ]]; then
+    export P4CLIENT=wanliz_p4sw_test
 fi
 if [[ -z $DISPLAY ]]; then
     export DISPLAY=:0
@@ -1360,6 +1362,8 @@ WantedBy=multi-user.target" | sudo tee /etc/systemd/system/x11vnc.service
             sudo cp -R p4v-2024.4.*/bin/* /usr/local/bin
             sudo cp -R p4v-2024.4.*/lib/* /usr/local/lib 
             popd
+
+            sudo apt install -y libxcb-cursor0
 
             [[ ! -z $(which p4v) ]] && 
             echo "- Install p4v command  [OK]" >> /tmp/config.log ||
