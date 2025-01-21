@@ -633,6 +633,32 @@ function disable-only-console-users-are-allowed-to-run-the-x-server {
     fi
 }
 
+function start-simple-desktop {
+    if [[ $XDG_SESSION_TYPE != tty ]]; then
+        echo "Please run through a tty session"
+        return
+    fi
+    if [[ $(systemctl is-active gdm3) == "active" ]]; then
+        read -e -i "yes" -p "Stop running gdm3? (yes/no): " ans
+        if [[ $ans != "yes" ]]; then
+            return
+        fi
+        sudo systemctl stop gdm3
+    fi
+    if [[ -z $(grep anybody /etc/X11/Xwrapper.config) ]]; then
+        sudo sed -i 's/console/anybody/g' /etc/X11/Xwrapper.config
+        echo "Replaced console with anybody in /etc/X11/Xwrapper.config"
+    fi
+    if [[ -z $(which openbox) ]]; then
+        sudo apt install -y openbox
+    fi
+
+    sudo X -retro &
+    sleep 2
+    export DISPLAY=:0
+    openbox --replace &
+}
+
 function load-pic-env {
     pushd $HOME/PIC-X_Package/SinglePassCapture/Scripts >/dev/null
     source ./setup-symbollinks.sh 
