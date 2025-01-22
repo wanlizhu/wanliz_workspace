@@ -542,6 +542,7 @@ function use-gcc12 {
         sudo apt install -y gcc-12
     fi
     sudo ln -sf /usr/bin/gcc-12 /usr/bin/gcc
+    gcc --version
 }
 
 function resize-display {
