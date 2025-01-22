@@ -293,33 +293,16 @@ function nvidia-install {
             return -1
         fi
 
-        # TODO - gcc-12
-        # Disable nouveau
-        #if [[ ! -z $(lsmod | grep nouveau) ]]; then
-        #    if [[ -z $(grep -r "nouveau" /etc/modprobe.d/) ]]; then
-        #        read -e -i "ignore" -p "Nouveau has loaded, disable or ignore it? (disable/ignore): " ans
-        #        if [[ $ans == disable ]]; then
-        #            echo "blacklist nouveau" | sudo tee /etc/modprobe.d/blacklist-nouveau.conf
-        #            echo "options nouveau modeset=0" | sudo tee -a /etc/modprobe.d/blacklist-nouveau.conf
-        #            sudo update-initramfs -u
-        #            echo "Nouveau is disabled since next boot"
-        #            echo "Reboot and try again"
-        #            return -1
-        #        fi
-        #    fi
-        #fi
-
         driver=$(realpath $1)
         echo "NVIDIA driver: $driver"
         read -p "Press [ENTER] to continue: " _
         sudo systemctl isolate multi-user
-        
-        #read -e -i "no" -p "Uninstall existing NVIDIA driver? (yes/no): " ans
-        #if [[ $ans == yes ]]; then
-        #    sudo nvidia-uninstall 
-        #    sudo apt remove -y --purge '^nvidia-.*'
-        #    sudo apt autoremove -y
-        #fi
+        sleep 1
+
+        if [[ $(tty) == "/dev/tty"* ]]; then
+            ttyid=$(sudo fgconsole)
+            sudo chvt $ttyid 
+        fi
 
 	    chmod +x $driver 
         sudo $driver && 
