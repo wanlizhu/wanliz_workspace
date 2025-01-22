@@ -299,13 +299,10 @@ function nvidia-install {
         sudo systemctl isolate multi-user
         sleep 1
 
-        set -x
         if [[ $(tty) == "/dev/tty"* ]]; then
             ttyid=$(sudo fgconsole)
             sudo chvt $ttyid 
         fi
-        set +x
-        return
 
 	    chmod +x $driver 
         sudo $driver && 
