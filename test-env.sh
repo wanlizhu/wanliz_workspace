@@ -537,6 +537,13 @@ function nopasswd {
     fi
 }
 
+function use-gcc12 {
+    if [[ -z $(which gcc-12) ]]; then
+        sudo apt install -y gcc-12
+    fi
+    sudo ln -sf /usr/bin/gcc-12 /usr/bin/gcc
+}
+
 function resize-display {
     read -p "New size: " size
     outputname=$(xrandr | grep " connected" | awk '{print $1}')
