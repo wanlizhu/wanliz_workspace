@@ -174,6 +174,7 @@ function nvidia-install {
         echo "Available build types for $1: release, debug and develop"
         read -e -i "release" -p "Build type: " buildtype
         if [[ $buildtype == release ]]; then
+            echo "Pulling driver list..."
             wanted=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D" | grep '<td><a href="20' | grep "${1//[!0-9]/}_" | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${wanted}.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${wanted}.run"
@@ -181,6 +182,7 @@ function nvidia-install {
             fi 
             nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-$wanted.run
         elif [[ $buildtype == debug ]]; then
+            echo "Pulling driver list..."
             wanted=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D" | grep '<td><a href="20' | grep "${1//[!0-9]/}_" | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${wanted}-debug.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${wanted}-debug.run"
@@ -188,6 +190,7 @@ function nvidia-install {
             fi 
             nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-${wanted}-debug.run
         elif [[ $buildtype == develop ]]; then
+            echo "Pulling driver list..."
             wanted=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D" | grep '<td><a href="20' | grep "${1//[!0-9]/}_" | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${wanted}-develop.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${wanted}-develop.run"
@@ -201,6 +204,7 @@ function nvidia-install {
         echo "Available build types for $1: release, debug and develop"
         read -e -i "release" -p "Build type: " buildtype
         if [[ $buildtype == release ]]; then
+            echo "Pulling driver list..."
             current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${current}.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${current}.run"
@@ -208,6 +212,7 @@ function nvidia-install {
             fi 
             nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-$current.run
         elif [[ $buildtype == debug ]]; then
+            echo "Pulling driver list..."
             current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${current}-debug.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${current}-debug.run"
@@ -215,6 +220,7 @@ function nvidia-install {
             fi 
             nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-debug.run
         elif [[ $buildtype == develop ]]; then
+            echo "Pulling driver list..."
             current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
             if [[ ! -f NVIDIA-Linux-x86_64-${current}-develop.run ]]; then
                 echo "Downloading NVIDIA-Linux-x86_64-${current}-develop.run"
