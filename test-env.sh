@@ -1127,10 +1127,8 @@ function record-screen {
     ffmpeg -video_size $(xdpyinfo | grep dimensions | awk '{print $2}') -framerate 30 -f x11grab -i :0.0 -c:v libx264rgb -preset ultrafast -qp 0 -pix_fmt rgb24 $HOME/Videos/$filename &
     FFPID=$!
 
-    sleep 2
-    echo "Recording screen to $HOME/Videos/$filename"
-
     if [[ -z $proc ]]; then
+        sleep 2
         read -p "Press [ENTER] to stop recording:" _
     else
         while true; do
