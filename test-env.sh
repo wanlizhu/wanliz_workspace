@@ -1120,11 +1120,12 @@ function record-screen {
         sudo apt install -y ffmpeg
     fi
 
-    read -e -i "$(date +%Y%m%d_%H%M%S)" -p "Save to file: " filename
+    read -e -i "$(date +%Y%m%d_%H%M%S).mp4" -p "Save to file: " filename
     read -p "Ends after the termination of: " proc
     
-    ffmpeg -video_size $(xdpyinfo | grep dimensions | awk '{print $2}') -framerate 30 -f x11grab -i :0.0 -c:v libx264rgb -preset ultrafast -qp 0 -pix_fmt rgb24 $HOME/Videos/$filename.mp4 &
-    echo "Recording screen to $HOME/Videos/$filename.mp4"
+    mkdir -p $HOME/Videos
+    ffmpeg -video_size $(xdpyinfo | grep dimensions | awk '{print $2}') -framerate 30 -f x11grab -i :0.0 -c:v libx264rgb -preset ultrafast -qp 0 -pix_fmt rgb24 $HOME/Videos/$filename &
+    echo "Recording screen to $HOME/Videos/$filename"
 
     if [[ -z $proc ]]; then
         read -p "Press [ENTER] to stop recording:" _
