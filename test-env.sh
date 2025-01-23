@@ -1120,11 +1120,14 @@ function record-screen {
         sudo apt install -y ffmpeg
     fi
 
+    mkdir -p $HOME/Videos
     read -e -i "$(date +%Y%m%d_%H%M%S).mp4" -p "Save to file: " filename
     read -p "Ends after the termination of: " proc
     
-    mkdir -p $HOME/Videos
     ffmpeg -video_size $(xdpyinfo | grep dimensions | awk '{print $2}') -framerate 30 -f x11grab -i :0.0 -c:v libx264rgb -preset ultrafast -qp 0 -pix_fmt rgb24 $HOME/Videos/$filename &
+    FFPID=$!
+
+    sleep 2
     echo "Recording screen to $HOME/Videos/$filename"
 
     if [[ -z $proc ]]; then
@@ -1136,6 +1139,8 @@ function record-screen {
             fi
         done
     fi 
+
+    kill -SIGINT $FFPID
 }
 
 ###########################################################
