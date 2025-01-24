@@ -120,16 +120,21 @@ function nvidia-make {
         default_args=""
     fi
 
+    exclude_modules=(
+        nvcuvid
+    )
+
     $P4ROOT/misc/linux/unix-build \
         --tools $P4ROOT/tools \
         --devrel $P4ROOT/devrel/SDK/inc/GL \
         --unshare-namespaces \
         nvmake \
         NV_COLOR_OUTPUT=1 \
+        NV_GUARDWORD= \
+        NV_MANGLE_SYMBOLS= \
         NV_COMPRESS_THREADS=$(nproc) \
-        NV_FAST_PACKAGE_COMPRESSION=1 \
-        NV_KEEP_UNSTRIPPED_BINARIES=0 \
-        NV_GUARDWORD=0 $default_args $@ 
+        NV_FAST_PACKAGE_COMPRESSION=zstd \
+        NV_EXCLUDE_BUILD_MODULES="${exclude_modules[*]}" $default_args $@ 
 }
 
 function nvidia-make-ppp {
