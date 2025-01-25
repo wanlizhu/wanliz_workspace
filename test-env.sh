@@ -120,15 +120,15 @@ function nvidia-build-info {
 
 function nvidia-install-ssl-certificate {
     sudo apt install -y ca-certificates
-    for url in "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-1.crt" 
-               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-2.crt"
-               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-3.crt"
-               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-4.crt"
-               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-12-1.crt"
-               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-12-2.crt"
-               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-4.crt"
-               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2015-10-1.crt"
-               "//sw/pvt/aplattner/ssl/roots/HQNVCA121-CA-2017-06-20.crt"
+    for url in "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-1.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-2.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-3.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-4.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-12-1.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-12-2.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-4.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2015-10-1.crt" \
+               "//sw/pvt/aplattner/ssl/roots/HQNVCA121-CA-2017-06-20.crt" \
                "//sw/pvt/aplattner/ssl/roots/HQNVCA121-CA-2022-02-27.crt"; do
         p4 print -o ~/Downloads/nvidia.crt.d/$(basename $url) $url 
         sudo cp -vf ~/Downloads/nvidia.crt.d/$(basename $url) /usr/local/share/ca-certificates/
