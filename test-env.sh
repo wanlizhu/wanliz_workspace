@@ -134,7 +134,6 @@ function nvidia-install-ssl-certificate {
         sudo cp -f ~/Downloads/nvidia.crt.d/$(basename $url) /usr/local/share/ca-certificates/
     done
     sudo update-ca-certificates
-    grep "your_certificate" /etc/ssl/certs/ca-certificates.crt 
 }
 
 function nvidia-make {
