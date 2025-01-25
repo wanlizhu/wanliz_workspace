@@ -107,6 +107,36 @@ function nvidia-version {
     echo "Nvidia SRC ($P4CLIENT) version: $(nvidia-src-version)"
 }
 
+function nvidia-build-info {
+    if [[ -z $1 ]]; then
+        read -p "Enter the version string: " version
+    else
+        version=$1
+    fi
+
+    url="https://dvsweb.nvidia.com/DVSWeb/view/content/od/odBuilds.jsf?versionNumber=$version"
+    xdg-open $url || gio open $url
+}
+
+function nvidia-install-ssl-certificate {
+    sudo apt install -y ca-certificates
+    for url in "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-1.crt" 
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-2.crt"
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-3.crt"
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-4.crt"
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-12-1.crt"
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-12-2.crt"
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-4.crt"
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2015-10-1.crt"
+               "//sw/pvt/aplattner/ssl/roots/HQNVCA121-CA-2017-06-20.crt"
+               "//sw/pvt/aplattner/ssl/roots/HQNVCA121-CA-2022-02-27.crt"; do
+        p4 print -o ~/Downloads/nvidia.crt.d/$(basename $url) $url 
+        sudo cp -vf ~/Downloads/nvidia.crt.d/$(basename $url) /usr/local/share/ca-certificates/
+    done
+    sudo update-ca-certificates
+    grep "your_certificate" /etc/ssl/certs/ca-certificates.crt 
+}
+
 function nvidia-make {
     if [[ -z $1 ]]; then
         if [[ $(basename $(pwd)) == bugfix_main ]]; then
@@ -120,10 +150,6 @@ function nvidia-make {
         default_args=""
     fi
 
-    exclude_modules=(
-        nvcuvid
-    )
-
     $P4ROOT/misc/linux/unix-build \
         --tools $P4ROOT/tools \
         --devrel $P4ROOT/devrel/SDK/inc/GL \
@@ -131,10 +157,9 @@ function nvidia-make {
         nvmake \
         NV_COLOR_OUTPUT=1 \
         NV_GUARDWORD= \
-        NV_MANGLE_SYMBOLS= \
         NV_COMPRESS_THREADS=$(nproc) \
         NV_FAST_PACKAGE_COMPRESSION=zstd \
-        NV_EXCLUDE_BUILD_MODULES="${exclude_modules[*]}" $default_args $@ 
+        NV_EXCLUDE_BUILD_MODULES="nvcuvid" $default_args $@ 
 }
 
 function nvidia-make-ppp {
