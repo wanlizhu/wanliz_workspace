@@ -131,7 +131,7 @@ function nvidia-install-ssl-certificate {
                "//sw/pvt/aplattner/ssl/roots/HQNVCA121-CA-2017-06-20.crt" \
                "//sw/pvt/aplattner/ssl/roots/HQNVCA121-CA-2022-02-27.crt"; do
         p4 print -o ~/Downloads/nvidia.crt.d/$(basename $url) $url 
-        sudo cp -vf ~/Downloads/nvidia.crt.d/$(basename $url) /usr/local/share/ca-certificates/
+        sudo cp -f ~/Downloads/nvidia.crt.d/$(basename $url) /usr/local/share/ca-certificates/
     done
     sudo update-ca-certificates
     grep "your_certificate" /etc/ssl/certs/ca-certificates.crt 
