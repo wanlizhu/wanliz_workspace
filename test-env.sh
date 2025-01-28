@@ -258,7 +258,7 @@ function nvidia-install {
             nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-develop.run
         fi
         popd 
-    elif [[ $1 =~ ^[0-9]+\.[0-9]+$ ]]; then
+    elif [[ $1 =~ ^[0-9]+\.[0-9]+$ || $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo "Available build types for $1: release, debug and develop"
         read -e -i "release" -p "Build type: " buildtype
         pushd ~/Downloads 
