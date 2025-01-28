@@ -122,8 +122,19 @@ function nvidia-build-info {
         version=$1
     fi
 
-    url="https://dvsweb.nvidia.com/DVSWeb/view/content/od/odBuilds.jsf?versionNumber=$version"
-    xdg-open $url || gio open $url
+    read -e -i "no" -p "Open web page for details? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        url="https://dvsweb.nvidia.com/DVSWeb/view/content/od/odBuilds.jsf?versionNumber=$version"
+        xdg-open $url || gio open $url
+    fi 
+
+    if [[ -z $(which curl) ]]; then
+        sudo apt install -y curl 
+    fi
+
+    curl --range 0-1023 -o /tmp/head-of-$version http://linuxqa/builds/release/display/x86_64/$version/logs/Build-20$version.log
+    cat /tmp/head-of-$version | grep CHANGELIST
+    cat /tmp/head-of-$version | grep NV_DVS_COMPONENT
 }
 
 function nvidia-install-ssl-certificate {
