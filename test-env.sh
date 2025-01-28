@@ -84,6 +84,14 @@ function p4sync {
     fi
 }
 
+function clone-p4sw-gitmirror {
+    git clone https://soprano.nvidia.com/git-client/sw $HOME/sw || return -1
+}
+
+function find-commit-id-by-changelist {
+    git log --all --grep="$1" --oneline
+}
+
 function nvidia-src-version {
     grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g'
 }
@@ -1322,6 +1330,11 @@ EOF
             echo "[[ -f $HOME/wanliz_workspace/test-env.sh ]] && source $HOME/wanliz_workspace/test-env.sh" >> ~/.bashrc
             echo "- Source test-env.sh in ~/.bashrc  [OK]" >> /tmp/config.log
         fi
+    fi
+
+    read -e -i "yes" -p "Install nvidia SSL certificate? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        nvidia-install-ssl-certificate
     fi
 
     if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
