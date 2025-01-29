@@ -45,7 +45,11 @@ int main() {
     GLuint test = 0;
     glGenBuffers(1, &test);
     glBindBuffer(GL_ARRAY_BUFFER, test);
-    glBufferStorage(GL_ARRAY_BUFFER, 8L*1024*1024*1024, NULL, GL_STATIC_DRAW);
+    glBufferStorage(GL_ARRAY_BUFFER, 8L * 1024 * 1024 * 1024, nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    void* ptr = glMapBufferRange(GL_ARRAY_BUFFER, 0, 8L * 1024 * 1024 * 1024, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    if (ptr) {
+        memset(ptr, 0, 8L * 1024 * 1024 * 1024); // Force allocation
+    }
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Setup vertex data
