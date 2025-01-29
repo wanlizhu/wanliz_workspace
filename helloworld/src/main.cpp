@@ -42,6 +42,12 @@ int main() {
     // Load shader
     Shader shader("../shaders/vertex_shader.glsl", "../shaders/fragment_shader.glsl");
 
+    GLuint test = 0;
+    glGenBuffers(1, &test);
+    glBindBuffer(GL_ARRAY_BUFFER, test);
+    glBufferStorage(GL_ARRAY_BUFFER, 8L*1024*1024*1024, NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     // Setup vertex data
     unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);

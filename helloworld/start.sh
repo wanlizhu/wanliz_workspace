@@ -14,12 +14,5 @@ for pkg in "${packages[@]}"; do
 done
 
 mkdir -p build && cd build
-
-if ! -d glad; then
-    git clone https://github.com/Dav1dde/glad.git && cd glad
-    git checkout v2.0.8
-    cd ..
-fi 
-
 cmake ..
 make && ./helloworld 
