@@ -84,6 +84,14 @@ function p4sync {
     fi
 }
 
+function clone-p4sw-gitmirror {
+    git clone https://soprano.nvidia.com/git-client/sw $HOME/sw || return -1
+}
+
+function find-commit-id-by-changelist {
+    git log --all --grep="$1" --oneline
+}
+
 function nvidia-src-version {
     grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g'
 }
@@ -107,6 +115,46 @@ function nvidia-version {
     echo "Nvidia SRC ($P4CLIENT) version: $(nvidia-src-version)"
 }
 
+function nvidia-build-info {
+    if [[ -z $1 ]]; then
+        read -p "Enter the version string: " version
+    else
+        version=$1
+    fi
+
+    read -e -i "no" -p "Open web page for details? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        url="https://dvsweb.nvidia.com/DVSWeb/view/content/od/odBuilds.jsf?versionNumber=$version"
+        xdg-open $url || gio open $url
+    fi 
+
+    if [[ -z $(which curl) ]]; then
+        sudo apt install -y curl 
+    fi
+
+    curl --range 0-1023 -o /tmp/head-of-$version http://linuxqa/builds/release/display/x86_64/$version/logs/Build-20$version.log
+    cat /tmp/head-of-$version | grep CHANGELIST
+    cat /tmp/head-of-$version | grep NV_DVS_COMPONENT
+}
+
+function nvidia-install-ssl-certificate {
+    sudo apt install -y ca-certificates
+    for url in "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-1.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-2.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-3.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-13-4.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-12-1.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-12-2.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2016-10-4.crt" \
+               "//sw/pvt/aplattner/ssl/intermediates/HQNVCA122-CA-2015-10-1.crt" \
+               "//sw/pvt/aplattner/ssl/roots/HQNVCA121-CA-2017-06-20.crt" \
+               "//sw/pvt/aplattner/ssl/roots/HQNVCA121-CA-2022-02-27.crt"; do
+        p4 print -o ~/Downloads/nvidia.crt.d/$(basename $url) $url 
+        sudo cp -f ~/Downloads/nvidia.crt.d/$(basename $url) /usr/local/share/ca-certificates/
+    done
+    sudo update-ca-certificates
+}
+
 function nvidia-make {
     if [[ -z $1 ]]; then
         if [[ $(basename $(pwd)) == bugfix_main ]]; then
@@ -126,10 +174,10 @@ function nvidia-make {
         --unshare-namespaces \
         nvmake \
         NV_COLOR_OUTPUT=1 \
+        NV_GUARDWORD= \
         NV_COMPRESS_THREADS=$(nproc) \
-        NV_FAST_PACKAGE_COMPRESSION=1 \
-        NV_KEEP_UNSTRIPPED_BINARIES=0 \
-        NV_GUARDWORD=0 $default_args $@ 
+        NV_FAST_PACKAGE_COMPRESSION=zstd \
+        NV_EXCLUDE_BUILD_MODULES="nvcuvid" $default_args $@ 
 }
 
 function nvidia-make-ppp {
@@ -229,7 +277,7 @@ function nvidia-install {
             nvidia-install $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-develop.run
         fi
         popd 
-    elif [[ $1 =~ ^[0-9]+\.[0-9]+$ ]]; then
+    elif [[ $1 =~ ^[0-9]+\.[0-9]+$ || $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
         echo "Available build types for $1: release, debug and develop"
         read -e -i "release" -p "Build type: " buildtype
         pushd ~/Downloads 
@@ -1293,6 +1341,11 @@ EOF
             echo "[[ -f $HOME/wanliz_workspace/test-env.sh ]] && source $HOME/wanliz_workspace/test-env.sh" >> ~/.bashrc
             echo "- Source test-env.sh in ~/.bashrc  [OK]" >> /tmp/config.log
         fi
+    fi
+
+    read -e -i "yes" -p "Install nvidia SSL certificate? (yes/no): " ans
+    if [[ $ans == yes ]]; then
+        nvidia-install-ssl-certificate
     fi
 
     if [[ -z $(sudo systemctl status ssh | grep 'active (running)') ]]; then
