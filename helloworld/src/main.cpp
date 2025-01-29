@@ -68,19 +68,6 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    //  Setup uniform buffer data
-    GLuint UBO;
-    glGenBuffers(1, &UBO);
-    glBindBuffer(GL_UNIFORM_BUFFER, UBO);
-    glBufferData(GL_UNIFORM_BUFFER, 8L * 1024 * 1024 * 1024, nullptr, GL_DYNAMIC_DRAW); 
-
-    GLuint uboIndex = glGetUniformBlockIndex(shader.ID, "UBOData");
-    glUniformBlockBinding(shader.ID, uboIndex, 0);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, UBO);
-    glBufferSubData(GL_UNIFORM_BUFFER, 0, 8L * 1024 * 1024 * 1024, NULL);
-    
-    glBindBuffer(GL_UNIFORM_BUFFER, 0); 
-
     // Main loop
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
