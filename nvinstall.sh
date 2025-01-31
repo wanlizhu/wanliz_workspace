@@ -111,7 +111,7 @@ elif [[ $1 =~ ^[0-9]+\.[0-9]+$ || $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     popd
 elif [[ $1 == release || $1 == debug || $1 == develop ]]; then
     outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$1
-    srcversion=$(grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g')
+    srcversion=$(grep '^#define NV_VERSION_STRING' $P4ROOT/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g')
     if [[ -f  $outdir/NVIDIA-Linux-x86_64-$srcversion.run ]]; then
         echo "32-bits compatible packages are available"
         read -e -i "yes" -p "Install PPP (amd64 + x86) driver? (yes/no): " ans
