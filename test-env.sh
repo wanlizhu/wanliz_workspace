@@ -1,5 +1,5 @@
 if   [[ $HOSTNAME == wanliz-dev  ]]; then
-    export P4CLIENT=wanliz-p4sw-bugfixmain
+    export P4CLIENT=wanliz-p4sw-bugfix_main
 elif [[ $HOSTNAME == wanliz-test ]]; then
     export P4CLIENT=wanliz_p4sw_test
 fi

@@ -140,16 +140,17 @@ elif [[ -d $(realpath $1) ]]; then
         $0 $(cat /tmp/$idx)
     fi
 else 
-    if [[ ! -e $1 ]]; then
-        echo "Driver not found: $1"
-        return -1
-    fi
     if [[ $XDG_SESSION_TYPE != tty ]]; then
         echo "Please run through a tty or ssh session"
         return -1
     fi
 
     driver=$(realpath $1)
+    if [[ ! -e $driver ]]; then
+        echo "Driver not found: $driver"
+        return -1
+    fi
+
     echo "NVIDIA driver: $driver"
     read -p "Press [ENTER] to continue: " _
     sudo systemctl isolate multi-user
