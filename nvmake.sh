@@ -5,14 +5,6 @@ export P4IGNORE=$HOME/.p4ignore
 export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
 
-read -e -i "yes" -p "Update build tools? (yes/no): " update
-if [[ $update == yes ]]; then
-    backup=$P4CLIENT 
-    export P4CLIENT=wanliz-p4sw-common
-    p4 sync //sw/... 
-    export P4CLIENT=$backup
-fi
-
 if [[ -z $1 ]]; then
     read -e -i "yes" -p "Make a full build? (yes/no): " fullbuild
     read -e -i "release" -p "Set build type: " buildtype
@@ -23,12 +15,23 @@ if [[ -z $1 ]]; then
         args="linux amd64 $buildtype -j$threads"
     fi
     echo "nvmake arguments: $args"
-    read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
+    read -p "Press [ENTER] to continue: " _
 else
     args="$@"
 fi
 
-time $P4ROOT/misc/linux/unix-build \
+read -e -i "no" -p "Update build tools? (yes/no): " update
+if [[ $update == yes ]]; then
+    backup1=$P4CLIENT 
+    backup2=$P4ROOT
+    export P4CLIENT=wanliz-p4sw-common
+    export P4ROOT=$HOME/$P4CLIENT
+    p4 sync //sw/... 
+    export P4CLIENT=$backup1
+    export P4ROOT=$backup2
+fi
+
+time $HOME/wanliz-p4sw-common/misc/linux/unix-build \
     --tools  $HOME/wanliz-p4sw-common/tools \
     --devrel $HOME/wanliz-p4sw-common/devrel/SDK/inc/GL \
     --unshare-namespaces \
