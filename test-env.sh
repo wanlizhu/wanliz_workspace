@@ -1,8 +1,8 @@
-if   [[ $HOSTNAME == wanliz-dev  ]]; then
-    export P4CLIENT=wanliz_p4sw_dev
-elif [[ $HOSTNAME == wanliz-test ]]; then
-    export P4CLIENT=wanliz_p4sw_test
-fi
+#if   [[ $HOSTNAME == wanliz-dev  ]]; then
+#    export P4CLIENT=wanliz-p4sw-bugfixmain
+#elif [[ $HOSTNAME == wanliz-test ]]; then
+#    export P4CLIENT=wanliz_p4sw_test
+#fi
 if [[ -z $DISPLAY ]]; then
     export DISPLAY=:0
 fi  
@@ -18,10 +18,10 @@ fi
 #    xauth list 
 #    popd >/dev/null
 #fi
-export P4ROOT=$HOME/$P4CLIENT
-export P4IGNORE=$HOME/.p4ignore
-export P4PORT=p4proxy-sc.nvidia.com:2006
-export P4USER=wanliz
+#export P4ROOT=$HOME/$P4CLIENT
+#export P4IGNORE=$HOME/.p4ignore
+#export P4PORT=p4proxy-sc.nvidia.com:2006
+#export P4USER=wanliz
 export PATH=$HOME/wanliz_workspace:$PATH
 export PATH=$HOME/wanliz_workspace/test_vp:$PATH
 export PATH=$HOME/wanliz_workspace/test_wayland:$PATH
@@ -60,14 +60,14 @@ function install-any {
     done
 }
 
-function chd {
-    case $1 in
-        gl|opengl|glcore) cd $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL ;;
-        glx) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/glx ;;
-        egl) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/egl/build ;;
-        *) cd $P4ROOT/dev/gpu_drv/bugfix_main ;;
-    esac
-}
+#function chd {
+#    case $1 in
+#        gl|opengl|glcore) cd $P4ROOT/dev/gpu_drv/bugfix_main/drivers/OpenGL ;;
+#        glx) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/glx ;;
+#        egl) cd $P4ROOT/dev/gpu_drv/bugfix_main/OpenGL/win/egl/build ;;
+#        *) cd $P4ROOT/dev/gpu_drv/bugfix_main ;;
+#    esac
+#}
 
 function p4sync {
     if [[ ! -d $P4ROOT ]]; then
@@ -153,39 +153,6 @@ function nvidia-install-ssl-certificate {
         sudo cp -f ~/Downloads/nvidia.crt.d/$(basename $url) /usr/local/share/ca-certificates/
     done
     sudo update-ca-certificates
-}
-
-function nvidia-make {
-    if [[ -z $1 ]]; then
-        if [[ $(basename $(pwd)) == bugfix_main ]]; then
-            default_args="drivers dist linux amd64 $(nvidia-build-type) -j$(nproc)"
-        else
-            default_args="linux amd64 $(nvidia-build-type) -j$(nproc)"
-        fi
-        echo "Auto-generated nvmake arguments: $default_args"
-        read -p "Press [ENTER] to continue or [CTRL-C] to cancel: " _
-    else
-        default_args=""
-    fi
-
-    $P4ROOT/misc/linux/unix-build \
-        --tools $P4ROOT/tools \
-        --devrel $P4ROOT/devrel/SDK/inc/GL \
-        --unshare-namespaces \
-        nvmake \
-        NV_COLOR_OUTPUT=1 \
-        NV_GUARDWORD= \
-        NV_COMPRESS_THREADS=$(nproc) \
-        NV_FAST_PACKAGE_COMPRESSION=zstd \
-        NV_EXCLUDE_BUILD_MODULES="nvcuvid" $default_args $@ 
-}
-
-function nvidia-make-ppp {
-    config=${1:-release}
-    nvidia-make drivers dist linux amd64 $config -j$(nproc) &&
-    nvidia-make drivers dist linux x86   $config -j$(nproc) &&
-    nvidia-make drivers dist linux amd64 $config post-process-packages &&
-    stat $P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$config/NVIDIA-Linux-x86_64-$(nvidia-src-version).run
 }
 
 function nvidia-install {

@@ -1,0 +1,24 @@
+vulkan: Add image load/store support for D16 and D32
+
+This was a request from Valve and it aligns with our DX12 implementation. Our SULD/SUST operations don't support depth formats directly, so we program the image header with the equivalent R16u/R32f formats.
+
+CTS is pending here: https://gerrit.khronos.org/c/vk-gl-cts/+/14669
+
+Bug 4654556: vulkan: Expose support for image load/store of D16_UNORM and D32_SFLOAT formats
+Reviewed by jbolz
+@@swarm-sw-ogl-vulkan
+@jbolz
+@esullivan
+#review-34303263
+
+DVS_SUITE_OGL_SANITY
+MVS_SET_TESTS all
+SUBMIT_GVS_OF_CUSTOM_DVS
+
+PRESUBMIT_TESTING:
+DVS: http://ausdvs.nvidia.com/Build_Results?which_changelist=3429617976267188.1&which_page=current_build
+GVS: https://testbot.nvidia.com/testbot/view/content/change/changeDetail.jsf?gcid=36286870&vid=5
+Manual testing:
+- Amodel with "gb202" for "gh100imagedescriptor.cpp" coverage
+- gm107 and gm204 for older GPU coverage
+- ga104
