@@ -6,12 +6,13 @@ if [[ -z $1 ]]; then
     echo "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D"
     echo 
     echo "[release|debug|develop] - install full build drivers"
-    echo "glcore - install driver module"
     echo "123.45 - install driver by version"
     echo "d20250130 - install driver by date"
     echo "current   - install driver with latest date"
     echo "directory - install driver found in directory"
     echo "file path - install driver by path"
+    echo ".dso file - install .dso driver module"
+    echo "reset.dso - reset default driver modules"
     exit 
 fi
 
@@ -139,6 +140,26 @@ elif [[ -d $(realpath $1) ]]; then
         read -e -i 0 -p "Select: " idx
         $0 $(cat /tmp/$idx)
     fi
+elif [[ $1 == *".dso" ]]; then
+    if [[ ! -f $1 ]]; then
+        echo "Driver module not found: $filename"
+        exit -1
+    fi
+
+    modversion=$(modinfo nvidia | grep ^version | awk '{print $2}')
+    filepath=$(realpath $1)
+    filename=$(basename $1).$modversion 
+
+    if [[ $1 == "reset.dso" ]]; then
+        find $HOME/so.$modversion.backup -type f -name "*.so.$modversion" -exec sh -c 'sudo cp -fv --remove-destination "$1" "/lib/x86_64-linux-gnu/$(basename "$1")"' _ {} \;
+        sudo rm -rf $HOME/so.$modversion.backup
+    else
+        if [[ ! -f $HOME/so.$modversion.backup/$filename ]]; then
+            mkdir -p $HOME/so.$modversion.backup
+            sudo cp -fv /lib/x86_64-linux-gnu/$filename $HOME/so.$modversion.backup/$filename
+        fi
+        sudo cp -fv --remove-destination $filepath /lib/x86_64-linux-gnu/$filename
+    fi 
 else 
     if [[ $XDG_SESSION_TYPE != tty ]]; then
         echo "Please run through a tty or ssh session"
