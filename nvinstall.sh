@@ -11,8 +11,8 @@ if [[ -z $1 ]]; then
     echo "current   - install driver with latest date"
     echo "directory - install driver found in directory"
     echo "file path - install driver by path"
-    echo ".dso file - install .dso driver module"
-    echo "reset.dso - reset default driver modules"
+    echo ".so file  - install .so driver module"
+    echo "reset.so  - reset default driver modules"
     exit 
 fi
 
@@ -140,7 +140,7 @@ elif [[ -d $(realpath $1) ]]; then
         read -e -i 0 -p "Select: " idx
         $0 $(cat /tmp/$idx)
     fi
-elif [[ $1 == *".dso" ]]; then
+elif [[ $1 == *".so" ]]; then
     if [[ ! -f $1 ]]; then
         echo "Driver module not found: $filename"
         exit -1
@@ -150,7 +150,7 @@ elif [[ $1 == *".dso" ]]; then
     filepath=$(realpath $1)
     filename=$(basename $1).$modversion 
 
-    if [[ $1 == "reset.dso" ]]; then
+    if [[ $1 == "reset.so" ]]; then
         find $HOME/so.$modversion.backup -type f -name "*.so.$modversion" -exec sh -c 'sudo cp -fv --remove-destination "$1" "/lib/x86_64-linux-gnu/$(basename "$1")"' _ {} \;
         sudo rm -rf $HOME/so.$modversion.backup
     else
