@@ -111,16 +111,17 @@ elif [[ $1 =~ ^[0-9]+\.[0-9]+$ || $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     popd
 elif [[ $1 == release || $1 == debug || $1 == develop ]]; then
     outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$1
-    if [[ -f  $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version).run ]]; then
+    srcversion=$(grep '^#define NV_VERSION_STRING' $P4ROOT/dev/gpu_drv/bugfix_main/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g')
+    if [[ -f  $outdir/NVIDIA-Linux-x86_64-$srcversion.run ]]; then
         echo "32-bits compatible packages are available"
         read -e -i "yes" -p "Install PPP (amd64 + x86) driver? (yes/no): " ans
         if [[ $ans == yes ]]; then
-            $0 $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version).run
+            $0 $outdir/NVIDIA-Linux-x86_64-$srcversion.run
         else
-            $0 $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version)-internal.run
+            $0 $outdir/NVIDIA-Linux-x86_64-$srcversion-internal.run
         fi
     else
-        $0 $outdir/NVIDIA-Linux-x86_64-$(nvidia-src-version)-internal.run
+        $0 $outdir/NVIDIA-Linux-x86_64-$srcversion-internal.run
     fi 
 elif [[ -d $(realpath $1) ]]; then
     idx=0
@@ -139,6 +140,10 @@ elif [[ -d $(realpath $1) ]]; then
         $0 $(cat /tmp/$idx)
     fi
 else 
+    if [[ ! -e $1 ]]; then
+        echo "Driver not found: $1"
+        return -1
+    fi
     if [[ $XDG_SESSION_TYPE != tty ]]; then
         echo "Please run through a tty or ssh session"
         return -1
