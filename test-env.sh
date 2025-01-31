@@ -1,8 +1,8 @@
-#if   [[ $HOSTNAME == wanliz-dev  ]]; then
-#    export P4CLIENT=wanliz-p4sw-bugfixmain
-#elif [[ $HOSTNAME == wanliz-test ]]; then
-#    export P4CLIENT=wanliz_p4sw_test
-#fi
+if   [[ $HOSTNAME == wanliz-dev  ]]; then
+    export P4CLIENT=wanliz-p4sw-bugfixmain
+elif [[ $HOSTNAME == wanliz-test ]]; then
+    export P4CLIENT=wanliz_p4sw_test
+fi
 if [[ -z $DISPLAY ]]; then
     export DISPLAY=:0
 fi  
@@ -18,10 +18,10 @@ fi
 #    xauth list 
 #    popd >/dev/null
 #fi
-#export P4ROOT=$HOME/$P4CLIENT
-#export P4IGNORE=$HOME/.p4ignore
-#export P4PORT=p4proxy-sc.nvidia.com:2006
-#export P4USER=wanliz
+export P4ROOT=$HOME/$P4CLIENT
+export P4IGNORE=$HOME/.p4ignore
+export P4PORT=p4proxy-sc.nvidia.com:2006
+export P4USER=wanliz
 export PATH=$HOME/wanliz_workspace:$PATH
 export PATH=$HOME/wanliz_workspace/test_vp:$PATH
 export PATH=$HOME/wanliz_workspace/test_wayland:$PATH
