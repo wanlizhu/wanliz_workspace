@@ -141,23 +141,25 @@ elif [[ -d $(realpath $1) ]]; then
         $0 $(cat /tmp/$idx)
     fi
 elif [[ $1 == *".so" ]]; then
-    if [[ ! -f $1 ]]; then
-        echo "Driver module not found: $filename"
-        exit -1
-    fi
-
     modversion=$(modinfo nvidia | grep ^version | awk '{print $2}')
-    filepath=$(realpath $1)
-    filename=$(basename $1).$modversion 
-
+    
     if [[ $1 == "reset.so" ]]; then
         find $HOME/so.$modversion.backup -type f -name "*.so.$modversion" -exec sh -c 'sudo cp -fv --remove-destination "$1" "/lib/x86_64-linux-gnu/$(basename "$1")"' _ {} \;
         sudo rm -rf $HOME/so.$modversion.backup
     else
+        if [[ ! -f $1 ]]; then
+            echo "Driver module not found: $filename"
+            exit -1
+        fi
+        
+        filepath=$(realpath $1)
+        filename=$(basename $1).$modversion 
+
         if [[ ! -f $HOME/so.$modversion.backup/$filename ]]; then
             mkdir -p $HOME/so.$modversion.backup
             sudo cp -fv /lib/x86_64-linux-gnu/$filename $HOME/so.$modversion.backup/$filename
         fi
+        
         sudo cp -fv --remove-destination $filepath /lib/x86_64-linux-gnu/$filename
     fi 
 else 
