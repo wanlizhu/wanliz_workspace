@@ -154,13 +154,6 @@ else
     echo "NVIDIA driver: $driver"
     read -p "Press [ENTER] to continue: " _
     sudo systemctl isolate multi-user
-    sleep 1
-
-    if [[ $(tty) == "/dev/tty"* ]]; then
-        ttyid=$(sudo fgconsole)
-        sudo chvt $ttyid 
-    fi
-
     chmod +x $driver 
     sudo $driver && 
     sudo systemctl isolate graphical || {
