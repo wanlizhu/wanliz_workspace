@@ -25,7 +25,7 @@ if [[ $1 == 'http'* ]]; then
     fi
     pushd ~/Downloads >/dev/null
     name="${1##*/}"
-    wget --no-check-certificate -O NVIDIA-Linux-x86_64-$name$buildtype.run $1 || return -1
+    wget --no-check-certificate -O NVIDIA-Linux-x86_64-$name$buildtype.run $1 || exit -1
     popd >/dev/null
     $0 $HOME/Downloads/NVIDIA-Linux-x86_64-$name$buildtype.run
 elif [[ $1 == "d"* ]]; then
@@ -37,7 +37,7 @@ elif [[ $1 == "d"* ]]; then
         wanted=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D" | grep '<td><a href="20' | grep "${1//[!0-9]/}_" | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
         if [[ ! -f NVIDIA-Linux-x86_64-${wanted}.run ]]; then
             echo "Downloading NVIDIA-Linux-x86_64-${wanted}.run"
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${wanted}.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/$wanted/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$wanted.run || return -1
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${wanted}.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/$wanted/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$wanted.run || exit -1
         fi 
         $0 $HOME/Downloads/NVIDIA-Linux-x86_64-$wanted.run
     elif [[ $buildtype == debug ]]; then
@@ -45,7 +45,7 @@ elif [[ $1 == "d"* ]]; then
         wanted=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D" | grep '<td><a href="20' | grep "${1//[!0-9]/}_" | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
         if [[ ! -f NVIDIA-Linux-x86_64-${wanted}-debug.run ]]; then
             echo "Downloading NVIDIA-Linux-x86_64-${wanted}-debug.run"
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${wanted}-debug.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/$wanted/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$wanted.run || return -1
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${wanted}-debug.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/$wanted/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$wanted.run || exit -1
         fi 
         $0 $HOME/Downloads/NVIDIA-Linux-x86_64-${wanted}-debug.run
     elif [[ $buildtype == develop ]]; then
@@ -53,7 +53,7 @@ elif [[ $1 == "d"* ]]; then
         wanted=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D" | grep '<td><a href="20' | grep "${1//[!0-9]/}_" | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
         if [[ ! -f NVIDIA-Linux-x86_64-${wanted}-develop.run ]]; then
             echo "Downloading NVIDIA-Linux-x86_64-${wanted}-develop.run"
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${wanted}-develop.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/$wanted/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$wanted.run || return -1
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${wanted}-develop.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/$wanted/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$wanted.run || exit -1
         fi 
         $0 $HOME/Downloads/NVIDIA-Linux-x86_64-${wanted}-develop.run
     fi
@@ -67,7 +67,7 @@ elif [[ $1 == current ]]; then
         current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
         if [[ ! -f NVIDIA-Linux-x86_64-${current}.run ]]; then
             echo "Downloading NVIDIA-Linux-x86_64-${current}.run"
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || exit -1
         fi 
         $0 $HOME/Downloads/NVIDIA-Linux-x86_64-$current.run
     elif [[ $buildtype == debug ]]; then
@@ -75,7 +75,7 @@ elif [[ $1 == current ]]; then
         current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
         if [[ ! -f NVIDIA-Linux-x86_64-${current}-debug.run ]]; then
             echo "Downloading NVIDIA-Linux-x86_64-${current}-debug.run"
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-debug.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-debug.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/debug/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || exit -1
         fi 
         $0 $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-debug.run
     elif [[ $buildtype == develop ]]; then
@@ -83,7 +83,7 @@ elif [[ $1 == current ]]; then
         current=$(curl -s "http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/?C=M;O=D" | grep '<td><a href="20' | head -n 1 | awk -F '"' '{print $8}' | awk -F '/' '{print $1}')
         if [[ ! -f NVIDIA-Linux-x86_64-${current}-develop.run ]]; then
             echo "Downloading NVIDIA-Linux-x86_64-${current}-develop.run"
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-develop.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || return -1
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-${current}-develop.run http://linuxqa/builds/daily/display/x86_64/dev/gpu_drv/bugfix_main/develop/$current/NVIDIA-Linux-x86_64-dev_gpu_drv_bugfix_main-$current.run || exit -1
         fi 
         $0 $HOME/Downloads/NVIDIA-Linux-x86_64-${current}-develop.run
     fi
@@ -94,23 +94,23 @@ elif [[ $1 =~ ^[0-9]+\.[0-9]+$ || $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     pushd ~/Downloads 
     if [[ $buildtype == release ]]; then
         if [[ ! -f NVIDIA-Linux-x86_64-$1.run ]]; then
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1.run http://linuxqa/builds/release/display/x86_64/$1/NVIDIA-Linux-x86_64-$1.run || return -1
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1.run http://linuxqa/builds/release/display/x86_64/$1/NVIDIA-Linux-x86_64-$1.run || exit -1
         fi 
         $0 $HOME/Downloads/NVIDIA-Linux-x86_64-$1.run
     elif [[ $buildtype == debug ]]; then
         if [[ ! -f NVIDIA-Linux-x86_64-$1-debug.run ]]; then
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-debug.run http://linuxqa/builds/release/display/x86_64/debug/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-debug.run http://linuxqa/builds/release/display/x86_64/debug/$1/NVIDIA-Linux-x86_64-$1.run || exit -1 
         fi 
         $0 $HOME/Downloads/NVIDIA-Linux-x86_64-$1-debug.run
     elif [[ $buildtype == develop ]]; then
         if [[ ! -f NVIDIA-Linux-x86_64-$1-develop.run ]]; then
-            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-develop.run http://linuxqa/builds/release/display/x86_64/develop/$1/NVIDIA-Linux-x86_64-$1.run || return -1 
+            wget --no-check-certificate -O NVIDIA-Linux-x86_64-$1-develop.run http://linuxqa/builds/release/display/x86_64/develop/$1/NVIDIA-Linux-x86_64-$1.run || exit -1 
         fi
         $0 $HOME/Downloads/NVIDIA-Linux-x86_64-$1-develop.run
     fi
     popd
 elif [[ $1 == release || $1 == debug || $1 == develop ]]; then
-    outdir=$P4ROOT/dev/gpu_drv/bugfix_main/_out/Linux_amd64_$1
+    outdir=$P4ROOT/_out/Linux_amd64_$1
     srcversion=$(grep '^#define NV_VERSION_STRING' $P4ROOT/drivers/common/inc/nvUnixVersion.h  | awk '{print $3}' | sed 's/"//g')
     if [[ -f  $outdir/NVIDIA-Linux-x86_64-$srcversion.run ]]; then
         echo "32-bits compatible packages are available"
@@ -134,7 +134,7 @@ elif [[ -d $(realpath $1) ]]; then
     done
     if [[ $idx == 0 ]]; then
         echo "Driver not found in $1"
-        return -1
+        exit -1
     else
         read -e -i 0 -p "Select: " idx
         $0 $(cat /tmp/$idx)
@@ -142,13 +142,13 @@ elif [[ -d $(realpath $1) ]]; then
 else 
     if [[ $XDG_SESSION_TYPE != tty ]]; then
         echo "Please run through a tty or ssh session"
-        return -1
+        exit -1
     fi
 
     driver=$(realpath $1)
     if [[ ! -e $driver ]]; then
         echo "Driver not found: $driver"
-        return -1
+        exit -1
     fi
 
     echo "NVIDIA driver: $driver"
