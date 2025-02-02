@@ -636,7 +636,7 @@ function install-viewperf {
     popd >/dev/null
 }
 
-function start-plain-x {
+function start-bare-x {
     if [[ $XDG_SESSION_TYPE != tty ]]; then
         echo "Please run through a tty or ssh session"
         return 
