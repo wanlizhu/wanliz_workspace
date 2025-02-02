@@ -19,5 +19,6 @@ if [[ -z $(openconnect --version | head -1 | grep "v9") ]]; then
     popd 
 fi
 
-eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which google-chrome) --authenticate ngvpn02.vpn.nvidia.com/SAML-EXT)
+vpnid=$([[ -z $1 ]] && echo 02 || echo $1)
+eval $(openconnect --useragent="AnyConnect-compatible OpenConnect VPN Agent" --external-browser $(which google-chrome) --authenticate ngvpn$vpnid.vpn.nvidia.com/SAML-EXT) 
 [ -n ["$COOKIE"] ] && echo -n "$COOKIE" | sudo openconnect --cookie-on-stdin $CONNECT_URL --servercert $FINGERPRINT --resolve $RESOLVE 

@@ -6,7 +6,7 @@ export P4PORT=p4proxy-sc.nvidia.com:2006
 export P4USER=wanliz
 
 if [[ -z $1 ]]; then
-    read -e -i "yes" -p "Make a full build? (yes/no): " fullbuild
+    read -e -i "no" -p "Make a full build? (yes/no): " fullbuild
     read -e -i "release" -p "Set build type: " buildtype
     read -e -i "$(nproc)" -p "Number of building threads: " threads
     if [[ $fullbuild == yes ]]; then

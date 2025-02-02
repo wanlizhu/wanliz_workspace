@@ -600,7 +600,7 @@ function check-p4ignore {
 }
 
 function dvsbuild {
-    $P4ROOT/automation/dvs/dvsbuild/dvsbuild.pl -c $1 
+    P4CLIENT=wanliz-p4sw-common $HOME/wanliz-p4sw-common/automation/dvs/dvsbuild/dvsbuild.pl -c $1 
 }
 
 function download-big-file {
