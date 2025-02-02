@@ -6,7 +6,7 @@ fi
 
 if [[ -d /opt/SPEC/SPECviewperf2020 ]]; then
     cd /opt/SPEC/SPECviewperf2020
-elif [[ -d $HOME/viewperf2020 ]]
+elif [[ -d $HOME/viewperf2020 ]]; then
     cd $HOME/viewperf2020
 else
     echo "Could not find viewperf directory"
