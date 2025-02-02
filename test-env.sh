@@ -664,7 +664,7 @@ function start-bare-x {
     fi
     
     sudo systemctl stop gdm
-    X :0 
+    sudo X :0 
 }
 
 function disable-only-console-users-are-allowed-to-run-the-x-server {
