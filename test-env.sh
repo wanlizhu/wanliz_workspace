@@ -661,7 +661,7 @@ function start-bare-x {
     fi
     
     sudo systemctl stop gdm
-    sudo X :0 
+    sudo X :0 &
 }
 
 function stop-bare-x {
