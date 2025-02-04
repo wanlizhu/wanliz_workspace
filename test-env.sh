@@ -784,7 +784,7 @@ function install-ngfx {
     
     pushd ~/Downloads 
     cp /mnt/10.126.133.25/share/Devtools/NomadBuilds/latest/Internal/linux/*.tar.gz . || return -1
-    tar -zxvf NVIDIA_Nsight_Graphics_*-internal.tar.gz
+    tar -zxvf NVIDIA_Nsight_Graphics_*-internal.tar.gz || return -1
     mv nvidia-nomad-internal-Linux.linux nvidia-nomad-internal
     rm -rf $HOME/nvidia-nomad-internal
     mv nvidia-nomad-internal $HOME
