@@ -666,7 +666,7 @@ function start-bare-x {
 
 function stop-bare-x {
     sudo kill -9 `pidof Xorg`
-    sleep 2
+    sleep 3
     sudo systemctl start gdm 
 }
 
