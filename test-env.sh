@@ -642,13 +642,10 @@ function start-bare-x {
         return 
     fi
     
-    read -e -i "yes" -p "Disable DPMS? (yes/no): " ans
-    if [[ $ans == yes ]]; then
-        xset -dpms
-        xset s off
-        if [[ -z $(grep '"DPMS" "false"' /etc/X11/xorg.conf) ]]; then
-            sudo sed -i 's/"DPMS"/"DPMS" "false"/g' /etc/X11/xorg.conf
-        fi
+    xset -dpms
+    xset s off
+    if [[ -z $(grep '"DPMS" "false"' /etc/X11/xorg.conf) ]]; then
+        sudo sed -i 's/"DPMS"/"DPMS" "false"/g' /etc/X11/xorg.conf
     fi
 
     if [[ -z $(grep anybody /etc/X11/Xwrapper.config) ]]; then
@@ -665,6 +662,12 @@ function start-bare-x {
     
     sudo systemctl stop gdm
     sudo X :0 
+}
+
+function stop-bare-x {
+    sudo kill -9 `pidof Xorg`
+    sleep 2
+    sudo systemctl start gdm 
 }
 
 function disable-only-console-users-are-allowed-to-run-the-x-server {
