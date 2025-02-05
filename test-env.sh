@@ -666,7 +666,9 @@ function start-bare-x {
 
 function stop-bare-x {
     sudo kill -9 `pidof Xorg`
-    sleep 3
+    while [[ ! -z $(pidof Xorg) ]]; do
+        sleep 1
+    done
     sudo systemctl start gdm 
 }
 
@@ -827,6 +829,9 @@ function install-display-managers {
     sudo apt install -y gdm3
     # The "Disable Unredirect Fullscreen Windows" extension allows you to disable compositing for full-screen applications
     sudo apt install -y gnome-shell-extension-manager 
+
+    # Set up automatic login for lightdm
+
 }
 
 function sync-root-docs {
